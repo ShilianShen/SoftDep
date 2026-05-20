@@ -1,6 +1,6 @@
 local softtree = {}
 
-local function getConst(t)
+local function _getConst(t)
 	local proxy = {}
 	local mt = {
 		__index = t,
@@ -16,6 +16,7 @@ local function _newNode(parentTags, entity, load, update, run)
 	local node = {
 		parentTags = parentTags or {},
 		entity = entity or {},
+		params = {},
 		stale = true,
 		dirty = true,
 		depth = 0,
@@ -27,7 +28,7 @@ local function _newNode(parentTags, entity, load, update, run)
 		parents = {},
 		children = {},
 	}
-	node.const = getConst(node.entity)
+	node.const = _getConst(node.entity)
 	setmetatable(node, {
 		__newindex = function()
 			assert(false)
@@ -35,25 +36,6 @@ local function _newNode(parentTags, entity, load, update, run)
 		__metatable = false,
 	})
 	return node
-end
-
-local function insert(tree, tag, parentTags, entity, load, update, run)
-	if type(tag) == "table" then
-		tag, parentTags, entity, load, update, run = tag.tag, tag.parentTags, tag.entity, tag.load, tag.update, tag.run
-	end
-	local node = _newNode(parentTags, entity, load, update, run)
-	tag = tag or tostring(entity)
-	tree.nodeDict[tag] = node
-	tree.stale = true
-	tree.dirty = true
-end
-
-local function remove(tree, tag, entity)
-	tag = tag or tostring(entity)
-	if tree.nodeDict[tag] ~= nil then
-		tree.nodeDict[tag] = nil
-		tree.stale = true
-	end
 end
 
 local function _setDepth(tree)
@@ -76,10 +58,11 @@ local function _setParentsAndChildren(nodeDict)
 		node.children = {}
 	end
 	for tag, node in pairs(nodeDict) do
-		for _, parentTag in ipairs(node.parentTags) do
+		for paramTag, parentTag in pairs(node.parentTags) do
 			local parent = nodeDict[parentTag]
 			parent.children[tag] = node
 			node.parents[parentTag] = parent
+			node.params[paramTag] = parent.const
 		end
 	end
 end
@@ -120,11 +103,26 @@ end
 
 local function _activateFunc(node, funcname)
 	if node[funcname] ~= nil then
-		local params = {}
-		for tag, parent in pairs(node.parents) do
-			params[tag] = parent.const
-		end
-		node[funcname](node.entity, params)
+		node[funcname](node.entity, node.params)
+	end
+end
+
+local function insert(tree, tag, parentTags, entity, load, update, run)
+	if type(tag) == "table" then
+		tag, parentTags, entity, load, update, run = tag.tag, tag.parentTags, tag.entity, tag.load, tag.update, tag.run
+	end
+	local node = _newNode(parentTags, entity, load, update, run)
+	tag = tag or tostring(entity)
+	tree.nodeDict[tag] = node
+	tree.stale = true
+	tree.dirty = true
+end
+
+local function remove(tree, tag, entity)
+	tag = tag or tostring(entity)
+	if tree.nodeDict[tag] ~= nil then
+		tree.nodeDict[tag] = nil
+		tree.stale = true
 	end
 end
 
@@ -143,7 +141,7 @@ local function spread(tree)
 	end
 end
 
-local function updateTree(tree)
+local function tick(tree)
 	if tree.stale then
 		_setParentsAndChildren(tree.nodeDict)
 		tree.nodeArray = _getOptimizedNodeArray(tree.nodeDict)
@@ -202,7 +200,7 @@ function softtree.newTree()
 
 		insert = insert,
 		remove = remove,
-		update = updateTree,
+		tick = tick,
 
 		getTagged = getTagged,
 		getMermaid = getMermaid,
