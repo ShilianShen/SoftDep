@@ -1,6 +1,7 @@
 local font1 = love.graphics.newFont(24)
 local font2 = love.graphics.newFont(12)
 local dirtyColor = { 0.6, 0.2, 0.2 }
+local staleColor = { 0, 0, 0 }
 local cleanColor = { 0.2, 0.5, 0.3 }
 local shineColor = { 0.9, 0.8, 0.2 }
 local nightColor = { 0.1, 0.1, 0.12 }
@@ -125,14 +126,16 @@ local function calc()
 			info.w = info.s * info.text:getWidth()
 			info.h = info.s * info.text:getHeight()
 			info.r = info.s * font1:getHeight() / 2
-			info.t = node.dirty and time or (info.t or 0)
-			info.k = math.max(0, 1 - (time - info.t) / bufferT)
+			info.t1 = node.stale and time or (info.t1 or 0)
+			info.k1 = math.max(0, 1 - (time - info.t1) / bufferT)
+			info.t2 = node.dirty and time or (info.t2 or 0)
+			info.k2 = math.max(0, 1 - (time - info.t2) / bufferT)
 		end
 	end
 end
 
 local function drawEntity(tab, depth, indent)
-	depth = depth or 0
+	depth = depth or 2
 	indent = indent or 16
 	local strings = dump(tab, depth)
 	local x, y = 0, (love.graphics.getHeight() - font2:getHeight() * #strings) / 2
@@ -166,8 +169,11 @@ local function drawNode(info, theme)
 	love.graphics.setColor(cleanColor)
 	love.graphics.rectangle("fill", info.x, info.y, info.w, info.h)
 
+	love.graphics.setColor(staleColor)
+	love.graphics.rectangle("fill", info.x, info.y, info.w * info.k1, info.h)
+
 	love.graphics.setColor(dirtyColor)
-	love.graphics.rectangle("fill", info.x, info.y, info.w * info.k, info.h)
+	love.graphics.rectangle("fill", info.x, info.y, info.w * info.k2, info.h)
 
 	love.graphics.setColor(theme or lightColor)
 	love.graphics.draw(info.text, info.x, info.y, 0, info.s, info.s)

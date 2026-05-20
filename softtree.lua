@@ -12,15 +12,17 @@ local function getConst(t)
 	return setmetatable(proxy, mt)
 end
 
-local function _newNode(parentTags, entity, load, update)
+local function _newNode(parentTags, entity, load, update, run)
 	local node = {
 		parentTags = parentTags or {},
 		entity = entity or {},
+		stale = true,
 		dirty = true,
 		depth = 0,
 
 		load = load,
 		update = update,
+		run = run,
 
 		parents = {},
 		children = {},
@@ -35,11 +37,14 @@ local function _newNode(parentTags, entity, load, update)
 	return node
 end
 
-local function insert(tree, tag, parentTags, entity, load, update)
-	local node = _newNode(parentTags, entity, load, update)
+local function insert(tree, tag, parentTags, entity, load, update, run)
+	if type(tag) == "table" then
+		tag, parentTags, entity, load, update, run = tag.tag, tag.parentTags, tag.entity, tag.load, tag.update, tag.run
+	end
+	local node = _newNode(parentTags, entity, load, update, run)
 	tag = tag or tostring(entity)
-	assert(tree.nodeDict[tag] == nil)
 	tree.nodeDict[tag] = node
+	tree.stale = true
 	tree.dirty = true
 end
 
@@ -47,7 +52,7 @@ local function remove(tree, tag, entity)
 	tag = tag or tostring(entity)
 	if tree.nodeDict[tag] ~= nil then
 		tree.nodeDict[tag] = nil
-		tree.dirty = true
+		tree.stale = true
 	end
 end
 
@@ -125,7 +130,12 @@ end
 
 local function spread(tree)
 	for _, node in ipairs(tree.nodeArray) do
-		if node.dirty then
+		if node.stale then
+			for _, child in pairs(node.children) do
+				child.stale = true
+				child.dirty = true
+			end
+		elseif node.dirty then
 			for _, child in pairs(node.children) do
 				child.dirty = true
 			end
@@ -134,26 +144,35 @@ local function spread(tree)
 end
 
 local function updateTree(tree)
-	if tree.dirty then
+	if tree.stale then
 		_setParentsAndChildren(tree.nodeDict)
 		tree.nodeArray = _getOptimizedNodeArray(tree.nodeDict)
 		_setDepth(tree)
-		tree.dirty = false
+		tree.stale = false
 	end
 
 	spread(tree)
 
 	for _, node in ipairs(tree.nodeArray) do
-		if node.dirty then
+		if node.stale then
 			_activateFunc(node, "load")
+			node.stale = false
+			node.dirty = true
+		end
+		if node.dirty then
+			_activateFunc(node, "update")
 			node.dirty = false
 		end
-		_activateFunc(node, "update")
+		_activateFunc(node, "run")
 	end
 end
 
 local function getTagged(tree, tag)
 	return tree.nodeDict[tag].entity
+end
+
+local function setStale(tree, tag)
+	tree.nodeDict[tag].stale = true
 end
 
 local function setDirty(tree, tag)
@@ -176,7 +195,7 @@ end
 
 function softtree.newTree()
 	local tree = {
-		dirty = true,
+		stale = true,
 		nodeDict = {},
 		nodeArray = {},
 		depth = 0,
@@ -188,6 +207,7 @@ function softtree.newTree()
 		getTagged = getTagged,
 		getMermaid = getMermaid,
 
+		setStale = setStale,
 		setDirty = setDirty,
 		spread = spread,
 	}
