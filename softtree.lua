@@ -1,6 +1,6 @@
 local softtree = {}
 
-local NODE_MT = {
+local _NODE_MT = {
 	__newindex = function()
 		error("Attempt to modify protected node field", 2)
 	end,
@@ -38,7 +38,7 @@ local function _newNode(parentTags, entity, load, update, run)
 		children = {},
 	}
 	node.const = _getConst(node.entity)
-	setmetatable(node, NODE_MT)
+	setmetatable(node, _NODE_MT)
 	return node
 end
 
@@ -117,9 +117,6 @@ local function _activateFunc(node, funcname)
 end
 
 local function insert(tree, tag, parentTags, entity, load, update, run)
-	if type(tag) == "table" then
-		tag, parentTags, entity, load, update, run = tag.tag, tag.parentTags, tag.entity, tag.load, tag.update, tag.run
-	end
 	local node = _newNode(parentTags, entity, load, update, run)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
