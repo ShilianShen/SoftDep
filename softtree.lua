@@ -32,8 +32,8 @@ local function _newNode(paramTags, entity, load, update, run)
 		update = update,
 		run = run,
 
-		loadCount = 0,
-		updateCount = 0,
+		staleCount = 0,
+		dirtyCount = 0,
 
 		parents = {},
 		children = {},
@@ -109,10 +109,26 @@ end
 local function _activateFunc(node, funcname)
 	if node[funcname] ~= nil then
 		node[funcname](node.entity, node.params)
-		if funcname == "load" then
-			node.loadCount = node.loadCount + 1
-		elseif funcname == "update" then
-			node.updateCount = node.updateCount + 1
+	end
+end
+
+local function _spread(tree)
+	for _, node in ipairs(tree.nodeArray) do
+		if node.stale then
+			for _, child in pairs(node.children) do
+				child.stale = true
+				child.dirty = true
+			end
+		elseif node.dirty then
+			for _, child in pairs(node.children) do
+				child.dirty = true
+			end
+		end
+		if node.stale then
+			node.staleCount = node.staleCount + 1
+		end
+		if node.dirty then
+			node.dirtyCount = node.dirtyCount + 1
 		end
 	end
 end
@@ -142,21 +158,6 @@ local function remove(tree, tag, entity)
 	end
 end
 
-local function spread(tree)
-	for _, node in ipairs(tree.nodeArray) do
-		if node.stale then
-			for _, child in pairs(node.children) do
-				child.stale = true
-				child.dirty = true
-			end
-		elseif node.dirty then
-			for _, child in pairs(node.children) do
-				child.dirty = true
-			end
-		end
-	end
-end
-
 local function tick(tree)
 	if tree.stale then
 		_setParentsAndChildren(tree.nodeDict)
@@ -165,7 +166,7 @@ local function tick(tree)
 		tree.stale = false
 	end
 
-	spread(tree)
+	_spread(tree)
 
 	for _, node in ipairs(tree.nodeArray) do
 		if node.stale then
@@ -226,7 +227,6 @@ function softtree.newTree()
 
 		setStale = setStale,
 		setDirty = setDirty,
-		spread = spread,
 	}
 	tree:insert("root", nil, {})
 	return tree

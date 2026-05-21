@@ -126,10 +126,10 @@ local function calc()
 			info.w = info.s * info.text:getWidth()
 			info.h = info.s * info.text:getHeight()
 			info.r = info.s * font1:getHeight() / 2
-			info.t1 = node.stale and time or (info.t1 or 0)
-			info.k1 = math.max(0, 1 - (time - info.t1) / bufferT)
-			info.t2 = node.dirty and time or (info.t2 or 0)
-			info.k2 = math.max(0, 1 - (time - info.t2) / bufferT)
+			info.staleT = info.staleN ~= node.staleCount and time or (info.staleT or 0)
+			info.staleN = node.staleCount
+			info.dirtyT = info.dirtyN ~= node.dirtyCount and time or (info.dirtyT or 0)
+			info.dirtyN = node.dirtyCount
 		end
 	end
 end
@@ -170,10 +170,10 @@ local function drawNode(info, theme)
 	love.graphics.rectangle("fill", info.x, info.y, info.w, info.h)
 
 	love.graphics.setColor(staleColor)
-	love.graphics.rectangle("fill", info.x, info.y, info.w * info.k1, info.h)
+	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.staleT) / bufferT), info.h)
 
 	love.graphics.setColor(dirtyColor)
-	love.graphics.rectangle("fill", info.x, info.y, info.w * info.k2, info.h)
+	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.dirtyT) / bufferT), info.h)
 
 	love.graphics.setColor(theme or lightColor)
 	love.graphics.draw(info.text, info.x, info.y, 0, info.s, info.s)
@@ -215,7 +215,6 @@ local function call(_tree)
 	winW, winH = love.graphics.getDimensions()
 	mouseX, mouseY = love.mouse.getPosition()
 	tree = _tree
-	tree:spread()
 	time = love.timer.getTime()
 	love.graphics.push("all")
 	love.graphics.setLineWidth(1)
