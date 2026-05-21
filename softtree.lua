@@ -26,13 +26,14 @@ local function _newNode(paramTags, entity, load, update, run)
 		params = {},
 		stale = true,
 		dirty = true,
-		loadCount = 0,
-		updateCount = 0,
 		depth = 0,
 
 		load = load,
 		update = update,
 		run = run,
+
+		loadCount = 0,
+		updateCount = 0,
 
 		parents = {},
 		children = {},
@@ -44,7 +45,7 @@ end
 
 local function _setDepth(tree)
 	tree.depth = 0
-	for i, node in ipairs(tree.nodeArray) do
+	for _, node in ipairs(tree.nodeArray) do
 		node.depth = 1
 		for _, parent in pairs(node.parents) do
 			node.depth = math.max(node.depth, parent.depth + 1)
@@ -117,6 +118,15 @@ local function _activateFunc(node, funcname)
 end
 
 local function insert(tree, tag, paramTags, entity, load, update, run)
+	if type(tag) == "table" then
+		local args = tag
+		tag = args.tag
+		paramTags = args.paramTags
+		entity = args.entity
+		load = args.load
+		update = args.update
+		run = args.run
+	end
 	local node = _newNode(paramTags, entity, load, update, run)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
@@ -190,7 +200,10 @@ local function getMermaid(tree)
 		for paramTag, parentTag in pairs(node.paramTags) do
 			local parent = tree.nodeDict[parentTag]
 			if parent then
-				table.insert(mermaid, string.format("%p", parent) .. "--[" .. paramTag .. "]-->" .. string.format("%p", node))
+				table.insert(
+					mermaid,
+					string.format("%p", parent) .. "--[" .. paramTag .. "]-->" .. string.format("%p", node)
+				)
 			end
 		end
 	end
