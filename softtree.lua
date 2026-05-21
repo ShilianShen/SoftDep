@@ -1,5 +1,12 @@
 local softtree = {}
 
+local NODE_MT = {
+	__newindex = function()
+		error("Attempt to modify protected node field", 2)
+	end,
+	__metatable = false,
+}
+
 local function _getConst(t)
 	local proxy = {}
 	local mt = {
@@ -31,19 +38,14 @@ local function _newNode(parentTags, entity, load, update, run)
 		children = {},
 	}
 	node.const = _getConst(node.entity)
-	setmetatable(node, {
-		__newindex = function()
-			assert(false)
-		end,
-		__metatable = false,
-	})
+	setmetatable(node, NODE_MT)
 	return node
 end
 
 local function _setDepth(tree)
 	tree.depth = 0
 	for i, node in ipairs(tree.nodeArray) do
-		node.depth = 0
+		node.depth = 1
 		if #node.parentTags == 0 then
 			node.depth = 1
 		end
