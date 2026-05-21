@@ -19,9 +19,9 @@ local function _getConst(t)
 	return setmetatable(proxy, mt)
 end
 
-local function _newNode(parentTags, entity, load, update, run)
+local function _newNode(paramTags, entity, load, update, run)
 	local node = {
-		parentTags = parentTags or {},
+		paramTags = paramTags or {},
 		entity = entity or {},
 		params = {},
 		stale = true,
@@ -46,9 +46,6 @@ local function _setDepth(tree)
 	tree.depth = 0
 	for i, node in ipairs(tree.nodeArray) do
 		node.depth = 1
-		if #node.parentTags == 0 then
-			node.depth = 1
-		end
 		for _, parent in pairs(node.parents) do
 			node.depth = math.max(node.depth, parent.depth + 1)
 		end
@@ -62,7 +59,7 @@ local function _setParentsAndChildren(nodeDict)
 		node.children = {}
 	end
 	for tag, node in pairs(nodeDict) do
-		for paramTag, parentTag in pairs(node.parentTags) do
+		for paramTag, parentTag in pairs(node.paramTags) do
 			local parent = nodeDict[parentTag]
 			parent.children[tag] = node
 			node.parents[parentTag] = parent
@@ -79,7 +76,10 @@ local function _getOptimizedNodeArray(nodeDict)
 
 	for _, node in pairs(nodeDict) do
 		array[#array + 1] = node
-		inDegree[node] = #node.parentTags
+		inDegree[node] = 0
+		for _, _ in pairs(node.paramTags) do
+			inDegree[node] = inDegree[node] + 1
+		end
 		count = count + 1
 	end
 
@@ -116,8 +116,8 @@ local function _activateFunc(node, funcname)
 	end
 end
 
-local function insert(tree, tag, parentTags, entity, load, update, run)
-	local node = _newNode(parentTags, entity, load, update, run)
+local function insert(tree, tag, paramTags, entity, load, update, run)
+	local node = _newNode(paramTags, entity, load, update, run)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
 	tree.stale = true
@@ -187,10 +187,10 @@ local function getMermaid(tree)
 	local mermaid = { "graph" }
 	for tag, node in pairs(tree.nodeDict) do
 		table.insert(mermaid, string.format('%p["%s"]', node, tag))
-		for _, parentTag in ipairs(node.parentTags) do
+		for paramTag, parentTag in pairs(node.paramTags) do
 			local parent = tree.nodeDict[parentTag]
 			if parent then
-				table.insert(mermaid, string.format("%p", parent) .. "-->" .. string.format("%p", node))
+				table.insert(mermaid, string.format("%p", parent) .. "--[" .. paramTag .. "]-->" .. string.format("%p", node))
 			end
 		end
 	end
