@@ -1,21 +1,18 @@
 {
-    "Lua.diagnostics.globals": [
-        "love"
-    ],
-    "Lua.runtime.version": "LuaJIT",
-    "Lua.workspace.library": [
-        "${3rd}/love2d/library"
-    ],
-    "[lua]": {
-        "editor.defaultFormatter": "JohnnyMorganz.stylua",
-        "editor.formatOnSave": true
-    },
-    "[markdown]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true,
-        "editor.unicodeHighlight.ambiguousCharacters": false,
-        "editor.renderWhitespace": "all" 
-    },
-    "python-envs.defaultEnvManager": "ms-python.python:conda",
-    "python-envs.defaultPackageManager": "ms-python.python:conda"
+  "Lua.diagnostics.globals": ["love"],
+  "Lua.runtime.version": "LuaJIT",
+  "Lua.workspace.library": ["${3rd}/love2d/library"],
+  "[lua]": {
+    "editor.defaultFormatter": "JohnnyMorganz.stylua",
+    "editor.formatOnSave": true
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.renderWhitespace": "all"
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda",
+  "stylua.targetReleaseVersion": "latest"
 }

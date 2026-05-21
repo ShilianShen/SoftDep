@@ -19,6 +19,8 @@ local function _newNode(parentTags, entity, load, update, run)
 		params = {},
 		stale = true,
 		dirty = true,
+		loadCount = 0,
+		updateCount = 0,
 		depth = 0,
 
 		load = load,
@@ -104,6 +106,11 @@ end
 local function _activateFunc(node, funcname)
 	if node[funcname] ~= nil then
 		node[funcname](node.entity, node.params)
+		if funcname == "load" then
+			node.loadCount = node.loadCount + 1
+		elseif funcname == "update" then
+			node.updateCount = node.updateCount + 1
+		end
 	end
 end
 
