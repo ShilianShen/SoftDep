@@ -134,10 +134,12 @@ local function calc()
 	end
 end
 
-local function drawEntity(tab, depth, indent)
+local function drawEntity(node, depth, indent)
 	depth = depth or 2
 	indent = indent or 16
-	local strings = dump(tab, depth)
+	local strings = dump(node.entity, depth)
+	table.insert(strings, "dirtyCount = " .. node.dirtyCount)
+	table.insert(strings, "staleCount = " .. node.staleCount)
 	local x, y = 0, (love.graphics.getHeight() - font2:getHeight() * #strings) / 2
 	love.graphics.setFont(font2)
 	for _, string in ipairs(strings) do
@@ -195,7 +197,7 @@ local function draw()
 	for _, info in pairs(infoDict) do
 		local dist = (mouseX - info.x) ^ 2 + (mouseY - info.y) ^ 2
 		if dist < info.r ^ 2 then
-			drawEntity(info.node.entity)
+			drawEntity(info.node)
 			love.graphics.setLineWidth(2)
 			for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
 				local info2 = infoDict[tag2]
