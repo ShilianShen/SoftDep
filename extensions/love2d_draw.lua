@@ -1,19 +1,36 @@
 local font1 = love.graphics.newFont(24)
 local font2 = love.graphics.newFont(12)
-local dirtyColor = { 0.6, 0.2, 0.2 }
-local staleColor = { 0, 0, 0 }
-local cleanColor = { 0.2, 0.5, 0.3 }
-local shineColor = { 0.9, 0.8, 0.2 }
-local nightColor = { 0.1, 0.1, 0.12 }
-local lightColor = { 0.95, 0.95, 0.9 }
-local smooth = 0.5
+local highColor = { 0.9, 0.8, 0.2 }
+local darkColor = { 0, 0, 0 }
+local basicTheme = {
+	nightColor = { 0.1, 0.1, 0.12 },
+	lightColor = { 0.95, 0.95, 0.9 },
+	cleanColor = { 0.2, 0.5, 0.3 },
+	staleColor = { 0, 0, 0 },
+	dirtyColor = { 0.6, 0.2, 0.2 },
+}
+local smooth = 0
 local scaleMax, scaleMin = 1, 0.5
 local infoDict = {}
+local infoArray = {}
 local mouseX, mouseY = 0, 0
 local bufferT = 1
 local winW, winH = 0, 0
 local time = 0
 local tree = {}
+local darkTheme = {}
+local highTheme = {}
+for key, color in pairs(basicTheme) do
+	local dark = {}
+	local high = {}
+	for i = 1, 3 do
+		dark[i] = (color[i] + darkColor[i]) / 2
+		high[i] = color[i]
+	end
+	darkTheme[key] = dark
+	highTheme[key] = high
+end
+highTheme.lightColor = highColor
 
 local function lpairs(t)
 	local keys = {}
@@ -56,7 +73,7 @@ local function merge(t1, t2)
 	return t
 end
 
-local function comp(tag1, tag2)
+local function compTag(tag1, tag2)
 	local value1, count1 = 0, 1
 	local value2, count2 = 0, 1
 	for parentTag, _ in pairs(tree.nodeDict[tag1].parents) do
@@ -74,6 +91,10 @@ local function comp(tag1, tag2)
 	else
 		return value1 < value2
 	end
+end
+
+local function compInfo(info1, info2)
+	return info1.s < info2.s
 end
 
 local function calc()
@@ -104,7 +125,7 @@ local function calc()
 
 	-- sort
 	for i = 1, #mesh do
-		table.sort(mesh[i], comp)
+		table.sort(mesh[i], compTag)
 		for j = 1, #mesh[i] do
 			infoDict[mesh[i][j]].i = j
 		end
@@ -132,9 +153,15 @@ local function calc()
 			info.dirtyN = node.dirtyCount
 		end
 	end
+
+	infoArray = {}
+	for _, info in pairs(infoDict) do
+		table.insert(infoArray, info)
+	end
+	table.sort(infoArray, compInfo)
 end
 
-local function drawEntity(node, depth, indent)
+local function drawEntity(node, theme, depth, indent)
 	depth = depth or 2
 	indent = indent or 16
 	local strings = dump(node.entity, depth)
@@ -144,9 +171,9 @@ local function drawEntity(node, depth, indent)
 	love.graphics.setFont(font2)
 	for _, string in ipairs(strings) do
 		x = x - (string == "}" and indent or 0)
-		love.graphics.setColor(nightColor)
+		love.graphics.setColor(theme.nightColor)
 		love.graphics.rectangle("fill", x, y, font2:getWidth(string), font2:getHeight())
-		love.graphics.setColor(lightColor)
+		love.graphics.setColor(theme.lightColor)
 		love.graphics.print(string, x, y)
 		y = y + font2:getHeight()
 		x = x + (string.match(string, "{") and indent or 0)
@@ -154,7 +181,7 @@ local function drawEntity(node, depth, indent)
 end
 
 local function drawEdge(info1, info2, theme)
-	love.graphics.setColor(theme or lightColor)
+	love.graphics.setColor(theme.lightColor)
 	local dy = smooth * (info2.y - info1.y)
 	local vertices = { info1.x, info1.y, info1.x, info1.y + dy, info2.x, info2.y - dy, info2.x, info2.y }
 	local curve = love.math.newBezierCurve(vertices)
@@ -162,54 +189,59 @@ local function drawEdge(info1, info2, theme)
 end
 
 local function drawNode(info, theme)
-	love.graphics.setColor(nightColor)
+	love.graphics.setColor(theme.nightColor)
 	love.graphics.circle("fill", info.x, info.y, info.r)
 
-	love.graphics.setColor(theme or lightColor)
+	love.graphics.setColor(theme.lightColor)
 	love.graphics.circle("line", info.x, info.y, info.r)
 
-	love.graphics.setColor(cleanColor)
+	love.graphics.setColor(theme.cleanColor)
 	love.graphics.rectangle("fill", info.x, info.y, info.w, info.h)
 
-	love.graphics.setColor(staleColor)
+	love.graphics.setColor(theme.staleColor)
 	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.staleT) / bufferT), info.h)
 
-	love.graphics.setColor(dirtyColor)
+	love.graphics.setColor(theme.dirtyColor)
 	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.dirtyT) / bufferT), info.h)
 
-	love.graphics.setColor(theme or lightColor)
+	love.graphics.setColor(theme.lightColor)
 	love.graphics.draw(info.text, info.x, info.y, 0, info.s, info.s)
 end
 
 local function draw()
+	local target = nil
+	for tag, info in pairs(infoDict) do
+		local dist = (mouseX - info.x) ^ 2 + (mouseY - info.y) ^ 2
+		if dist < info.r ^ 2 then
+			target = tag
+		end
+	end
+
+	local theme = target == nil and basicTheme or darkTheme
 	for tag, node in pairs(tree.nodeDict) do
 		local info1 = infoDict[tag]
 		for tag2, _ in pairs(node.children) do
 			local info2 = infoDict[tag2]
-			drawEdge(info1, info2)
+			drawEdge(info1, info2, theme)
 		end
 	end
-
-	for _, info in pairs(infoDict) do
-		drawNode(info)
+	for _, info in ipairs(infoArray) do
+		drawNode(info, theme)
 	end
 
-	for _, info in pairs(infoDict) do
-		local dist = (mouseX - info.x) ^ 2 + (mouseY - info.y) ^ 2
-		if dist < info.r ^ 2 then
-			drawEntity(info.node)
-			love.graphics.setLineWidth(2)
-			for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
-				local info2 = infoDict[tag2]
-				drawEdge(info, info2, shineColor)
-			end
-			for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
-				local info2 = infoDict[tag2]
-				drawNode(info2, shineColor)
-			end
-			drawNode(info, shineColor)
-			break
+	if target ~= nil then
+		local info = infoDict[target]
+		drawEntity(info.node, basicTheme)
+		love.graphics.setLineWidth(2)
+		for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
+			local info2 = infoDict[tag2]
+			drawEdge(info, info2, highTheme)
 		end
+		for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
+			local info2 = infoDict[tag2]
+			drawNode(info2, highTheme)
+		end
+		drawNode(info, highTheme)
 	end
 end
 
