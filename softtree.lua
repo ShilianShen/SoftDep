@@ -112,27 +112,6 @@ local function _activateFunc(node, funcname)
 	end
 end
 
-local function _spread(tree)
-	for _, node in ipairs(tree.nodeArray) do
-		if node.stale then
-			for _, child in pairs(node.children) do
-				child.stale = true
-				child.dirty = true
-			end
-		elseif node.dirty then
-			for _, child in pairs(node.children) do
-				child.dirty = true
-			end
-		end
-		if node.stale then
-			node.staleCount = node.staleCount + 1
-		end
-		if node.dirty then
-			node.dirtyCount = node.dirtyCount + 1
-		end
-	end
-end
-
 local function insert(tree, tag, paramTags, entity, load, update, run)
 	if type(tag) == "table" then
 		local args = tag
@@ -166,15 +145,22 @@ local function tick(tree)
 		tree.stale = false
 	end
 
-	_spread(tree)
-
 	for _, node in ipairs(tree.nodeArray) do
 		if node.stale then
+			for _, child in pairs(node.children) do
+				child.stale = true
+				child.dirty = true
+			end
+			node.staleCount = node.staleCount + 1
 			_activateFunc(node, "load")
 			node.stale = false
 			node.dirty = true
 		end
 		if node.dirty then
+			for _, child in pairs(node.children) do
+				child.dirty = true
+			end
+			node.dirtyCount = node.dirtyCount + 1
 			_activateFunc(node, "update")
 			node.dirty = false
 		end
