@@ -20,6 +20,8 @@ local time = 0
 local tree = {}
 local darkTheme = {}
 local highTheme = {}
+local entityDepth = 4
+local entityIndent = 16
 for key, color in pairs(basicTheme) do
 	local dark = {}
 	local high = {}
@@ -32,12 +34,22 @@ for key, color in pairs(basicTheme) do
 end
 highTheme.lightColor = highColor
 
+local function lcomp(k1, k2)
+	local t1 = type(k1)
+	local t2 = type(k2)
+	if t1 == t2 then
+		return tostring(k1) < tostring(k2)
+	else
+		return t1 < t2
+	end
+end
+
 local function lpairs(t)
 	local keys = {}
 	for k in pairs(t) do
-		table.insert(keys, tostring(k))
+		table.insert(keys, k)
 	end
-	table.sort(keys)
+	table.sort(keys, lcomp)
 
 	local i = 0
 	return function()
@@ -161,22 +173,21 @@ local function calc()
 	table.sort(infoArray, compInfo)
 end
 
-local function drawEntity(node, theme, depth, indent)
-	depth = depth or 2
-	indent = indent or 16
-	local strings = dump(node.entity, depth)
+local function drawEntity(node, theme, pos)
+	local strings = dump(node.entity, entityDepth)
 	table.insert(strings, "dirtyCount = " .. node.dirtyCount)
 	table.insert(strings, "staleCount = " .. node.staleCount)
-	local x, y = 0, (love.graphics.getHeight() - font2:getHeight() * #strings) / 2
+	local h = font2:getHeight() * #strings
+	local x, y = 0, (love.graphics.getHeight() - h) * (1 - pos) / 2
 	love.graphics.setFont(font2)
 	for _, string in ipairs(strings) do
-		x = x - (string == "}" and indent or 0)
+		x = x - (string == "}" and entityIndent or 0)
 		love.graphics.setColor(theme.nightColor)
 		love.graphics.rectangle("fill", x, y, font2:getWidth(string), font2:getHeight())
 		love.graphics.setColor(theme.lightColor)
 		love.graphics.print(string, x, y)
 		y = y + font2:getHeight()
-		x = x + (string.match(string, "{") and indent or 0)
+		x = x + (string.match(string, "{") and entityIndent or 0)
 	end
 end
 
@@ -231,7 +242,7 @@ local function draw()
 
 	if target ~= nil then
 		local info = infoDict[target]
-		drawEntity(info.node, basicTheme)
+		drawEntity(info.node, basicTheme, (info.y - mouseY) / info.r * 1.5)
 		love.graphics.setLineWidth(2)
 		for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
 			local info2 = infoDict[tag2]
