@@ -23,6 +23,9 @@ local function _newNode(entity, tasks)
 	for _, task in pairs(tasks) do
 		task.dirty = true
 		task.callCount = 0
+		task._params = {}
+		task._parents = {}
+		task._children = {}
 	end
 	local node = {
 		entity = entity or {},
@@ -37,6 +40,7 @@ local function _newNode(entity, tasks)
 	}
 	node.const = _getConst(node.entity)
 	setmetatable(node, _NODE_MT)
+	setmetatable(node.tasks, _NODE_MT)
 	return node
 end
 
@@ -62,23 +66,40 @@ local function _setParentsAndChildren(nodeDict)
 		node._parents = {}
 		node._children = {}
 		node._params = {}
-		for _, task in pairs(node.tasks) do
-			task._params = {}
-		end
 	end
+
 	for tag, node in pairs(nodeDict) do
 		local params = {}
 		for _, task in pairs(node.tasks) do
 			for paramTag, parentTag in pairs(task.params) do
 				params[parentTag] = true
 				local parent = nodeDict[parentTag]
-				task._params[paramTag] = parent.const
 				parent._children[tag] = node
 				node._parents[parentTag] = parent
 			end
 		end
 		for _, parentTag in pairs(params) do
 			table.insert(node._params, parentTag)
+		end
+	end
+
+	for tag, node in pairs(nodeDict) do
+		for taskname, task in pairs(node.tasks) do
+			task._params = {}
+			task._parents = {}
+			task._children = {}
+		end
+	end
+
+	for tag, node in pairs(nodeDict) do
+		for taskname, task in pairs(node.tasks) do
+			for paramTag, parentTag in pairs(task.params) do
+				local parentNode = nodeDict[parentTag]
+				local parentTask = parentNode.tasks[taskname]
+				task._params[paramTag] = parentNode.const
+				table.insert(parentTask._children, task)
+				table.insert(task._parents, parentTask)
+			end
 		end
 	end
 end
@@ -146,6 +167,17 @@ local function tick(tree, taskname)
 		_setDepth(tree)
 		tree.stale = false
 	end
+
+	-- for _, node in ipairs(tree.nodeArray) do
+	-- 	local task = node.tasks[taskname]
+	-- 	if task ~= nil and task.dirty then
+	-- 		task.func(node.entity, task._params)
+	-- 		for _, subtask in ipairs(task.children) do
+	-- 			subtask.dirty = true
+	-- 		end
+	-- 		task.dirty = false
+	-- 	end
+	-- end
 
 	for _, node in ipairs(tree.nodeArray) do
 		if node.stale then
