@@ -29,14 +29,12 @@ local function _newNode(entity, tasks)
 	end
 	local node = {
 		entity = entity or {},
-		stale = true,
-		dirty = true,
 		depth = 0,
 		tasks = tasks,
 		_parents = {}, -- dict
 		_children = {}, -- dict
 	}
-	node.const = _getConst(node.entity)
+	node._const = _getConst(node.entity)
 	setmetatable(node, _NODE_MT)
 	setmetatable(node.tasks, _NODE_MT)
 	return node
@@ -78,7 +76,7 @@ local function _setParentsAndChildren(nodeDict)
 				node._parents[parentTag] = parentNode
 
 				local parentTask = parentNode.tasks[taskname]
-				task._params[paramTag] = parentNode.const
+				task._params[paramTag] = parentNode._const
 				table.insert(parentTask._children, task)
 				table.insert(task._parents, parentTask)
 			end
