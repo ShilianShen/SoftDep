@@ -152,14 +152,6 @@ local function _setDepth(tree)
 	end
 end
 
-local function _activateFunc(node, taskname)
-	local task = node.tasks[taskname]
-	if task ~= nil then
-		task.func(node.entity, node.tasks[taskname]._params)
-		task.callCount = task.callCount + 1
-	end
-end
-
 local function tick(tree, taskname)
 	if tree.stale then
 		_setParentsAndChildren(tree.nodeDict)
@@ -168,35 +160,16 @@ local function tick(tree, taskname)
 		tree.stale = false
 	end
 
-	-- for _, node in ipairs(tree.nodeArray) do
-	-- 	local task = node.tasks[taskname]
-	-- 	if task ~= nil and task.dirty then
-	-- 		task.func(node.entity, task._params)
-	-- 		for _, subtask in ipairs(task.children) do
-	-- 			subtask.dirty = true
-	-- 		end
-	-- 		task.dirty = false
-	-- 	end
-	-- end
-
 	for _, node in ipairs(tree.nodeArray) do
-		if node.stale then
-			for _, child in pairs(node._children) do
-				child.stale = true
-				child.dirty = true
+		local task = node.tasks[taskname]
+		if task ~= nil and task.dirty then
+			task.func(node.entity, task._params)
+			task.callCount = task.callCount + 1
+			for _, subtask in ipairs(task._children or {}) do
+				subtask.dirty = true
 			end
-			_activateFunc(node, "load")
-			node.stale = false
-			node.dirty = true
+			task.dirty = false
 		end
-		if node.dirty then
-			for _, child in pairs(node._children) do
-				child.dirty = true
-			end
-			_activateFunc(node, "update")
-			node.dirty = false
-		end
-		_activateFunc(node, "run")
 	end
 end
 
@@ -204,8 +177,10 @@ local function getTagged(tree, tag)
 	return tree.nodeDict[tag].entity
 end
 
-local function setDirty(tree, tag)
-	tree.nodeDict[tag].dirty = true
+local function setDirty(tree, tag, taskname)
+	local node = tree.nodeDict[tag]
+	local task = node.tasks[taskname]
+	task.dirty = true
 end
 
 local function getMermaid(tree)
