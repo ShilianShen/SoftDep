@@ -44,14 +44,20 @@ local function _newNode(entity, funcs)
 	return node
 end
 
-local function _setDepth(tree)
-	tree.depth = 0
-	for _, node in ipairs(tree.nodeArray) do
-		node.depth = 1
-		for _, parent in pairs(node.parents) do
-			node.depth = math.max(node.depth, parent.depth + 1)
-		end
-		tree.depth = math.max(tree.depth, node.depth)
+local function insert(tree, tag, entity, funcs)
+	funcs = funcs or {}
+	local node = _newNode(entity, funcs)
+	tag = tag or tostring(entity)
+	tree.nodeDict[tag] = node
+	tree.stale = true
+	tree.dirty = true
+end
+
+local function remove(tree, tag, entity)
+	tag = tag or tostring(entity)
+	if tree.nodeDict[tag] ~= nil then
+		tree.nodeDict[tag] = nil
+		tree.stale = true
 	end
 end
 
@@ -111,26 +117,22 @@ local function _getOptimizedNodeArray(nodeDict)
 	return array
 end
 
-local function _activateFunc(node, funcname)
-	if node.funcs[funcname] ~= nil then
-		node.funcs[funcname].func(node.entity, node.funcs[funcname]._params)
+local function _setDepth(tree)
+	tree.depth = 0
+	for _, node in ipairs(tree.nodeArray) do
+		node.depth = 1
+		for _, parent in pairs(node.parents) do
+			node.depth = math.max(node.depth, parent.depth + 1)
+		end
+		tree.depth = math.max(tree.depth, node.depth)
 	end
 end
 
-local function insert(tree, tag, entity, funcs)
-	funcs = funcs or {}
-	local node = _newNode(entity, funcs)
-	tag = tag or tostring(entity)
-	tree.nodeDict[tag] = node
-	tree.stale = true
-	tree.dirty = true
-end
-
-local function remove(tree, tag, entity)
-	tag = tag or tostring(entity)
-	if tree.nodeDict[tag] ~= nil then
-		tree.nodeDict[tag] = nil
-		tree.stale = true
+local function _activateFunc(node, funcname)
+	local func = node.funcs[funcname]
+	if func ~= nil then
+		func.func(node.entity, node.funcs[funcname]._params)
+		func.callCount = func.callCount + 1
 	end
 end
 
