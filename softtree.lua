@@ -112,17 +112,11 @@ local function _activateFunc(node, funcname)
 	end
 end
 
-local function insert(tree, tag, paramTags, entity, load, update, run)
-	if type(tag) == "table" then
-		local args = tag
-		tag = args.tag
-		paramTags = args.paramTags
-		entity = args.entity
-		load = args.load
-		update = args.update
-		run = args.run
-	end
-	local node = _newNode(paramTags, entity, load, update, run)
+local function insert(tree, args)
+	local tag = args.tag
+	local entity = args.entity
+
+	local node = _newNode(args.paramTags, entity, args.load, args.update, args.run)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
 	tree.stale = true
@@ -214,7 +208,7 @@ function softtree.newTree()
 		setStale = setStale,
 		setDirty = setDirty,
 	}
-	tree:insert("root", nil, {})
+	tree:insert({ tag = "root" })
 	return tree
 end
 
