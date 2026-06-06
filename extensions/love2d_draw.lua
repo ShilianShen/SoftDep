@@ -6,7 +6,6 @@ local basicTheme = {
 	nightColor = { 0.1, 0.1, 0.12 },
 	lightColor = { 0.95, 0.95, 0.9 },
 	cleanColor = { 0.2, 0.5, 0.3 },
-	staleColor = { 0, 0, 0 },
 	dirtyColor = { 0.6, 0.2, 0.2 },
 }
 local smooth = 0
@@ -124,7 +123,14 @@ local function calc()
 			infoDict[tag] = {
 				node = node,
 				text = love.graphics.newText(font1, tag),
+				t = {},
 			}
+			for _, task in lpairs(node.tasks) do
+				table.insert(infoDict[tag].t, {
+					t = 0,
+					n = 0,
+				})
+			end
 		end
 	end
 
@@ -160,10 +166,13 @@ local function calc()
 			info.w = info.s * info.text:getWidth()
 			info.h = info.s * info.text:getHeight()
 			info.r = info.s * font1:getHeight() / 2
-			info.staleT = 0 --info.staleN ~= node.staleCount and time or (info.staleT or 0)
-			info.staleN = 0 --node.staleCount
-			info.dirtyT = 0 --info.dirtyN ~= node.dirtyCount and time or (info.dirtyT or 0)
-			info.dirtyN = 0 --node.dirtyCount
+			local t = 1
+			for _, task in lpairs(node.tasks) do
+				local jnfo = info.t[t]
+				jnfo.t = jnfo.n ~= task.callCount and time or (jnfo.t or 0)
+				jnfo.n = task.callCount
+				t = t + 1
+			end
 		end
 	end
 
@@ -176,8 +185,6 @@ end
 
 local function drawEntity(node, theme, pos)
 	local strings = dump(node, entityDepth)
-	-- table.insert(strings, "dirtyCount = " .. node.dirtyCount)
-	-- table.insert(strings, "staleCount = " .. node.staleCount)
 	local h = font2:getHeight() * #strings
 	local x, y = 0, (love.graphics.getHeight() - h) * (1 - pos) / 2
 	love.graphics.setFont(font2)
@@ -210,11 +217,16 @@ local function drawNode(info, theme)
 	love.graphics.setColor(theme.cleanColor)
 	love.graphics.rectangle("fill", info.x, info.y, info.w, info.h)
 
-	love.graphics.setColor(theme.staleColor)
-	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.staleT) / bufferT), info.h)
-
 	love.graphics.setColor(theme.dirtyColor)
-	love.graphics.rectangle("fill", info.x, info.y, info.w * math.max(0, 1 - (time - info.dirtyT) / bufferT), info.h)
+	for i, task in ipairs(info.t) do
+		love.graphics.rectangle(
+			"fill",
+			info.x,
+			info.y + info.h * (i - 1) / #info.t,
+			info.w * math.max(0, 1 - (time - task.t) / bufferT),
+			info.h / #info.t
+		)
+	end
 
 	love.graphics.setColor(theme.lightColor)
 	love.graphics.draw(info.text, info.x, info.y, 0, info.s, info.s)

@@ -70,15 +70,18 @@ local function _setParentsAndChildren(nodeDict)
 
 	for tag, node in pairs(nodeDict) do
 		for taskname, task in pairs(node.tasks) do
-			for paramTag, parentTag in pairs(task.params) do
+			for paramTag, parentTag in pairs(task.params or {}) do
 				local parentNode = nodeDict[parentTag]
+				assert(parentNode ~= nil, tag)
 				parentNode._children[tag] = node
 				node._parents[parentTag] = parentNode
 
 				local parentTask = parentNode.tasks[taskname]
+				if parentTask ~= nil then
+					table.insert(parentTask._children, task)
+					table.insert(task._parents, parentTask)
+				end
 				task._params[paramTag] = parentNode._const
-				table.insert(parentTask._children, task)
-				table.insert(task._parents, parentTask)
 			end
 		end
 	end
@@ -158,6 +161,14 @@ local function getTagged(tree, tag)
 end
 
 local function setDirty(tree, tag, taskname)
+	if tag == nil then
+		for _, node in ipairs(tree.nodeArray) do
+			if node.tasks[taskname] ~= nil then
+				node.tasks[taskname].dirty = true
+			end
+		end
+		return
+	end
 	local node = tree.nodeDict[tag]
 	local task = node.tasks[taskname]
 	task.dirty = true
