@@ -31,9 +31,9 @@ local function _newNode(entity, funcs)
 		depth = 0,
 		funcs = funcs,
 
-		params = {},
-		parents = {},
-		children = {},
+		_params = {},
+		_parents = {},
+		_children = {},
 	}
 	node.const = _getConst(node.entity)
 	setmetatable(node, _NODE_MT)
@@ -59,9 +59,9 @@ end
 
 local function _setParentsAndChildren(nodeDict)
 	for _, node in pairs(nodeDict) do
-		node.parents = {}
-		node.children = {}
-		node.params = {}
+		node._parents = {}
+		node._children = {}
+		node._params = {}
 		for _, func in pairs(node.funcs) do
 			func._params = {}
 		end
@@ -73,12 +73,12 @@ local function _setParentsAndChildren(nodeDict)
 				params[parentTag] = true
 				local parent = nodeDict[parentTag]
 				func._params[paramTag] = parent.const
-				parent.children[tag] = node
-				node.parents[parentTag] = parent
+				parent._children[tag] = node
+				node._parents[parentTag] = parent
 			end
 		end
 		for _, parentTag in pairs(params) do
-			table.insert(node.params, parentTag)
+			table.insert(node._params, parentTag)
 		end
 	end
 end
@@ -92,7 +92,7 @@ local function _getOptimizedNodeArray(nodeDict)
 	for _, node in pairs(nodeDict) do
 		array[#array + 1] = node
 		inDegree[node] = 0
-		for _, _ in ipairs(node.params) do
+		for _, _ in ipairs(node._params) do
 			inDegree[node] = inDegree[node] + 1
 		end
 		count = count + 1
@@ -108,7 +108,7 @@ local function _getOptimizedNodeArray(nodeDict)
 				sorted = sorted + 1
 				array[i] = array[sorted]
 				array[sorted] = node
-				for _, child in pairs(node.children) do
+				for _, child in pairs(node._children) do
 					inDegree[child] = inDegree[child] - 1
 				end
 			end
@@ -124,7 +124,7 @@ local function _setDepth(tree)
 	tree.depth = 0
 	for _, node in ipairs(tree.nodeArray) do
 		node.depth = 1
-		for _, parent in pairs(node.parents) do
+		for _, parent in pairs(node._parents) do
 			node.depth = math.max(node.depth, parent.depth + 1)
 		end
 		tree.depth = math.max(tree.depth, node.depth)
@@ -149,7 +149,7 @@ local function tick(tree)
 
 	for _, node in ipairs(tree.nodeArray) do
 		if node.stale then
-			for _, child in pairs(node.children) do
+			for _, child in pairs(node._children) do
 				child.stale = true
 				child.dirty = true
 			end
@@ -158,7 +158,7 @@ local function tick(tree)
 			node.dirty = true
 		end
 		if node.dirty then
-			for _, child in pairs(node.children) do
+			for _, child in pairs(node._children) do
 				child.dirty = true
 			end
 			_activateFunc(node, "update")
@@ -180,7 +180,7 @@ local function getMermaid(tree)
 	local mermaid = { "graph" }
 	for tag, node in pairs(tree.nodeDict) do
 		table.insert(mermaid, string.format('%p["%s"]', node, tag))
-		for _, parentTag in ipairs(node.params) do
+		for _, parentTag in ipairs(node._params) do
 			local parent = tree.nodeDict[parentTag]
 			if parent then
 				table.insert(mermaid, string.format("%p", parent) .. "-->" .. string.format("%p", node))

@@ -63,7 +63,8 @@ end
 local function dump(tab, depth, result)
 	result = result or { "{" }
 	for key, value in lpairs(tab) do
-		if type(value) == "table" and depth > 0 then
+		if string.sub(key, 1, 1) == "_" then
+		elseif type(value) == "table" and depth > 0 then
 			table.insert(result, key .. " = {")
 			dump(value, depth - 1, result)
 		else
@@ -88,11 +89,11 @@ end
 local function compTag(tag1, tag2)
 	local value1, count1 = 0, 1
 	local value2, count2 = 0, 1
-	for parentTag, _ in pairs(tree.nodeDict[tag1].parents) do
+	for parentTag, _ in pairs(tree.nodeDict[tag1]._parents) do
 		value1 = value1 + infoDict[parentTag].i
 		count1 = count1 + 1
 	end
-	for parentTag, _ in pairs(tree.nodeDict[tag2].parents) do
+	for parentTag, _ in pairs(tree.nodeDict[tag2]._parents) do
 		value2 = value2 + infoDict[parentTag].i
 		count2 = count2 + 1
 	end
@@ -174,7 +175,7 @@ local function calc()
 end
 
 local function drawEntity(node, theme, pos)
-	local strings = dump(node.entity, entityDepth)
+	local strings = dump(node, entityDepth)
 	-- table.insert(strings, "dirtyCount = " .. node.dirtyCount)
 	-- table.insert(strings, "staleCount = " .. node.staleCount)
 	local h = font2:getHeight() * #strings
@@ -231,7 +232,7 @@ local function draw()
 	local theme = target == nil and basicTheme or darkTheme
 	for tag, node in pairs(tree.nodeDict) do
 		local info1 = infoDict[tag]
-		for tag2, _ in pairs(node.children) do
+		for tag2, _ in pairs(node._children) do
 			local info2 = infoDict[tag2]
 			drawEdge(info1, info2, theme)
 		end
@@ -244,11 +245,11 @@ local function draw()
 		local info = infoDict[target]
 		drawEntity(info.node, basicTheme, (info.y - mouseY) / info.r * 1.5)
 		love.graphics.setLineWidth(2)
-		for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
+		for tag2, _ in pairs(merge(info.node._children, info.node._parents)) do
 			local info2 = infoDict[tag2]
 			drawEdge(info, info2, highTheme)
 		end
-		for tag2, _ in pairs(merge(info.node.children, info.node.parents)) do
+		for tag2, _ in pairs(merge(info.node._children, info.node._parents)) do
 			local info2 = infoDict[tag2]
 			drawNode(info2, highTheme)
 		end
