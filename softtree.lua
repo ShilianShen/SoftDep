@@ -19,17 +19,17 @@ local function _getConst(t)
 	return setmetatable(proxy, mt)
 end
 
-local function _newNode(entity, funcs)
-	for _, func in pairs(funcs) do
-		func.dirty = true
-		func.callCount = 0
+local function _newNode(entity, tasks)
+	for _, task in pairs(tasks) do
+		task.dirty = true
+		task.callCount = 0
 	end
 	local node = {
 		entity = entity or {},
 		stale = true,
 		dirty = true,
 		depth = 0,
-		funcs = funcs,
+		tasks = tasks,
 
 		_params = {},
 		_parents = {},
@@ -40,9 +40,9 @@ local function _newNode(entity, funcs)
 	return node
 end
 
-local function insert(tree, tag, entity, funcs)
-	funcs = funcs or {}
-	local node = _newNode(entity, funcs)
+local function insert(tree, tag, entity, tasks)
+	tasks = tasks or {}
+	local node = _newNode(entity, tasks)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
 	tree.stale = true
@@ -62,17 +62,17 @@ local function _setParentsAndChildren(nodeDict)
 		node._parents = {}
 		node._children = {}
 		node._params = {}
-		for _, func in pairs(node.funcs) do
-			func._params = {}
+		for _, task in pairs(node.tasks) do
+			task._params = {}
 		end
 	end
 	for tag, node in pairs(nodeDict) do
 		local params = {}
-		for _, func in pairs(node.funcs) do
-			for paramTag, parentTag in pairs(func.params) do
+		for _, task in pairs(node.tasks) do
+			for paramTag, parentTag in pairs(task.params) do
 				params[parentTag] = true
 				local parent = nodeDict[parentTag]
-				func._params[paramTag] = parent.const
+				task._params[paramTag] = parent.const
 				parent._children[tag] = node
 				node._parents[parentTag] = parent
 			end
@@ -131,15 +131,15 @@ local function _setDepth(tree)
 	end
 end
 
-local function _activateFunc(node, funcname)
-	local func = node.funcs[funcname]
-	if func ~= nil then
-		func.func(node.entity, node.funcs[funcname]._params)
-		func.callCount = func.callCount + 1
+local function _activateFunc(node, taskname)
+	local task = node.tasks[taskname]
+	if task ~= nil then
+		task.func(node.entity, node.tasks[taskname]._params)
+		task.callCount = task.callCount + 1
 	end
 end
 
-local function tick(tree)
+local function tick(tree, taskname)
 	if tree.stale then
 		_setParentsAndChildren(tree.nodeDict)
 		tree.nodeArray = _getOptimizedNodeArray(tree.nodeDict)
