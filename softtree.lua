@@ -19,18 +19,19 @@ local function _getConst(t)
 	return setmetatable(proxy, mt)
 end
 
-local function _newNode(paramTags, entity, load, update, run)
+local function _newNode(entity, funcs)
+	for _, func in pairs(funcs) do
+		func.dirty = true
+		func.callCount = 0
+	end
 	local node = {
-		paramTags = paramTags or {},
+		paramTags = {},
 		entity = entity or {},
 		params = {},
 		stale = true,
 		dirty = true,
 		depth = 0,
-
-		load = load,
-		update = update,
-		run = run,
+		funcs = funcs,
 
 		staleCount = 0,
 		dirtyCount = 0,
@@ -60,11 +61,15 @@ local function _setParentsAndChildren(nodeDict)
 		node.children = {}
 	end
 	for tag, node in pairs(nodeDict) do
-		for paramTag, parentTag in pairs(node.paramTags) do
-			local parent = nodeDict[parentTag]
-			parent.children[tag] = node
-			node.parents[parentTag] = parent
-			node.params[paramTag] = parent.const
+		for _, func in pairs(node.funcs) do
+			func._params = {}
+			for paramTag, parentTag in pairs(func.params) do
+				node.paramTags[paramTag] = parentTag
+				local parent = nodeDict[parentTag]
+				func._params[paramTag] = parent.const
+				parent.children[tag] = node
+				node.parents[parentTag] = parent
+			end
 		end
 	end
 end
@@ -107,16 +112,14 @@ local function _getOptimizedNodeArray(nodeDict)
 end
 
 local function _activateFunc(node, funcname)
-	if node[funcname] ~= nil then
-		node[funcname](node.entity, node.params)
+	if node.funcs[funcname] ~= nil then
+		node.funcs[funcname].func(node.entity, node.funcs[funcname]._params)
 	end
 end
 
-local function insert(tree, args)
-	local tag = args.tag
-	local entity = args.entity
-
-	local node = _newNode(args.paramTags, entity, args.load, args.update, args.run)
+local function insert(tree, tag, entity, funcs)
+	funcs = funcs or {}
+	local node = _newNode(entity, funcs)
 	tag = tag or tostring(entity)
 	tree.nodeDict[tag] = node
 	tree.stale = true
@@ -208,7 +211,6 @@ function softtree.newTree()
 		setStale = setStale,
 		setDirty = setDirty,
 	}
-	tree:insert({ tag = "root" })
 	return tree
 end
 
