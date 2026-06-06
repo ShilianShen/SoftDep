@@ -25,9 +25,7 @@ local function _newNode(entity, funcs)
 		func.callCount = 0
 	end
 	local node = {
-		paramTags = {},
 		entity = entity or {},
-		params = {},
 		stale = true,
 		dirty = true,
 		depth = 0,
@@ -36,6 +34,7 @@ local function _newNode(entity, funcs)
 		staleCount = 0,
 		dirtyCount = 0,
 
+		params = {},
 		parents = {},
 		children = {},
 	}
@@ -69,12 +68,17 @@ local function _setParentsAndChildren(nodeDict)
 	for tag, node in pairs(nodeDict) do
 		for _, func in pairs(node.funcs) do
 			func._params = {}
+			local params = {}
 			for paramTag, parentTag in pairs(func.params) do
-				node.paramTags[paramTag] = parentTag
+				params[parentTag] = true
 				local parent = nodeDict[parentTag]
 				func._params[paramTag] = parent.const
 				parent.children[tag] = node
 				node.parents[parentTag] = parent
+			end
+			node.params = {}
+			for _, parentTag in pairs(params) do
+				table.insert(node.params, parentTag)
 			end
 		end
 	end
@@ -89,7 +93,7 @@ local function _getOptimizedNodeArray(nodeDict)
 	for _, node in pairs(nodeDict) do
 		array[#array + 1] = node
 		inDegree[node] = 0
-		for _, _ in pairs(node.paramTags) do
+		for _, _ in ipairs(node.params) do
 			inDegree[node] = inDegree[node] + 1
 		end
 		count = count + 1
@@ -183,13 +187,10 @@ local function getMermaid(tree)
 	local mermaid = { "graph" }
 	for tag, node in pairs(tree.nodeDict) do
 		table.insert(mermaid, string.format('%p["%s"]', node, tag))
-		for paramTag, parentTag in pairs(node.paramTags) do
+		for _, parentTag in ipairs(node.params) do
 			local parent = tree.nodeDict[parentTag]
 			if parent then
-				table.insert(
-					mermaid,
-					string.format("%p", parent) .. "--[" .. paramTag .. "]-->" .. string.format("%p", node)
-				)
+				table.insert(mermaid, string.format("%p", parent) .. "-->" .. string.format("%p", node))
 			end
 		end
 	end
