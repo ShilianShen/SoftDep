@@ -31,9 +31,6 @@ local function _newNode(entity, funcs)
 		depth = 0,
 		funcs = funcs,
 
-		staleCount = 0,
-		dirtyCount = 0,
-
 		params = {},
 		parents = {},
 		children = {},
@@ -64,11 +61,14 @@ local function _setParentsAndChildren(nodeDict)
 	for _, node in pairs(nodeDict) do
 		node.parents = {}
 		node.children = {}
-	end
-	for tag, node in pairs(nodeDict) do
+		node.params = {}
 		for _, func in pairs(node.funcs) do
 			func._params = {}
-			local params = {}
+		end
+	end
+	for tag, node in pairs(nodeDict) do
+		local params = {}
+		for _, func in pairs(node.funcs) do
 			for paramTag, parentTag in pairs(func.params) do
 				params[parentTag] = true
 				local parent = nodeDict[parentTag]
@@ -76,10 +76,9 @@ local function _setParentsAndChildren(nodeDict)
 				parent.children[tag] = node
 				node.parents[parentTag] = parent
 			end
-			node.params = {}
-			for _, parentTag in pairs(params) do
-				table.insert(node.params, parentTag)
-			end
+		end
+		for _, parentTag in pairs(params) do
+			table.insert(node.params, parentTag)
 		end
 	end
 end
@@ -154,7 +153,6 @@ local function tick(tree)
 				child.stale = true
 				child.dirty = true
 			end
-			node.staleCount = node.staleCount + 1
 			_activateFunc(node, "load")
 			node.stale = false
 			node.dirty = true
@@ -163,7 +161,6 @@ local function tick(tree)
 			for _, child in pairs(node.children) do
 				child.dirty = true
 			end
-			node.dirtyCount = node.dirtyCount + 1
 			_activateFunc(node, "update")
 			node.dirty = false
 		end
@@ -173,10 +170,6 @@ end
 
 local function getTagged(tree, tag)
 	return tree.nodeDict[tag].entity
-end
-
-local function setStale(tree, tag)
-	tree.nodeDict[tag].stale = true
 end
 
 local function setDirty(tree, tag)
@@ -211,7 +204,6 @@ function softtree.newTree()
 		getTagged = getTagged,
 		getMermaid = getMermaid,
 
-		setStale = setStale,
 		setDirty = setDirty,
 	}
 	return tree

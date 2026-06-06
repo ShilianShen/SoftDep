@@ -159,10 +159,10 @@ local function calc()
 			info.w = info.s * info.text:getWidth()
 			info.h = info.s * info.text:getHeight()
 			info.r = info.s * font1:getHeight() / 2
-			info.staleT = info.staleN ~= node.staleCount and time or (info.staleT or 0)
-			info.staleN = node.staleCount
-			info.dirtyT = info.dirtyN ~= node.dirtyCount and time or (info.dirtyT or 0)
-			info.dirtyN = node.dirtyCount
+			info.staleT = 0 --info.staleN ~= node.staleCount and time or (info.staleT or 0)
+			info.staleN = 0 --node.staleCount
+			info.dirtyT = 0 --info.dirtyN ~= node.dirtyCount and time or (info.dirtyT or 0)
+			info.dirtyN = 0 --node.dirtyCount
 		end
 	end
 
@@ -175,8 +175,8 @@ end
 
 local function drawEntity(node, theme, pos)
 	local strings = dump(node.entity, entityDepth)
-	table.insert(strings, "dirtyCount = " .. node.dirtyCount)
-	table.insert(strings, "staleCount = " .. node.staleCount)
+	-- table.insert(strings, "dirtyCount = " .. node.dirtyCount)
+	-- table.insert(strings, "staleCount = " .. node.staleCount)
 	local h = font2:getHeight() * #strings
 	local x, y = 0, (love.graphics.getHeight() - h) * (1 - pos) / 2
 	love.graphics.setFont(font2)
