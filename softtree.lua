@@ -23,9 +23,9 @@ local function _newNode(entity, tasks)
 	for _, task in pairs(tasks) do
 		task.dirty = true
 		task.callCount = 0
-		task._params = {}
-		task._parents = {}
-		task._children = {}
+		task._params = {} -- dict
+		task._parents = {} -- array
+		task._children = {} -- array
 	end
 	local node = {
 		entity = entity or {},
@@ -33,10 +33,8 @@ local function _newNode(entity, tasks)
 		dirty = true,
 		depth = 0,
 		tasks = tasks,
-
-		_params = {},
-		_parents = {},
-		_children = {},
+		_parents = {}, -- dict
+		_children = {}, -- dict
 	}
 	node.const = _getConst(node.entity)
 	setmetatable(node, _NODE_MT)
@@ -65,26 +63,7 @@ local function _setParentsAndChildren(nodeDict)
 	for _, node in pairs(nodeDict) do
 		node._parents = {}
 		node._children = {}
-		node._params = {}
-	end
-
-	for tag, node in pairs(nodeDict) do
-		local params = {}
 		for _, task in pairs(node.tasks) do
-			for paramTag, parentTag in pairs(task.params) do
-				params[parentTag] = true
-				local parent = nodeDict[parentTag]
-				parent._children[tag] = node
-				node._parents[parentTag] = parent
-			end
-		end
-		for _, parentTag in pairs(params) do
-			table.insert(node._params, parentTag)
-		end
-	end
-
-	for tag, node in pairs(nodeDict) do
-		for taskname, task in pairs(node.tasks) do
 			task._params = {}
 			task._parents = {}
 			task._children = {}
@@ -95,6 +74,9 @@ local function _setParentsAndChildren(nodeDict)
 		for taskname, task in pairs(node.tasks) do
 			for paramTag, parentTag in pairs(task.params) do
 				local parentNode = nodeDict[parentTag]
+				parentNode._children[tag] = node
+				node._parents[parentTag] = parentNode
+
 				local parentTask = parentNode.tasks[taskname]
 				task._params[paramTag] = parentNode.const
 				table.insert(parentTask._children, task)
@@ -113,7 +95,7 @@ local function _getOptimizedNodeArray(nodeDict)
 	for _, node in pairs(nodeDict) do
 		array[#array + 1] = node
 		inDegree[node] = 0
-		for _, _ in ipairs(node._params) do
+		for _, _ in pairs(node._parents) do
 			inDegree[node] = inDegree[node] + 1
 		end
 		count = count + 1
@@ -187,7 +169,7 @@ local function getMermaid(tree)
 	local mermaid = { "graph" }
 	for tag, node in pairs(tree.nodeDict) do
 		table.insert(mermaid, string.format('%p["%s"]', node, tag))
-		for _, parentTag in ipairs(node._params) do
+		for parentTag, _ in ipairs(node._parents) do
 			local parent = tree.nodeDict[parentTag]
 			if parent then
 				table.insert(mermaid, string.format("%p", parent) .. "-->" .. string.format("%p", node))
