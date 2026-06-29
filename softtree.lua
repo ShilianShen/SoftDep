@@ -146,7 +146,9 @@ local function tick(tree, taskname)
 	for _, node in ipairs(tree.nodeArray) do
 		local task = node.tasks[taskname]
 		if task ~= nil and task.dirty then
-			task.func(node.entity, task._params)
+			if task.func ~= nil then
+				task.func(node.entity, task._params)
+			end
 			task.callCount = task.callCount + 1
 			for _, subtask in ipairs(task._children or {}) do
 				subtask.dirty = true
@@ -157,6 +159,10 @@ local function tick(tree, taskname)
 end
 
 local function getTagged(tree, tag)
+	local node = tree.nodeDict[tag]
+	if node == nil then
+		return nil
+	end
 	return tree.nodeDict[tag].entity
 end
 
@@ -168,10 +174,18 @@ local function setDirty(tree, tag, taskname)
 			end
 		end
 		return
+	elseif type(tag) == "table" then
+		for _, node in ipairs(tree.nodeArray) do
+			if tag == node.entity or tag == node._const then
+				node.tasks[taskname].dirty = true
+				return
+			end
+		end
+	else
+		local node = tree.nodeDict[tag]
+		local task = node.tasks[taskname]
+		task.dirty = true
 	end
-	local node = tree.nodeDict[tag]
-	local task = node.tasks[taskname]
-	task.dirty = true
 end
 
 local function getMermaid(tree)
