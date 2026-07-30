@@ -67,10 +67,34 @@ SoftTree最大的约束是, $(nodes, deps_e)$ 也应该为DAG.
 
 原本以为DAG约束, 而无法实现的task, 可以在反向节点里实现.
 
-### sort (忽略)
-
-### SoftTree的优点
+## SoftTree的优点
 
 - 多task的冲突只会发生在单个模块之间, 可以直接手动串联解决
 - 增强扩展性, 问题变成了模块之间的单向依赖的拼接
 - 循环依赖问题只需要在SoftTree外排查即可知晓
+
+## ER图 (待完善)
+
+```mermaid
+erDiagram 
+    tree {}
+    node {}
+    data {}
+    task {}
+    dep_a {
+        Task task FK
+        Data data FK
+        Access access
+    }
+
+    tree ||--|{ node: "consist"
+    node ||--|| data: "dep_b"
+    node ||--|{ task: "dep_b"
+    task ||--|{ dep_a: "dep_a"
+    data ||--|{ dep_a: "dep_a"
+    task ||--|{ task: ""
+```
+
+## 各个语言能实现的access (待完善)
+
+Lua: none, readonly, writable
