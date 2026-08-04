@@ -14,78 +14,44 @@ There are several kinds of dependency.
 
 ### Control Dependency
 
-- $deps_c\subseteq tasks\times tasks$.
-- $(tasks, deps_c)$ 是有向无环图DAG.
-- 对于 $(a,b)\in deps_c$ 称作 $a$ 被 $b$ 依赖.
-
-#### 深度 depth (忽略)
-
 $$
-depth: tasks\to\mathbb{N}\times\mathbb{N}
+deps_c\subseteq tasks\times tasks
 $$
 
-对于$b\in task$ 有 $depths_p=\{depth(a)|(a,b)\in deps_c\}$ 满足
+Which satisfies $(tasks, deps_c)$ is a DAG.
+
+For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
+
+$sort$ is a function, which satisfies $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
+
+$sorts$ is the set of all possible $sort$.
+
+### Data Dependency
 
 $$
-depth(b)=\begin{cases}
-    (0, 0), depths_p=\varnothing \\
-    (\min depths_p+1, \max depths_p+1), else
-\end{cases}
+deps_d\subseteq data\times task
 $$
 
-#### 排序 sort
+For $(d, t)\in deps_d$, we say that $t$ depends on $d$ .
+
+### Access Dependency
 
 $$
-sort: tasks\to\mathbb{N} \\
-\forall(a,b)\in deps_c:sort(a)<sort(b)
+deps_a: deps_d\to access
 $$
 
-可以通过以下较为朴素的方法得到sort
+$access$ is the set of available accesses, which ist deicded by the uesd environment.
 
-```text
-get_sort(tasks):
-    sort = {}
+$access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means lowest permission, $\top$ means highest permission.
 
-    indegree[len(tasks)] = {}
-    for task in tasks:
-        indegree[task] = len(task.parents)
+> Maybe you guys would ask: "Shouldn't it be 'Dependency Access'?"
+> Sure, that the access more like an attribute of the dependency.
+> But here access, task and data are on equal footing.
+> So, the point of "Access Dependency" is to notice the relation between access and data dependency.
 
-    remain = copy(tasks)
-    while remain != {}:
-        list = {}
-        for task in remain:
-            if indegree[task] = 0:
-                list.insert(task)
+## What are problems?
 
-        if list == {}:
-            error()
-
-        for task in list:
-            for child in task.children:
-                indegree[child] -= 1
-            remain.remove(task)
-            sort.insert(task)
-
-    return sort
-```
-
-这里的写法有优化空间, 但是这里不深入探讨, 为了在数学上容易看懂.
-
-### 数据依赖 Data Dependency
-
-- $deps_d\subseteq tasks\times data$.
-- $(t, d)\in deps_d$ 称作 $t$ 依赖数据 $d$ .
-
-### 依赖权限 Access Dependency
-
-- $access$ 由使用环境决定, 是能使用的权限集合.
-- $access$ 至少满足 $\{\bot, \top\}\subseteq access$
-- $\bot$ 意味着最低权限, $\top$ 意味着最高权限.
-- $deps_a: deps_d\to access$.
-
-## 依赖有什么问题?
-
-### 多subtask的冲突
+### Conflict among multiple tasks
 
 ```mermaid
 graph
@@ -97,13 +63,13 @@ graph
     taskA --> taskC
 ```
 
-在这个情景下, 输出是不可预测的, 因为ABC和ACB都是满足控制依赖的条件的.
+In this case the output is unpredictable, cause $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
 
-这个问题在于同一个task的多个subtask, 如果都是read操作还好, 但是如果出现write操作就会导致必须需要一个顺序去决定subtask的执行顺序.
+THis problem would happen, when a part of data has multiple dependening tasks, which have no control dependency between those.
 
-也就是说, 对于一个数据d, 所涉及到的所有task, 如果其中包含write的操作, 那么就有可能需要一个显式的排序(不排除因为控制依赖的限制足够排序).
+It's ok if the data is readonly for all those tasks. But when there is a wirtable operation, there must be an explicit order to deicde which task first excution.
 
-显式的排序这样做的话太繁琐了, 所以这里希望被提出其他解决方法.
+Obviously the explicit order is kind of sick, so here is anther way wished to be found out..
 
 ### 扩展性差
 
