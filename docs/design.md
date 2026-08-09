@@ -1,16 +1,16 @@
 # Design
 
-The name "SoftTree" comes from "Software" and "Dependency Tree".
+The name "SoftTree" is derived from "Software" and "Dependency Tree".
 
-## Why it exists?
+## Why does it exist?
 
-In some projects, there can be some quite complex "dependencies" between tasks or modules.
-This structure is called "Dependency Tree".
-Following the principle "Don't repeat yourself", there would be a dependency management system as a higher abstract concept, which is named "SoftTree".
+Projects can have complex dependencies between tasks or modules.
+Such a structure is commonly referred to as a dependency tree.
+Following the principle "Don't repeat yourself", we can extract the common dependency management logic into a higher-level abstraction called "SoftTree".
 
-## What is dependency?
+## What are dependencies?
 
-There are several kinds of dependency.
+There are several kinds of dependencies.
 
 ### Control Dependency
 
@@ -18,18 +18,18 @@ $$
 deps_c\subseteq tasks\times tasks
 $$
 
-Which satisfies $(tasks, deps_c)$ is a DAG.
+where $(tasks, deps_c)$ is a DAG.
 
 For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
 
-$sort$ is a function, which satisfies $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
+$sort: tasks\to\{1,\dots,|tasks|\}$ is a bijection satisfying $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
 
-$sorts$ is the set of all possible $sort$.
+$sorts$ is the set of all possible topological orderings.
 
 ### Data Dependency
 
 $$
-deps_d\subseteq data\times task
+deps_d\subseteq data\times tasks
 $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$ .
@@ -65,7 +65,7 @@ graph
 
 In this case the output is unpredictable, cause $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
 
-THis problem would happen, when a part of data has multiple dependening tasks, which have no control dependency between those.
+This problem would happen, when a part of data has multiple dependening tasks, which have no control dependency between those.
 
 It's ok if the data is readonly for all those tasks. But when there is a wirtable operation, there must be an explicit order to deicde which task first excution.
 
@@ -86,7 +86,6 @@ Obviously the explicit order is kind of sick, so here is anther way wished to be
 虽然对task来说d是readonly的, 但是如果d的属性有一个setter函数, task也是有可能意外调用的, 而且不可以预计影响.
 
 当然Rust是可以避免的, 所以这个实际上是环境提供的access的能力限制, 有些语言无法实现, 所以难免发生这种事情.
-
 
 ## SoftTree做什么?
 
