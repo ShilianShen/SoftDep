@@ -10,6 +10,12 @@ Following the principle "Don't repeat yourself", we can extract the common depen
 
 ## What are dependencies?
 
+First, there are several basic concepts to define:
+
+- data, just data
+- task, something to do, with no responsibility for storing data
+- access, a task's permission to access data
+
 There are several kinds of dependencies.
 
 ### Control Dependency
@@ -32,7 +38,7 @@ $$
 deps_d\subseteq data\times tasks
 $$
 
-For $(d, t)\in deps_d$, we say that $t$ depends on $d$ .
+For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 
 ### Access Dependency
 
