@@ -40,20 +40,15 @@ $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 
-### Access Dependency
+### Access
 
 $$
 deps_a: deps_d\to access
 $$
 
-$access$ is the set of available accesses, which ist deicded by the uesd environment.
+$access$ is the set of available access levels, which is determined by the environment in which SoftTree is used.
 
-$access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means lowest permission, $\top$ means highest permission.
-
-> Maybe you guys would ask: "Shouldn't it be 'Dependency Access'?"
-> Sure, that the access more like an attribute of the dependency.
-> But here access, task and data are on equal footing.
-> So, the point of "Access Dependency" is to notice the relation between access and data dependency.
+$access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means the lowest access level, $\top$ means the highest access level.
 
 ## What are problems?
 
@@ -69,7 +64,7 @@ graph
     taskA --> taskC
 ```
 
-In this case the output is unpredictable, cause $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
+In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
 
 This problem would happen, when a part of data has multiple dependening tasks, which have no control dependency between those.
 
