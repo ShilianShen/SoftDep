@@ -50,7 +50,7 @@ $access$ is the set of available access levels, which is determined by the envir
 
 $access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means the lowest access level, $\top$ means the highest access level.
 
-## What are problems?
+## What are the problems?
 
 ### Conflict among multiple tasks
 
@@ -66,11 +66,11 @@ graph
 
 In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
 
-This problem would happen, when a part of data has multiple dependening tasks, which have no control dependency between those.
+This problem can occur when a part of data has multiple dependent tasks that have no control dependency between those.
 
-It's ok if the data is readonly for all those tasks. But when there is a wirtable operation, there must be an explicit order to deicde which task first excution.
+It's OK if the data is readonly for all those tasks. But when there is a writable operation, there must be an explicit order to decide which task first execution.
 
-Obviously the explicit order is kind of sick, so here is anther way wished to be found out..
+Obviously, specifying the order explicitly is cumbersome, so we need another approach.
 
 ### 扩展性差
 
