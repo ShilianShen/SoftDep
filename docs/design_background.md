@@ -58,7 +58,7 @@ $$
 deps_a((d, t))=\bigvee_{i\le |t|}deps_a((d, t_i))
 $$
 
-Sometimes, it is useful to consider multiple tasks as one single task. In this way, the access level of any task group can be determined.
+Sometimes, it is useful to consider multiple tasks as a single task. In this way, the access level of any task group can be determined.
 
 ## What are the problems?
 
@@ -78,7 +78,7 @@ In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)
 
 This problem can occur when a data item has multiple dependent tasks that have no control dependency between them.
 
-Not every writable operation causes this problem. It would happen when the subtasks are order-sensitive.
+Not every writable operation causes this problem.
 
 ```mermaid
 graph
@@ -104,22 +104,33 @@ graph
 
 If all the subtasks are order-insensitive and writable but not readable, it's also OK.
 
-It's OK if the data is order-insensitive for all those tasks. But when there is an order-sensitive operation, there must be an explicit order to decide which task executes first.
+It happen when the subtasks are order-sensitive. In other words, it happens when $\bigvee_i deps_a((d, t_i))$ is order-sensitive.
 
-Obviously, specifying the order explicitly is cumbersome, so we need another approach.
+In the first example, the join of `readonly` and `order-insensitive write and not read` is order-sensitive.
 
-### 扩展性差
+When the combined access level is order-sensitive, there must be an explicit order to decide which task executes first. But obviously, specifying the order explicitly is cumbersome, so we need another approach.
+
+What we want is
+
+$$
+IDK
+$$
+
+### Poor extensibility
 
 如果希望在这个系统里添加新的task, 就有可能引发新冲突, 而且这一点要依赖于以前的显式排序, 如果显式排序本身就有隐患, 就会变得很难查明.
-
-### 是否允许动态?
-
-在task的调用中, 是否可能创建新的d并添加到data里, 或者task添加到tasks里? 或者删除?
-
-绝对不可以, 这个问题的情景下的拓扑排序什么的, 十分依赖固定的tasks和data, 而且理论上通过结构体或者数组什么的, 可以实现将新数据归纳到已有数据中, 应该不会出现完全超出代码预期的数据才对.
 
 ### 权限泄漏
 
 虽然对task来说d是readonly的, 但是如果d的属性有一个setter函数, task也是有可能意外调用的, 而且不可以预计影响.
 
 当然Rust是可以避免的, 所以这个实际上是环境提供的access的能力限制, 有些语言无法实现, 所以难免发生这种事情.
+
+
+### 其他
+
+### 是否允许动态?
+
+在task的调用中, 是否可能创建新的d并添加到data里, 或者task添加到tasks里? 或者删除?
+
+绝对不可以, 这个问题的情景下的拓扑排序什么的, 十分依赖固定的tasks和data, 而且理论上通过结构体或者数组什么的, 可以实现将新数据归纳到已有数据中, 应该不会出现完全超出代码预期的数据才对.
