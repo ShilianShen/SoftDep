@@ -46,16 +46,33 @@ $$
 deps_a: deps_d\to access
 $$
 
-$access$ is the set of available access levels, partially ordered by $\le$ and determined by the environment in which SoftTree is used.
+---
 
-$access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means the lowest access level, $\top$ means the highest access level.
+$access^\circ$ is the set of available access levels  determined by the environment in which SoftTree is used. 
 
-Thus $\forall a\in access: \bot\le a\le\top$ and $\forall a, b\in access, a\vee b \ \text{exists}$.
+$(access^\circ, \le)$ satisfies the following properties:
+
+- $(access^\circ, \le)$ is a partially ordered set.
+- $\{\bot, \top\}\subseteq access^\circ$
+- $\forall a\in access^\circ:\bot\le a\le\top$
+
+For $a, b\in access^\circ$ with $a<b$, we say that $b$ is a higher access level than $a$.
+
+---
+
+$access=DM(access^\circ)$ is the Dedekind–MacNeille completion of $access^\circ$.
+
+In this way, $(access, \le)$ satisfies the following properties:
+
+- $(access, \le)$ is a complete lattice.
+- $\forall A\subseteq access$ both $\bigvee_{a\in A}a$ and $\bigwedge_{a\in A}a$ exist.
+
+---
 
 A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case we can determine the minimum access level required by $t$
 
 $$
-deps_a((d, t))=\bigvee_{i\le |t|}deps_a((d, t_i))
+deps_a(d, t)=\bigvee_{i\le |t|}deps_a(d, t_i)
 $$
 
 Sometimes, it is useful to consider multiple tasks as a single task. In this way, the access level of any task group can be determined.
