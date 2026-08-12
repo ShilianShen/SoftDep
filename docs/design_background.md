@@ -46,11 +46,19 @@ $$
 deps_a: deps_d\to access
 $$
 
-$access$ is the set of available access levels, which is determined by the environment in which SoftTree is used, partially ordered by order $\le$.
+$access$ is the set of available access levels, partially ordered by $\le$ and determined by the environment in which SoftTree is used.
 
 $access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means the lowest access level, $\top$ means the highest access level.
 
-Thus $\forall a\in access: \bot\le a\le\top$.
+Thus $\forall a\in access: \bot\le a\le\top$ and $\forall a, b\in access, a\vee b \ \text{exists}$.
+
+A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case we can determine the minimum access level required by $t$
+
+$$
+deps_a((d, t))=\bigvee_{i\le |t|}deps_a((d, t_i))
+$$
+
+Sometimes, it is useful to consider multiple tasks as one single task. In this way, the access level of any task group can be determined.
 
 ## What are the problems?
 
