@@ -46,9 +46,11 @@ $$
 deps_a: deps_d\to access
 $$
 
-$access$ is the set of available access levels, which is determined by the environment in which SoftTree is used.
+$access$ is the set of available access levels, which is determined by the environment in which SoftTree is used, partially ordered by order $\le$.
 
 $access$ should at least satisfy $\{\bot, \top\}\subseteq access$, where $\bot$ means the lowest access level, $\top$ means the highest access level.
+
+Thus $\forall a\in access: \bot\le a\le\top$.
 
 ## What are the problems?
 
@@ -66,9 +68,35 @@ graph
 
 In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
 
-This problem can occur when a part of data has multiple dependent tasks that have no control dependency between those.
+This problem can occur when a data item has multiple dependent tasks that have no control dependency between them.
 
-It's OK if the data is readonly for all those tasks. But when there is a writable operation, there must be an explicit order to decide which task first execution.
+Not every writable operation causes this problem. It would happen when the subtasks are order-sensitive.
+
+```mermaid
+graph
+    taskA[A: a=0]
+    taskB["B: print(a)"]
+    taskC["C: print(a)"]
+
+    taskA --> taskB
+    taskA --> taskC
+```
+
+If all the subtasks are readonly, it's OK.
+
+```mermaid
+graph
+    taskA[A: a=0]
+    taskB[B: a++]
+    taskC[C: a++]
+
+    taskA --> taskB
+    taskA --> taskC
+```
+
+If all the subtasks are order-insensitive and writable but not readable, it's also OK.
+
+It's OK if the data is order-insensitive for all those tasks. But when there is an order-sensitive operation, there must be an explicit order to decide which task executes first.
 
 Obviously, specifying the order explicitly is cumbersome, so we need another approach.
 
@@ -162,7 +190,7 @@ SoftTree最大的约束是, $(nodes, deps_e)$ 也应该为DAG.
 ## ER图 (待完善)
 
 ```mermaid
-erDiagram 
+erDiagram
     tree {}
     node {}
     data {}
