@@ -30,6 +30,27 @@ $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 
+## Parents and Children
+
+$$
+parents_i(x)=\{p|(p, x)\in deps_i\}
+$$
+
+$$
+children_i(x)=\{c|(x, c)\in deps_i\}
+$$
+
+## Parallel Tasks of Data
+
+$$
+parallel:data\to\mathcal{P}(\mathcal{P}(tasks))
+$$
+
+$\mathcal{T}=parallel(d)$ is a family of sets, where each $T\in\mathcal{T}$ satisfies the following properties:
+
+- For every $a, b\in T$ there is no path from $a$ to $b$ or from $b$ to $a$ in $(tasks, deps_c)$.
+- $\forall t\in T, \exists (d, t)\in deps_d$
+
 ## Access
 
 $$
