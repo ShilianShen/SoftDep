@@ -1,6 +1,6 @@
-## What are the problems?
+# Design - Problems
 
-### Conflict among multiple tasks
+## Conflict among multiple tasks
 
 ```mermaid
 graph
@@ -26,7 +26,7 @@ Assume that $access$ contains the following access levels:
 
 Those access levels satisfy $OS = RO\vee OISW$.
 
-#### Example 1
+### Example 1
 
 ```mermaid
 graph
@@ -40,7 +40,7 @@ graph
 
 All the subtasks are $RO$, it's OK.
 
-#### Example 2
+### Example 2
 
 ```mermaid
 graph
@@ -54,7 +54,7 @@ graph
 
 All the subtasks are $OISW$, it's also OK.
 
-#### Example 3
+### Example 3
 
 ```mermaid
 graph
@@ -82,18 +82,18 @@ $$
 IDK
 $$
 
-### Poor extensibility
+## Poor extensibility
 
 如果希望在这个系统里添加新的task, 就有可能引发新冲突, 而且这一点要依赖于以前的显式排序, 如果显式排序本身就有隐患, 就会变得很难查明.
 
-### 权限泄漏
+## 权限泄漏
 
 虽然对task来说d是readonly的, 但是如果d的属性有一个setter函数, task也是有可能意外调用的, 而且不可以预计影响.
 
 当然Rust是可以避免的, 所以这个实际上是环境提供的access的能力限制, 有些语言无法实现, 所以难免发生这种事情.
 
 
-### 其他
+## 其他
 
 ### 是否允许动态?
 

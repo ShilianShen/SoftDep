@@ -1,14 +1,4 @@
-# Design - Background
-
-The name "SoftTree" is derived from "Software" and "Dependency Tree".
-
-## Why does it exist?
-
-Projects can have complex dependencies between tasks or modules.
-Such a structure is commonly referred to as a dependency tree.
-Following the principle "Don't repeat yourself", we can extract the common dependency management logic into a higher-level abstraction called "SoftTree".
-
-## What are dependencies?
+# Design - Definitions
 
 First, there are several basic concepts to define:
 
@@ -18,7 +8,7 @@ First, there are several basic concepts to define:
 
 There are several kinds of dependencies.
 
-### Control Dependency
+## Control Dependency
 
 $$
 deps_c\subseteq tasks\times tasks
@@ -32,7 +22,7 @@ $sort: tasks\to\{1,\dots,|tasks|\}$ is a bijection satisfying $\forall (a,b)\in 
 
 $sorts$ is the set of all possible topological orderings.
 
-### Data Dependency
+## Data Dependency
 
 $$
 deps_d\subseteq data\times tasks
@@ -40,7 +30,7 @@ $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 
-### Access
+## Access
 
 $$
 deps_a: deps_d\to access
@@ -50,11 +40,10 @@ We use $deps_a(d,t)$ as shorthand for $deps_a((d,t))$.
 
 ---
 
-$access^\circ$ is the set of available access levels  determined by the environment in which SoftTree is used. 
+$access^\circ$ is the set of available access levels determined by the environment in which SoftTree is used.
 
-$(access^\circ, \le)$ satisfies the following properties:
+$(access^\circ, \le)$ is a partially ordered set satisfying the following properties:
 
-- $(access^\circ, \le)$ is a partially ordered set.
 - $\{\bot, \top\}\subseteq access^\circ$
 - $\forall a\in access^\circ:\bot\le a\le\top$
 
@@ -64,18 +53,17 @@ For $a, b\in access^\circ$ with $a<b$, we say that $b$ is a higher access level 
 
 $access=DM(access^\circ)$ is the Dedekind–MacNeille completion of $access^\circ$.
 
-In this way, $(access, \le)$ satisfies the following properties:
+Thus, $(access, \le)$ satisfies the following properties:
 
 - $(access, \le)$ is a complete lattice.
 - $\forall A\subseteq access$ both $\bigvee_{a\in A}a$ and $\bigwedge_{a\in A}a$ exist.
 
 ---
 
-A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case we can determine the minimum access level required by $t$
+A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case, we can determine the minimum access level required by $t$
 
 $$
 deps_a(d, t)=\bigvee_{i\le |t|}deps_a(d, t_i)
 $$
 
-Sometimes, it is useful to consider multiple tasks as a single task. In this way, the access level of any task group can be determined.
-
+Sometimes, it is useful to consider multiple tasks as a single task. In this way, the minimum access level required by any task group can be determined.
