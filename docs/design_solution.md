@@ -1,16 +1,16 @@
 # Design - Solution
 
-## SoftTree做什么?
+## What does SoftTree do?
 
-### 拆分task
+### Split the Task
 
-限制一个task最多只能对一个d有write及以上的影响.
+Each task can have an access level greater than or equal to writable for at most one data item.
 
 $$
-\sum_{(task,d)\in deps_d}\mathbb{1}[deps_a(task, d)\ge writable]\le 1
+\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[deps_a(d, t)\ge writable]\le 1
 $$
 
-对于原本task如果不满足这个要求, 可以按照顺序拆分成满足条件的串联的task.
+If an existing task does not satisfy this property, it can be split into smaller tasks that do.
 
 ### 面向对象
 
