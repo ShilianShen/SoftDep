@@ -4,5 +4,6 @@ SoftTree is a library designed to manage complex dependency relationships, facil
 
 Well, I'm still developing it, so if you want to know what I'm working on, take a look here:
 
-- [background](docs/design_background.md)
+- [definations](docs/design_definations.md)
+- [problems](docs/design_problems.md)
 - [solution](docs/design_solution.md)
