@@ -40,51 +40,51 @@ $$
 children_i(x)=\{c|(x, c)\in deps_i\}
 $$
 
-## Parallel Tasks of Data
+## Parallel Tasks
 
 $$
-parallel:data\to\mathcal{P}(\mathcal{P}(tasks))
+parallel(d) = \{
+    T\subseteq children_d(d)\mid \\
+    \forall a,b\in T, a\neq b: \text{there is no path between}\ a\ \text{and}\ b
+\}
 $$
 
-$\mathcal{T}=parallel(d)$ is a family of sets, where each $T\in\mathcal{T}$ satisfies the following properties:
-
-- For every $a, b\in T$ there is no path from $a$ to $b$ or from $b$ to $a$ in $(tasks, deps_c)$.
-- $\forall t\in T, \exists (d, t)\in deps_d$
+Every ordering of the tasks in $T$ can be extended to a topological ordering of the entire task graph.
 
 ## Access
 
 $$
-deps_a: deps_d\to access
+access: deps_d\to A
 $$
 
-We use $deps_a(d,t)$ as shorthand for $deps_a((d,t))$.
+We use $access(d,t)$ as shorthand for $access((d,t))$.
 
 ---
 
-$access^\circ$ is the set of available access levels determined by the environment in which SoftTree is used.
+$A^\circ$ is the set of available access levels determined by the environment in which SoftTree is used.
 
-$(access^\circ, \le)$ is a partially ordered set satisfying the following properties:
+$(A^\circ, \le)$ is a partially ordered set satisfying the following properties:
 
-- $\{\bot, \top\}\subseteq access^\circ$
-- $\forall a\in access^\circ:\bot\le a\le\top$
+- $\{\bot, \top\}\subseteq A^\circ$
+- $\forall a\in A^\circ:\bot\le a\le\top$
 
-For $a, b\in access^\circ$ with $a<b$, we say that $b$ is a higher access level than $a$.
-
----
-
-$access=DM(access^\circ)$ is the Dedekind–MacNeille completion of $access^\circ$.
-
-Thus, $(access, \le)$ satisfies the following properties:
-
-- $(access, \le)$ is a complete lattice.
-- $\forall A\subseteq access$ both $\bigvee_{a\in A}a$ and $\bigwedge_{a\in A}a$ exist.
+For $a, b\in A^\circ$ with $a<b$, we say that $b$ is a higher access level than $a$.
 
 ---
 
-A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case, we can determine the minimum access level required by $t$
+$A=DM(A^\circ)$ is the Dedekind–MacNeille completion of $A^\circ$.
+
+Thus, $(A, \le)$ satisfies the following properties:
+
+- $(A, \le)$ is a complete lattice.
+- $\forall B\subseteq A$ both $\bigvee_{a\in B}a$ and $\bigwedge_{a\in B}a$ exist.
+
+---
+
+A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case, we can determine the minimum access level required by $t$:
 
 $$
-deps_a(d, t)=\bigvee_{i\le |t|}deps_a(d, t_i)
+access(d, t)=\bigvee_{i\le |t|}access(d, t_i)
 $$
 
 Sometimes, it is useful to consider multiple tasks as a single task. In this way, the minimum access level required by any task group can be determined.

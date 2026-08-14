@@ -18,11 +18,11 @@ This problem can occur when a data item has multiple dependent tasks that have n
 
 But multiple dependent tasks do not always cause this problem.
 
-Assume that $access$ contains the following access levels:
+Assume that $A$ contains the following access levels:
 
 - $OS$: order-sensitive
 - $RO$: readonly. Example: `print`
-- $OISW$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $deps_a(d, a), deps_a(d, b)\le OISW$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
+- $OISW$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $access(d, a), access(d, b)\le OISW$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
 
 Obviously, these access levels satisfy $OS = RO\vee OISW$.
 
@@ -32,12 +32,12 @@ $$
 \exists d\in data, 
 \exists T\in parallel(d):
 \left(
-    \bigvee_{t\in T}deps_a(d, t)\ge OS
+    \bigvee_{t\in T}access(d, t)\ge OS
 \right)
 \land (|T|>1)
 $$
 
-When the combined access level is order-sensitive, there must be an explicit order to decide which task executes first. But obviously, specifying the order explicitly is cumbersome, so we need another approach.
+When the combined access level is order-sensitive, there must be an explicit order to decide which task executes first. But specifying the order explicitly is cumbersome, so we need another approach.
 
 ## Poor Extensibility
 

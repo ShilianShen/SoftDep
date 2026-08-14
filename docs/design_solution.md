@@ -12,17 +12,25 @@ $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
 
-### 面向对象
+### OOP
 
-#### 从属依赖
+#### Belonging
 
-于是存在一个从属依赖$deps_b:tasks\to data$满足
+Define
 
 $$
-deps_a(task,d)\ge writable\Rightarrow deps_b(task) = d
+deps_b:tasks\to data
 $$
 
-这种情况称作task属于d.
+such that
+
+$$
+deps_a(d, t)\ge writable\rightarrow deps_b(t) = d
+$$
+
+If $deps_b(task)=d$, we say that $t$ belongs to $d$.
+
+---
 
 $$
 tasks_d := \{task|task\in tasks,deps_b(task)=d\} \\
