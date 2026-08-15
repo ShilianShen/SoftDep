@@ -7,56 +7,37 @@
 Each task can have an access level greater than or equal to writable for at most one data item.
 
 $$
-\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[deps_a(d, t)\ge writable]\le 1
+\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge writable]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
 
-### OOP
-
-#### Belonging
-
-Define
+### Encapsulation
 
 $$
-deps_b:tasks\to data
+(nodes, deps_n)
 $$
 
-such that
+Each $n=(d, T)\in nodes$ satisfies the following properties:
 
-$$
-deps_a(d, t)\ge writable\rightarrow deps_b(t) = d
-$$
+- $d\in data, T\subseteq tasks$
+- $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge writable)\to t\in T$
 
-If $deps_b(task)=d$, we say that $t$ belongs to $d$.
+For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
 
----
+$nodes$ satisfies the following properties:
 
-$$
-tasks_d := \{task|task\in tasks,deps_b(task)=d\} \\
-node_d := (d, tasks_d)
-$$
+- $\{d|(d, T)\in nodes\}=data$
+- $\bigcup_{(d, T)\in nodes}T=tasks$
+- $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
-#### 封装依赖
+$deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
-$$
-deps_e \subseteq nodes\times nodes \\
-$$
-
-$$
-\begin{rcases}
-    \exists(task_a, task_b)\in deps_c \\
-    a = deps_b(task_a) \\
-    b = deps_b(task_b) \\
-    node_a \neq node_b
-\end{rcases}
-\Leftrightarrow
-(node_a, node_b) \in deps_e
-$$
+- $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
 ### DAG约束
 
-SoftTree最大的约束是, $(nodes, deps_e)$ 也应该为DAG.
+SoftTree最大的约束是, $(nodes, deps_n)$ 也应该为DAG.
 
 这个约束并不能从前面的情景推导得到, 而是为了解决问题而针对用户提出的限制.
 
