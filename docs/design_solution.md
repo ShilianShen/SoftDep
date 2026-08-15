@@ -18,18 +18,17 @@ $$
 (nodes, deps_n)
 $$
 
-Each $n=(d, T, s)\in nodes$ satisfies the following properties:
+Each $n=(d, T)\in nodes$ satisfies the following properties:
 
 - $d\in data, T\subseteq tasks$
 - $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge writable)\to t\in T$
-- $s:T\to\{1, \dots,|T|\}$ is an explicit topological ordering.
 
-For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, $s$ and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i, s_i)$ and $t_i\in T_i$.
+For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
 
 $nodes$ satisfies the following properties:
 
-- $\{d|(d, T, s)\in nodes\}=data$
-- $\bigcup_{(d, T, s)\in nodes}T=tasks$
+- $\{d|(d, T)\in nodes\}=data$
+- $\bigcup_{(d, T)\in nodes}T=tasks$
 - $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
 $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
