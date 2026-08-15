@@ -36,6 +36,10 @@ $$
 children_i(x)=\{c|(x, c)\in deps_i\}
 $$
 
+## Path
+
+For $a,b\in tasks$, if $a\neq b$ and there is a path in $(tasks, deps_c)$ from $a$ to $b$, we write $a\leadsto b$.
+
 ## Restriction Notation
 
 For a binary relation $R$ and a set $X$, we denote the restriction of $R$ to $X$ by
@@ -57,8 +61,8 @@ Hereafter, all orders are assumed to be topological orders.
 
 $$
 parallel(d) = \{
-    T\subseteq children_d(d)\mid \\
-    \forall a,b\in T, a\neq b: \text{there is no path in}\ (tasks, deps_c)\ \text{between}\ a\ \text{and}\ b
+T\subseteq children_d(d)\mid
+\forall a,b\in T: \neg(a\leadsto b\lor b\leadsto a)
 \}
 $$
 
