@@ -36,24 +36,37 @@ $$
 children_i(x)=\{c|(x, c)\in deps_i\}
 $$
 
-## Sort
+## Restriction Notation
 
-$sort: tasks\to\{1,\dots,|tasks|\}$ is a bijection satisfying $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
+For a binary relation $R$ and a set $X$, we denote the restriction of $R$ to $X$ by
 
-$sorts$ is the set of all possible topological orderings.
+$$
+R|_X=R\cap(X\times X)
+$$
 
-All sorts mentioned below are topological orderings.
+## Order
+
+$<_{topo, X}\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
+
+- $(X, <_{topo, X})$ is a strict total order.
+- $\forall (a,b)\in deps_c|_{X}: a<_{topo, X} b$
+
+Hereafter, all orders are assumed to be topological orders.
 
 ## Parallel Tasks
 
 $$
 parallel(d) = \{
     T\subseteq children_d(d)\mid \\
-    \forall a,b\in T, a\neq b: \text{there is no path between}\ a\ \text{and}\ b
+    \forall a,b\in T, a\neq b: \text{there is no path in}\ (tasks, deps_c)\ \text{between}\ a\ \text{and}\ b
 \}
 $$
 
 Every ordering of the tasks in $T$ can be extended to a topological ordering of the entire task graph.
+
+$$
+\forall <_{topo, T}, \exists <_{topo}:\ <_{topo, T} = <_{topo}|_T
+$$
 
 ## Access
 

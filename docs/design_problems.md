@@ -12,7 +12,7 @@ graph
     taskA --> taskC
 ```
 
-In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)$ both satisfy the sort condition of Control Dependency.
+In this case the output may be unpredictable, because $(A, B, C)$ and $(A, C, B)$ both satisfy the order condition of Control Dependency.
 
 This problem can occur when a data item has multiple dependent tasks that have no control dependency between them.
 
@@ -29,7 +29,7 @@ Obviously, these access levels satisfy $OS = RO\vee OISW$.
 The problem happens if and only if
 
 $$
-\exists d\in data, 
+\exists d\in data,
 \exists T\in parallel(d):
 \left(
     \bigvee_{t\in T}access(d, t)\ge OS
@@ -44,7 +44,7 @@ When the combined access level is order-sensitive, there must be an explicit ord
 If a new task is added to the system, it could cause new conflicts or invalidate the existing structure.
 
 ```mermaid
-graph 
+graph
     A[A: old task]
     B[B: old task]
     C[C: new task]
