@@ -41,16 +41,26 @@ The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DA
 
 Note that this constraint cannot be derived from the previous definitions.
 
-### 反向node
+### Backward Node
 
-目前的SoftTree的一个缺点是, 子节点无法write影响父节点.
+$$
+n_b
+$$
 
-这里给出的方法是, 设定有且仅有一个脱离前文管理的节点, 就是反向节点
+This node is introduced to address the problem that nodes cannot affect parent nodes in $(nodes, deps_n)$.
 
-- 反向节点可以read所有其他的节点, 并且其他节点无法知道反向节点存在
-- 反向节点可以write所有其他的节点
+We call it a "node" because it has properties similar to those of normal nodes.
 
-原本以为DAG约束, 而无法实现的task, 可以在反向节点里实现.
+$n_b$ satisfies the following properties:
+
+- $n_b\notin nodes$
+- $d_b\notin data$
+- $T_b\cap tasks = \varnothing$
+- The tasks in $n_b$ can read and write any data item.
+
+Some tasks cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
+
+The tasks in $n_b$ are executed after all other tasks.
 
 ## SoftTree的优点
 
