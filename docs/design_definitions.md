@@ -18,10 +18,6 @@ where $(tasks, deps_c)$ is a DAG.
 
 For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
 
-$sort: tasks\to\{1,\dots,|tasks|\}$ is a bijection satisfying $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
-
-$sorts$ is the set of all possible topological orderings.
-
 ## Data Dependency
 
 $$
@@ -39,6 +35,14 @@ $$
 $$
 children_i(x)=\{c|(x, c)\in deps_i\}
 $$
+
+## Sort
+
+$sort: tasks\to\{1,\dots,|tasks|\}$ is a bijection satisfying $\forall (a,b)\in deps_c:sort(a) < sort(b)$.
+
+$sorts$ is the set of all possible topological orderings.
+
+All sorts mentioned below are topological orderings.
 
 ## Parallel Tasks
 

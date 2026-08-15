@@ -41,6 +41,16 @@ The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DA
 
 Note that this constraint cannot be derived from the previous definitions.
 
+### Local Total Ordering
+
+This constraint requires $deps_c$ to satisfy the following property:
+
+$$
+\forall T\in parallel(d_i):|T\cap T_i|\le1
+$$
+
+In other words, no two tasks in $T_i$ are parallel with respect to $d_i$.
+
 ### Backward Node
 
 $$
@@ -62,34 +72,17 @@ Some tasks cannot belong to any node in $nodes$ because of the DAG constraint, b
 
 The tasks in $n_b$ are executed after all other tasks.
 
-## SoftTree的优点
+## How does SoftTree solve the problems?
 
-- 多task的冲突只会发生在单个模块之间, 可以直接手动串联解决
-- 增强扩展性, 问题变成了模块之间的单向依赖的拼接
-- 循环依赖问题只需要在SoftTree外排查即可知晓
+### Conflict among multiple tasks
 
-## ER图 (待完善)
+For each data item $d_i$ we can split the $children_d(d)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d)\setminus T_i$.
 
-```mermaid
-erDiagram
-    tree {}
-    node {}
-    data {}
-    task {}
-    dep_a {
-        Task task FK
-        Data data FK
-        Access access
-    }
-
-    tree ||--|{ node: "consist"
-    node ||--|| data: "dep_b"
-    node ||--|{ task: "dep_b"
-    task ||--|{ dep_a: "dep_a"
-    data ||--|{ dep_a: "dep_a"
-    task ||--|{ task: ""
-```
-
-## 各个语言能实现的access (待完善)
-
-Lua: none, readonly, writable
+$$
+\exists d\in data, 
+\exists T\in parallel(d):
+\left(
+    \bigvee_{t\in T}access(d, t)\ge OS
+\right)
+\land (|T|>1)
+$$
