@@ -35,13 +35,11 @@ $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
 - $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
-### DAG约束
+### DAG-Constraint
 
-SoftTree最大的约束是, $(nodes, deps_n)$ 也应该为DAG.
+The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DAG.
 
-这个约束并不能从前面的情景推导得到, 而是为了解决问题而针对用户提出的限制.
-
-而且某种意义上两个nodes之间有task反复依赖也挺怪的.
+Note that this constraint cannot be derived from the previous definitions.
 
 ### 反向node
 
