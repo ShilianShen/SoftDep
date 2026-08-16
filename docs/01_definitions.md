@@ -1,4 +1,4 @@
-# Design - Definitions
+## Definitions
 
 First, there are several basic concepts to define:
 
@@ -8,7 +8,7 @@ First, there are several basic concepts to define:
 
 There are several kinds of dependencies.
 
-## Control Dependency
+### Control Dependency
 
 $$
 deps_c\subseteq tasks\times tasks
@@ -18,7 +18,7 @@ where $(tasks, deps_c)$ is a DAG.
 
 For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
 
-## Data Dependency
+### Data Dependency
 
 $$
 deps_d\subseteq data\times tasks
@@ -26,7 +26,7 @@ $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 
-## Parents and Children
+### Parents and Children
 
 $$
 parents_i(x)=\{p|(p, x)\in deps_i\}
@@ -36,11 +36,11 @@ $$
 children_i(x)=\{c|(x, c)\in deps_i\}
 $$
 
-## Path
+### Path
 
 For $a,b\in tasks$, if $a\neq b$ and there is a path in $(tasks, deps_c)$ from $a$ to $b$, we write $a\leadsto b$.
 
-## Restriction Notation
+### Restriction Notation
 
 For a binary relation $R$ and a set $X$, we denote the restriction of $R$ to $X$ by
 
@@ -48,7 +48,7 @@ $$
 R|_X=R\cap(X\times X)
 $$
 
-## Order
+### Order
 
 $<_X\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
 
@@ -61,7 +61,7 @@ $$
 O(X)=\{<_X\subseteq X\times X|(X, <_X)\ \text{is a topological order}\}
 $$
 
-## Parallel Tasks
+### Parallel Tasks
 
 $$
 parallel(d) = \{
@@ -76,7 +76,7 @@ $$
 \forall <_T\in O(T), \exists <\in O(tasks)\ <_T = <|_T \\
 $$
 
-## Access
+### Access
 
 $$
 access: deps_d\to A

@@ -1,6 +1,6 @@
-# Design - Constraints
+## Constraints
 
-## Split the Task
+### Split the Task
 
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
@@ -10,7 +10,7 @@ $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
 
-## Encapsulation
+### Encapsulation
 
 $$
 (nodes, deps_n)
@@ -33,13 +33,13 @@ $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
 - $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
-## DAG Constraint
+### DAG Constraint
 
 The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DAG.
 
 Note that this constraint cannot be derived from the previous definitions.
 
-## Local Total Ordering
+### Local Total Ordering
 
 This constraint requires $deps_c$ to satisfy the following property:
 
@@ -49,7 +49,7 @@ $$
 
 In other words, no two tasks in $T_i$ are parallel.
 
-## Node Order
+### Node Order
 
 Because $(nodes, deps_n)$ is a DAG, there is also a topological order $<_N$.
 
@@ -57,7 +57,7 @@ The task order $<$ is required to satisfy the following properties:
 
 - $\forall t_1\in T_1, \forall t_2\in T_2:n_1<_Nn_2\to t_1<t_2$
 
-## Backward Node
+### Backward Node
 
 $$
 n_b

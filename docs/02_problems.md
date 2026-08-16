@@ -1,6 +1,6 @@
-# Design - Problems
+## Problems
 
-## Conflict among multiple tasks
+### Conflict among multiple tasks
 
 ```mermaid
 graph
@@ -39,7 +39,7 @@ $$
 
 When the combined access level is order-sensitive, there must be an explicit order to decide which task executes first. But specifying the order explicitly is cumbersome, so we need another approach.
 
-## Poor Extensibility
+### Poor Extensibility
 
 If a new task is added to the system, it could cause new conflicts or invalidate the existing structure.
 

@@ -1,6 +1,6 @@
-# Design - Properties
+## Properties
 
-## Conflict among multiple tasks
+### Conflict among multiple tasks
 
 For each data item $d_i$ we can split the $children_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d_i)\setminus T_i$.
 

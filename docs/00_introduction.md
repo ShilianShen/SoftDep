@@ -1,8 +1,8 @@
-# Design - Introduction
+## Introduction
 
 The name "SoftTree" is derived from "Software" and "Dependency Tree".
 
-## Why does it exist?
+### Why does it exist?
 
 Projects can have complex dependencies between tasks or modules.
 Such a structure is commonly referred to as a dependency tree.
