@@ -2,10 +2,10 @@
 
 ## Introduction
 
-The name "SoftDep" is derived from "Software" and "Dependency Tree".
+The name "SoftDep" is derived from "Software" and "Dependency".
 
 Projects can have complex dependencies between tasks or modules.
-Such a structure is commonly referred to as a dependency tree.
+Such a structure is commonly referred to as a dependency graph.
 Following the principle "Don't repeat yourself", we can extract the common dependency management logic into a higher-level abstraction called "SoftDep".
 
 ## Definitions
@@ -277,7 +277,7 @@ Case 1, $T\subseteq T_i$
 
 $$
 \begin{aligned}
-    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T
+    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T 
     \\
     & |O(T_i)|=1
     \\
@@ -306,7 +306,7 @@ $$
 Thus,
 
 $$
-\forall d\in data,
+\forall d\in data, 
 \forall T\in parallel(d):
 \left(
     \bigvee_{t\in T}access(d, t)< OS
@@ -325,3 +325,4 @@ In this case, $(nodes, deps_N)$ can be considered as an extension of $(X, deps_N
 Obviously, in this structure, extension can't affect the system before.
 
 Therefore, it's easy to extend an existing system.
+
