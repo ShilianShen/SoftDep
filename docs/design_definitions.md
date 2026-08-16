@@ -57,6 +57,10 @@ $<_X\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
 
 Hereafter, all orders are assumed to be topological orders.
 
+$$
+O(X)=\{<\subseteq X\times X|(X, <_X)\ \text{is a topological order}\}
+$$
+
 ## Parallel Tasks
 
 $$

@@ -35,7 +35,7 @@ $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
 - $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
-### DAG-Constraint
+### DAG Constraint
 
 The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DAG.
 
@@ -46,10 +46,18 @@ Note that this constraint cannot be derived from the previous definitions.
 This constraint requires $deps_c$ to satisfy the following property:
 
 $$
-\forall T\in parallel(d_i):|T\cap T_i|\le1
+\forall n_i\in nodes:|O(T_i)|=1
 $$
 
-In other words, no two tasks in $T_i$ are parallel with respect to $d_i$.
+In other words, no two tasks in $T_i$ are parallel.
+
+### Node Order
+
+Because $(nodes, deps_n)$ is a DAG, there is also a topological order $<_N$.
+
+The task order $<$ is required to satisfy the following properties:
+
+- $\forall t_1\in T_1, \forall t_2\in T_2:n_1<_Nn_2\to t_1<t_2$
 
 ### Backward Node
 
@@ -68,7 +76,7 @@ $n_b$ satisfies the following properties:
 - $T_b\cap tasks = \varnothing$
 - The tasks in $n_b$ can read and write any data item.
 
-Some tasks cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
+Some tasks $t_b\notin tasks$ cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
 
 The tasks in $n_b$ are executed after all other tasks.
 
@@ -76,7 +84,25 @@ The tasks in $n_b$ are executed after all other tasks.
 
 ### Conflict among multiple tasks
 
-For each data item $d_i$ we can split the $children_d(d)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d)\setminus T_i$.
+For each data item $d_i$ we can split the $children_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d_i)\setminus T_i$.
+
+Because of node order there is $\forall a\in T_i,\forall b\in\overline{T_i}:a< b$.
+
+Thus $\forall T\in parallel(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
+
+---
+
+Case 1, $T\subseteq T_i$
+
+$$
+|O(T_i)|=1\to\forall T\in parallel(d_i):|T| = 1
+$$
+
+---
+
+Case 2, $T\subseteq \overline{T_i}$
+
+---
 
 $$
 \exists d\in data, 
