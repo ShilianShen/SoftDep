@@ -1,8 +1,6 @@
-# Design - Solution
+# Design - Constraints
 
-## What does SoftTree do?
-
-### Split the Task
+## Split the Task
 
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
@@ -12,7 +10,7 @@ $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
 
-### Encapsulation
+## Encapsulation
 
 $$
 (nodes, deps_n)
@@ -35,13 +33,13 @@ $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
 - $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
-### DAG Constraint
+## DAG Constraint
 
 The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DAG.
 
 Note that this constraint cannot be derived from the previous definitions.
 
-### Local Total Ordering
+## Local Total Ordering
 
 This constraint requires $deps_c$ to satisfy the following property:
 
@@ -51,7 +49,7 @@ $$
 
 In other words, no two tasks in $T_i$ are parallel.
 
-### Node Order
+## Node Order
 
 Because $(nodes, deps_n)$ is a DAG, there is also a topological order $<_N$.
 
@@ -59,7 +57,7 @@ The task order $<$ is required to satisfy the following properties:
 
 - $\forall t_1\in T_1, \forall t_2\in T_2:n_1<_Nn_2\to t_1<t_2$
 
-### Backward Node
+## Backward Node
 
 $$
 n_b
@@ -79,46 +77,3 @@ $n_b$ satisfies the following properties:
 Some tasks $t_b\notin tasks$ cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
 
 The tasks in $n_b$ are executed after all other tasks.
-
-## How does SoftTree solve the problems?
-
-### Conflict among multiple tasks
-
-For each data item $d_i$ we can split the $children_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d_i)\setminus T_i$.
-
-Because of node order there is $\forall a\in T_i,\forall b\in\overline{T_i}:a< b$.
-
-Thus $\forall T\in parallel(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
-
----
-
-Case 1, $T\subseteq T_i$
-
-$$
-\begin{aligned}
-\because & |O(T_i)| = 1\\
-\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
-\end{aligned}
-$$
-
----
-
-Case 2, $T\subseteq \overline{T_i}$
-
-$$
-\begin{aligned}
-\because & |O(T_i)| = 1\\
-\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
-\end{aligned}
-$$
-
----
-
-$$
-\exists d\in data, 
-\exists T\in parallel(d):
-\left(
-    \bigvee_{t\in T}access(d, t)\ge OS
-\right)
-\land (|T|>1)
-$$
