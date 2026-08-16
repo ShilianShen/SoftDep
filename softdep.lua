@@ -1,4 +1,4 @@
-local softtree = {}
+local softdep = {}
 
 local _NODE_MT = {
 	__newindex = function()
@@ -202,7 +202,7 @@ local function getMermaid(tree)
 	return table.concat(mermaid, "\n")
 end
 
-function softtree.newTree()
+function softdep.newTree()
 	local tree = {
 		stale = true,
 		nodeDict = {},
@@ -221,4 +221,4 @@ function softtree.newTree()
 	return tree
 end
 
-return softtree
+return softdep

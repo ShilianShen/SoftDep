@@ -1,13 +1,12 @@
-# SoftTree
+# SoftDep
 
 ## Introduction
 
-The name "SoftTree" is derived from "Software" and "Dependency Tree".
+The name "SoftDep" is derived from "Software" and "Dependency Tree".
 
 Projects can have complex dependencies between tasks or modules.
 Such a structure is commonly referred to as a dependency tree.
-Following the principle "Don't repeat yourself", we can extract the common dependency management logic into a higher-level abstraction called "SoftTree".
-
+Following the principle "Don't repeat yourself", we can extract the common dependency management logic into a higher-level abstraction called "SoftDep".
 
 ## Definitions
 
@@ -99,7 +98,7 @@ We use $access(d,t)$ as shorthand for $access((d,t))$.
 
 ---
 
-$A^\circ$ is the set of available access levels determined by the environment in which SoftTree is used.
+$A^\circ$ is the set of available access levels determined by the environment in which SoftDep is used.
 
 $(A^\circ, \le)$ is a partially ordered set satisfying the following properties:
 
@@ -126,7 +125,6 @@ access(d, t)=\bigvee_{i\le |t|}access(d, t_i)
 $$
 
 Sometimes, it is useful to consider multiple tasks as a single task. In this way, the minimum access level required by any task group can be determined.
-
 
 ## Problems
 
@@ -182,7 +180,6 @@ graph
     A -.-> C -.-> B
 ```
 
-
 ## Constraints
 
 ### Split the Task
@@ -211,8 +208,8 @@ For convenience, we use subscripts to indicate the relationships among $n$, $d$,
 
 $nodes$ satisfies the following properties:
 
-- $\{d|(d, T)\in nodes\}=data$
-- $\bigcup_{(d, T)\in nodes}T=tasks$
+- $\{d|(d, T, a)\in nodes\}=data$
+- $\bigcup_{(d, T, a)\in nodes}T=tasks$
 - $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
 $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
@@ -221,7 +218,7 @@ $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
 
 ### DAG Constraint
 
-The strongest constraint of SoftTree is that $(nodes, deps_n)$ must also be a DAG.
+The strongest constraint of SoftDep is that $(nodes, deps_n)$ must also be a DAG.
 
 Note that this constraint cannot be derived from the previous definitions.
 
@@ -264,10 +261,9 @@ Some tasks $t_b\notin tasks$ cannot belong to any node in $nodes$ because of the
 
 The tasks in $n_b$ are executed after all other tasks.
 
-
 ## Properties
 
-### Conflict among multiple tasks
+### No more conflict among multiple tasks
 
 For each data item $d_i$ we can split the $children_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d_i)\setminus T_i$.
 
@@ -281,7 +277,7 @@ Case 1, $T\subseteq T_i$
 
 $$
 \begin{aligned}
-    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T 
+    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T
     \\
     & |O(T_i)|=1
     \\
@@ -301,7 +297,7 @@ $$
 \begin{aligned}
     \because & T\subseteq\overline{T_i}
     \\
-    \therefore & \bigvee_{t\in T}access(d_i,t)\le\bigvee_{t\in \overline{T_i}}access(d_i,t)\le a< OS
+    \therefore & \bigvee_{t\in T}access(d_i,t)\le\bigvee_{t\in \overline{T_i}}access(d_i,t)\le a_i< OS
 \end{aligned}
 $$
 
@@ -310,7 +306,7 @@ $$
 Thus,
 
 $$
-\forall d\in data, 
+\forall d\in data,
 \forall T\in parallel(d):
 \left(
     \bigvee_{t\in T}access(d, t)< OS
@@ -320,4 +316,12 @@ $$
 
 Therefore, there is no conflict.
 
+### Better Extensibility
 
+For every $X\subseteq nodes:\delta^-(X)=\varnothing$, $(X, deps_N|_X)$ is also a DAG.
+
+In this case, $(nodes, deps_N)$ can be considered as an extension of $(X, deps_N|_X)$.
+
+Obviously, in this structure, extension can't affect the system before.
+
+Therefore, it's easy to extend an existing system.
