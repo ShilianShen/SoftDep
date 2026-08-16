@@ -50,10 +50,10 @@ $$
 
 ## Order
 
-$<_{topo, X}\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
+$<_X\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
 
-- $(X, <_{topo, X})$ is a strict total order.
-- $\forall (a,b)\in deps_c|_{X}: a<_{topo, X} b$
+- $(X, <_X)$ is a strict total order.
+- $\forall (a,b)\in deps_c|_X: a<_X b$
 
 Hereafter, all orders are assumed to be topological orders.
 
@@ -69,7 +69,7 @@ $$
 Every ordering of the tasks in $T$ can be extended to a topological ordering of the entire task graph.
 
 $$
-\forall <_{topo, T}, \exists <_{topo}:\ <_{topo, T} = <_{topo}|_T
+\forall <_T, \exists <:\ <_T = <|_T
 $$
 
 ## Access
