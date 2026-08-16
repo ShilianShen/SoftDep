@@ -4,10 +4,10 @@
 
 ### Split the Task
 
-Each task can have an access level greater than or equal to writable for at most one data item.
+Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
 $$
-\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge writable]\le 1
+\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge OS]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
@@ -21,7 +21,7 @@ $$
 Each $n=(d, T)\in nodes$ satisfies the following properties:
 
 - $d\in data, T\subseteq tasks$
-- $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge writable)\to t\in T$
+- $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge OS)\to t\in T$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
 
@@ -95,12 +95,22 @@ Thus $\forall T\in parallel(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
 Case 1, $T\subseteq T_i$
 
 $$
-|O(T_i)|=1\to\forall T\in parallel(d_i):|T| = 1
+\begin{aligned}
+\because & |O(T_i)| = 1\\
+\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
+\end{aligned}
 $$
 
 ---
 
 Case 2, $T\subseteq \overline{T_i}$
+
+$$
+\begin{aligned}
+\because & |O(T_i)| = 1\\
+\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
+\end{aligned}
+$$
 
 ---
 

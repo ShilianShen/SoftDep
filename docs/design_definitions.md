@@ -58,7 +58,7 @@ $<_X\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
 Hereafter, all orders are assumed to be topological orders.
 
 $$
-O(X)=\{<\subseteq X\times X|(X, <_X)\ \text{is a topological order}\}
+O(X)=\{<_X\subseteq X\times X|(X, <_X)\ \text{is a topological order}\}
 $$
 
 ## Parallel Tasks
@@ -73,7 +73,7 @@ $$
 Every ordering of the tasks in $T$ can be extended to a topological ordering of the entire task graph.
 
 $$
-\forall <_T, \exists <:\ <_T = <|_T
+\forall <_T\in O(T), \exists <\in O(tasks)\ <_T = <|_T \\
 $$
 
 ## Access
