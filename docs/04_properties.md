@@ -14,8 +14,15 @@ Case 1, $T\subseteq T_i$
 
 $$
 \begin{aligned}
-\because & |O(T_i)| = 1\\
-\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
+    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T 
+    \\
+    & |O(T_i)|=1
+    \\
+    \therefore & \forall T\in parallel(d),|O(T)|\le|O(T_i)| = 1
+    \\
+    \because & |O(T)|=|T|!= 1
+    \\
+    \therefore & |T| = 1
 \end{aligned}
 $$
 
@@ -25,18 +32,23 @@ Case 2, $T\subseteq \overline{T_i}$
 
 $$
 \begin{aligned}
-\because & |O(T_i)| = 1\\
-\therefore & \forall (T:T\in parallel(d_i)\land T\subseteq T_i):|T| = 1
+    \because & T\subseteq\overline{T_i}
+    \\
+    \therefore & \bigvee_{t\in T}access(d_i,t)\le\bigvee_{t\in \overline{T_i}}access(d_i,t)\le a< OS
 \end{aligned}
 $$
 
 ---
 
+Thus,
+
 $$
-\exists d\in data, 
-\exists T\in parallel(d):
+\forall d\in data, 
+\forall T\in parallel(d):
 \left(
-    \bigvee_{t\in T}access(d, t)\ge OS
+    \bigvee_{t\in T}access(d, t)< OS
 \right)
-\land (|T|>1)
+\lor (|T|\le1)
 $$
+
+Therefore, there is no conflict.

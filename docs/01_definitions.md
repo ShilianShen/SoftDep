@@ -76,6 +76,8 @@ $$
 \forall <_T\in O(T), \exists <\in O(tasks)\ <_T = <|_T \\
 $$
 
+Because there is no path in $T$ we have $|O(T)|=|T|!$.
+
 ### Access
 
 $$

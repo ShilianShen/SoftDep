@@ -16,10 +16,11 @@ $$
 (nodes, deps_n)
 $$
 
-Each $n=(d, T)\in nodes$ satisfies the following properties:
+Each $n=(d, T, a)\in nodes$ satisfies the following properties:
 
 - $d\in data, T\subseteq tasks$
 - $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge OS)\to t\in T$
+- $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} access(d,t)\le a<OS$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
 
