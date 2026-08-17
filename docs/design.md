@@ -39,11 +39,11 @@ For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
 ### Parents and Children
 
 $$
-parents_i(x)=\{p|(p, x)\in deps_i\}
+\operatorname{parents}_i(x)=\{p|(p, x)\in deps_i\}
 $$
 
 $$
-children_i(x)=\{c|(x, c)\in deps_i\}
+\operatorname{children}_i(x)=\{c|(x, c)\in deps_i\}
 $$
 
 ### Path
@@ -75,7 +75,7 @@ $$
 
 $$
 parallel(d) = \{
-T\subseteq children_d(d)\mid
+T\subseteq \operatorname{children}_d(d)\mid
 \forall a,b\in T: \neg(a\leadsto b\lor b\leadsto a)
 \}
 $$
@@ -109,7 +109,7 @@ For $a, b\in A^\circ$ with $a<b$, we say that $b$ is a higher access level than 
 
 ---
 
-$A=DM(A^\circ)$ is the Dedekind–MacNeille completion of $A^\circ$.
+$A=\operatorname{DM}(A^\circ)$ is the Dedekind–MacNeille completion of $A^\circ$.
 
 Thus, $(A, \le)$ satisfies the following properties:
 
@@ -199,7 +199,7 @@ graph
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
 $$
-\forall t\in \mathcal{T}:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge OS]\le 1
+\forall t\in \mathcal{T}:\sum_{d\in \operatorname{parents}_d(t)}\mathbb{1}[access(d, t)\ge OS]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
@@ -277,7 +277,7 @@ The tasks in $n_b$ are executed after all other tasks.
 
 ### No more conflict among multiple tasks
 
-For each data item $d_i$ we can split the $children_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=children_d(d_i)\setminus T_i$.
+For each data item $d_i$ we can split the $\operatorname{children}_d(d_i)$ in two parts $T_i$ and $\overline{T_i}:=\operatorname{children}_d(d_i)\setminus T_i$.
 
 Because of node order there is $\forall a\in T_i,\forall b\in\overline{T_i}:a< b$.
 
