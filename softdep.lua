@@ -1,18 +1,24 @@
 local softdep = {}
 
-softdep.ACCESS = {
+local ACCESS = {
 	none = "none",
 	readonly = "readonly",
 	writable = "writable",
 }
 
-local function kahn(nodes, pkey)
-	assert(type(nodes) == "table")
+local MT = {
+	__newindex = function(t, key)
+		assert(false)
+	end,
+}
+
+local function kahn(vertices, pkey)
+	assert(type(vertices) == "table")
 	assert(type(pkey) == "string")
-	for _, node in pairs(nodes) do
-		assert(type(node) == "table")
-		assert(node[pkey] == nil or type(node[pkey]) == "table")
-		for _, ptag in pairs(node[pkey] or {}) do
+	for _, vertex in pairs(vertices) do
+		assert(type(vertex) == "table")
+		assert(vertex[pkey] == nil or type(vertex[pkey]) == "table")
+		for _, ptag in pairs(vertex[pkey] or {}) do
 			assert(type(ptag) == "string")
 		end
 	end
@@ -22,13 +28,13 @@ local function kahn(nodes, pkey)
 	local order = {}
 	local count = 0
 
-	for tag, _ in pairs(nodes) do
+	for tag, _ in pairs(vertices) do
 		infos[tag] = { indegree = 0, children = {} }
 		count = count + 1
 	end
 
-	for tag, node in pairs(nodes) do
-		for _, ptag in pairs(node[pkey] or {}) do
+	for tag, vertex in pairs(vertices) do
+		for _, ptag in pairs(vertex[pkey] or {}) do
 			assert(infos[ptag] ~= nil)
 			assert(infos[ptag].children[tag] ~= true)
 			infos[tag].indegree = infos[tag].indegree + 1
@@ -40,7 +46,7 @@ local function kahn(nodes, pkey)
 	end
 
 	for _ = 1, count do
-        assert(#stack ~= 0)
+		assert(#stack ~= 0)
 		local tag = table.remove(stack)
 		for ctag, _ in pairs(infos[tag].children) do
 			infos[ctag].indegree = infos[ctag].indegree - 1
@@ -54,26 +60,34 @@ local function kahn(nodes, pkey)
 	return order
 end
 
+local function shallowCopy(a)
+	assert(type(a) == "table")
+	local b = {}
+	for key, value in pairs(a) do
+		b[key] = value
+	end
+	return b
+end
+
 local function newTask(func, args, deps)
 	assert(type(func) == "function")
 	assert(args == nil or type(args) == "table")
+	for _, tag in pairs(args or {}) do
+		assert(type(tag) == "string")
+	end
 	assert(deps == nil or type(deps) == "table")
+	for index, tag in pairs(deps or {}) do
+		assert(type(index) == "number")
+		assert(type(tag) == "string")
+	end
 
-	local task = {
+	local task = setmetatable({
 		func = func,
-		args = {},
-		deps = {},
+		args = shallowCopy(args or {}),
+		deps = shallowCopy(deps or {}),
 		dirty = true,
-	}
-
-	for key, value in pairs(args or {}) do
-		task.args[key] = value
-	end
-
-	for _, dep in ipairs(deps or {}) do
-		table.insert(task.deps, dep)
-	end
-
+	}, MT)
+    
 	return task
 end
 
@@ -81,23 +95,24 @@ local function newNode(data, tasks, access)
 	assert(data == nil or type(data) == "table")
 	assert(tasks == nil or type(tasks) == "table")
 	assert(access == nil or type(access) == "string")
-	assert(softdep.ACCESS[access] ~= nil)
+	assert(ACCESS[access] ~= nil)
 
-	local node = {
+	local node = setmetatable({
 		data = data,
 		tasks = {},
 		access = access,
 		deps = {},
-	}
+		order = {},
+	}, MT)
 
-	for name, task in pairs(tasks) do
-		node.tasks[name] = newTask(task.func, task.args, task.deps)
+	for tag, task in pairs(tasks) do
+		node.tasks[tag] = newTask(task.func, task.args, task.deps)
 		for _, key in pairs(task.args) do
 			table.insert(node.deps, key)
 		end
 	end
 
-	node.order = kahn(tasks, "deps")
+	node.order = kahn(node.tasks, "deps")
 
 	return node
 end
@@ -123,11 +138,12 @@ local function tickGraph(graph)
 end
 
 function softdep.newGraph()
-	local graph = {
+	local graph = setmetatable({
 		nodes = {},
 		extend = extendGraph,
 		tick = tickGraph,
-	}
+		order = {},
+	}, MT)
 	return graph
 end
 
