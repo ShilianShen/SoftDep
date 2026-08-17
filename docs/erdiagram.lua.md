@@ -2,9 +2,10 @@
 erDiagram
     graph {
         Ntag-Node nodes
-        Func extend
-        Func tick
+        Func[] funcs
         Ntag[] nodeOrder
+        Task[] taskOrder
+        Bool dirty
     }
     node {
         Data data
@@ -12,6 +13,7 @@ erDiagram
         Access access
         Ttag[] taskOrder
         Ntag[] nodeDeps
+        Bool dirty
     }
     task {
         Func func

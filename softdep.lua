@@ -114,6 +114,7 @@ local function newNode(data, tasks, access)
 		access = access,
 		nodeDeps = {},
 		taskOrder = {},
+		dirty = true,
 	}, MT)
 
 	for ttag, task in pairs(tasks) do
@@ -130,13 +131,20 @@ end
 
 local function extendGraph(graph, ntag, data, tasks, access)
 	assert(graph ~= nil)
+	assert(graph.ready == false)
 	assert(graph.nodes[ntag] == nil)
 	graph.nodes[ntag] = newNode(data, tasks, access)
+end
+
+local function loadGraph(graph)
+	assert(graph ~= nil)
 	graph.nodeOrder = kahn(graph.nodes, "nodeDeps")
+	graph.ready = true
 end
 
 local function tickGraph(graph)
 	assert(graph ~= nil)
+	assert(graph.ready)
 	for _, ntag in ipairs(graph.nodeOrder) do
 		local node = graph.nodes[ntag]
 		for _, ttag in ipairs(node.taskOrder) do
@@ -155,8 +163,10 @@ function softdep.newGraph()
 		nodes = {},
 		extend = extendGraph,
 		tick = tickGraph,
+		load = loadGraph,
 		nodeOrder = {},
-        taskOrder = {},
+		taskOrder = {},
+		ready = false,
 	}, MT)
 	return graph
 end
