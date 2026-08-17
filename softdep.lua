@@ -1,224 +1,128 @@
 local softdep = {}
 
-local _NODE_MT = {
-	__newindex = function()
-		error("Attempt to modify protected node field", 2)
-	end,
-	__metatable = false,
+softdep.ACCESS = {
+	none = "none",
+	readonly = "readonly",
+	writable = "writable",
 }
 
-local function _getConst(t)
-	local proxy = {}
-	local mt = {
-		__index = t,
-		__newindex = function(_, k, v)
-			error("Attempt to modify a read-only table", 2)
-		end,
-		__metatable = false,
-	}
-	return setmetatable(proxy, mt)
+local function sort(nodes, pkey)
+	assert(type(nodes) == "table")
+	assert(type(pkey) == "string")
+	for _, node in pairs(nodes) do
+		assert(type(node) == "table")
+		assert(node[pkey] == nil or type(node[pkey]) == "table")
+		for _, pname in pairs(node[pkey] or {}) do
+			assert(type(pname) == "string")
+		end
+	end
+
+	local infos = {}
+	for name, _ in pairs(nodes) do
+		infos[name] = { indegree = 0, children = {} }
+	end
+	for name, node in pairs(nodes) do
+		for _, pname in pairs(node[pkey] or {}) do
+			infos[name].indegree = infos[name].indegree + 1
+			infos[pname].children[name] = true
+		end
+	end
+
+	local queue = {}
+	for name, _ in pairs(nodes) do
+		if infos[name].indegree == 0 then
+			table.insert(queue, name)
+		end
+	end
+
+	local order = {}
+	while #queue > 0 do
+		local name = table.remove(queue)
+		for cname, _ in pairs(infos[name].children) do
+			infos[name].children[cname] = nil
+			infos[cname].indegree = infos[cname].indegree - 1
+			if infos[cname].indegree == 0 then
+				table.insert(queue, cname)
+			end
+		end
+		table.insert(order, name)
+	end
+
+	return order
 end
 
-local function _newNode(entity, tasks)
-	for _, task in pairs(tasks) do
-		task.dirty = true
-		task.callCount = 0
-		task._params = {} -- dict
-		task._parents = {} -- array
-		task._children = {} -- array
-	end
-	local node = {
-		entity = entity or {},
-		depth = 0,
-		tasks = tasks,
-		_parents = {}, -- dict
-		_children = {}, -- dict
+local function newTask(func, args, deps)
+	assert(type(func) == "function")
+	assert(args == nil or type(args) == "table")
+	assert(deps == nil or type(deps) == "table")
+
+	local task = {
+		func = func,
+		args = {},
+		deps = {},
 	}
-	node._const = _getConst(node.entity)
-	setmetatable(node, _NODE_MT)
-	setmetatable(node.tasks, _NODE_MT)
+
+	for key, value in pairs(args or {}) do
+		task.args[key] = value
+	end
+	for _, dep in ipairs(deps or {}) do
+		table.insert(task.deps, dep)
+	end
+	return task
+end
+
+local function newNode(data, tasks, access)
+	assert(data == nil or type(data) == "table")
+	assert(tasks == nil or type(tasks) == "table")
+	assert(access == nil or type(access) == "string")
+	assert(softdep.ACCESS[access] ~= nil)
+
+	local node = {
+		data = data,
+		tasks = {},
+		access = access,
+		deps = {},
+	}
+
+	for name, task in pairs(tasks) do
+		node.tasks[name] = newTask(task.func, task.args, task.deps)
+		for _, key in pairs(task.args) do
+			table.insert(node.deps, key)
+		end
+	end
+
+	node.order = sort(tasks, "deps")
+
 	return node
 end
 
-local function insert(tree, tag, entity, tasks)
-	tasks = tasks or {}
-	local node = _newNode(entity, tasks)
-	tag = tag or tostring(entity)
-	tree.nodeDict[tag] = node
-	tree.stale = true
-	tree.dirty = true
+local function extendGraph(graph, tag, data, tasks, access)
+	assert(graph.nodes[tag] == nil)
+	graph.nodes[tag] = newNode(data, tasks, access)
+	graph.order = sort(graph.nodes, "deps")
 end
 
-local function remove(tree, tag, entity)
-	tag = tag or tostring(entity)
-	if tree.nodeDict[tag] ~= nil then
-		tree.nodeDict[tag] = nil
-		tree.stale = true
-	end
-end
-
-local function _setParentsAndChildren(nodeDict)
-	for _, node in pairs(nodeDict) do
-		node._parents = {}
-		node._children = {}
-		for _, task in pairs(node.tasks) do
-			task._params = {}
-			task._parents = {}
-			task._children = {}
-		end
-	end
-
-	for tag, node in pairs(nodeDict) do
-		for taskname, task in pairs(node.tasks) do
-			for paramTag, parentTag in pairs(task.params or {}) do
-				local parentNode = nodeDict[parentTag]
-				assert(parentNode ~= nil, tag)
-				parentNode._children[tag] = node
-				node._parents[parentTag] = parentNode
-
-				local parentTask = parentNode.tasks[taskname]
-				if parentTask ~= nil then
-					table.insert(parentTask._children, task)
-					table.insert(task._parents, parentTask)
-				end
-				task._params[paramTag] = parentNode._const
+local function tickGraph(graph)
+	for _, nkey in ipairs(graph.order) do
+		local node = graph.nodes[nkey]
+		for _, tkey in ipairs(node.order) do
+			local task = node.tasks[tkey]
+			local args = {}
+			for akey, key in pairs(task.args) do
+				args[akey] = graph.nodes[key].data
 			end
+			task.func(node.data, args)
 		end
 	end
 end
 
-local function _getOptimizedNodeArray(nodeDict)
-	local inDegree = {}
-	local sorted = 0
-	local array = {}
-	local count = 0
-
-	for _, node in pairs(nodeDict) do
-		array[#array + 1] = node
-		inDegree[node] = 0
-		for _, _ in pairs(node._parents) do
-			inDegree[node] = inDegree[node] + 1
-		end
-		count = count + 1
-	end
-
-	local loop = true
-	while loop do
-		loop = false
-		for i = sorted + 1, #array do
-			local node = array[i]
-			if inDegree[node] == 0 then
-				loop = true
-				sorted = sorted + 1
-				array[i] = array[sorted]
-				array[sorted] = node
-				for _, child in pairs(node._children) do
-					inDegree[child] = inDegree[child] - 1
-				end
-			end
-		end
-	end
-
-	assert(sorted == count)
-
-	return array
-end
-
-local function _setDepth(tree)
-	tree.depth = 0
-	for _, node in ipairs(tree.nodeArray) do
-		node.depth = 1
-		for _, parent in pairs(node._parents) do
-			node.depth = math.max(node.depth, parent.depth + 1)
-		end
-		tree.depth = math.max(tree.depth, node.depth)
-	end
-end
-
-local function tick(tree, taskname)
-	if tree.stale then
-		_setParentsAndChildren(tree.nodeDict)
-		tree.nodeArray = _getOptimizedNodeArray(tree.nodeDict)
-		_setDepth(tree)
-		tree.stale = false
-	end
-
-	for _, node in ipairs(tree.nodeArray) do
-		local task = node.tasks[taskname]
-		if task ~= nil and task.dirty then
-			if task.func ~= nil then
-				task.func(node.entity, task._params)
-			end
-			task.callCount = task.callCount + 1
-			for _, subtask in ipairs(task._children or {}) do
-				subtask.dirty = true
-			end
-			task.dirty = false
-		end
-	end
-end
-
-local function getTagged(tree, tag)
-	local node = tree.nodeDict[tag]
-	if node == nil then
-		return nil
-	end
-	return tree.nodeDict[tag].entity
-end
-
-local function setDirty(tree, tag, taskname)
-	if tag == nil then
-		for _, node in ipairs(tree.nodeArray) do
-			if node.tasks[taskname] ~= nil then
-				node.tasks[taskname].dirty = true
-			end
-		end
-		return
-	elseif type(tag) == "table" then
-		for _, node in ipairs(tree.nodeArray) do
-			if tag == node.entity or tag == node._const then
-				node.tasks[taskname].dirty = true
-				return
-			end
-		end
-	else
-		local node = tree.nodeDict[tag]
-		local task = node.tasks[taskname]
-		task.dirty = true
-	end
-end
-
-local function getMermaid(tree)
-	local mermaid = { "graph" }
-	for tag, node in pairs(tree.nodeDict) do
-		table.insert(mermaid, string.format('%p["%s"]', node, tag))
-		for parentTag, _ in ipairs(node._parents) do
-			local parent = tree.nodeDict[parentTag]
-			if parent then
-				table.insert(mermaid, string.format("%p", parent) .. "-->" .. string.format("%p", node))
-			end
-		end
-	end
-	return table.concat(mermaid, "\n")
-end
-
-function softdep.newTree()
-	local tree = {
-		stale = true,
-		nodeDict = {},
-		nodeArray = {},
-		depth = 0,
-
-		insert = insert,
-		remove = remove,
-		tick = tick,
-
-		getTagged = getTagged,
-		getMermaid = getMermaid,
-
-		setDirty = setDirty,
+function softdep.newGraph()
+	local graph = {
+		nodes = {},
+		extend = extendGraph,
+		tick = tickGraph,
 	}
-	return tree
+	return graph
 end
 
 return softdep
