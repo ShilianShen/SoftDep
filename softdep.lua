@@ -80,7 +80,7 @@ local function isArray(t)
 	return count == #t
 end
 
-local function newTask(func, args, deps)
+local function newTask(func, args, deps, access)
 	assert(type(func) == "function")
 	assert(args == nil or type(args) == "table")
 	for atag, ntag in pairs(args or {}) do
@@ -91,12 +91,16 @@ local function newTask(func, args, deps)
 	for _, ttag in pairs(deps or {}) do
 		assert(type(ttag) == "string")
 	end
+	assert(access == nil or type(access) == "string")
+	access = access or "writable"
+	assert(ACCESS[access] ~= nil)
 
 	local task = setmetatable({
 		func = func,
 		args = shallowCopy(args or {}),
 		taskDeps = shallowCopy(deps or {}),
 		dirty = true,
+		access = access,
 	}, MT)
 
 	return task
@@ -106,6 +110,7 @@ local function newNode(data, tasks, access)
 	assert(data == nil or type(data) == "table")
 	assert(tasks == nil or type(tasks) == "table")
 	assert(access == nil or type(access) == "string")
+	access = access or "none"
 	assert(ACCESS[access] ~= nil)
 
 	local node = setmetatable({
@@ -118,7 +123,7 @@ local function newNode(data, tasks, access)
 	}, MT)
 
 	for ttag, task in pairs(tasks) do
-		node.tasks[ttag] = newTask(task.func, task.args, task.deps)
+		node.tasks[ttag] = newTask(task.func, task.args, task.deps, task.access)
 		for _, ntag in pairs(task.args) do
 			table.insert(node.nodeDeps, ntag)
 		end

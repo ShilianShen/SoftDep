@@ -20,6 +20,7 @@ erDiagram
         Atag-Ntag args
         Ttag[] taskDeps
         Bool dirty
+        Access access
     }
 
     graph ||--|{ node : "graph.nodes[ntag]=node"
