@@ -338,3 +338,25 @@ Obviously, in this structure, extension can't affect the system before.
 
 Therefore, it's easy to extend an existing system.
 
+## Inducing
+
+$$
+\begin{rcases}
+    tasks \\
+    data \\
+    nodes \\
+    \dots \\
+\end{rcases}
+\leftrightarrow
+\begin{cases}
+    tasks \\
+    data \\
+    nodes \\
+    access \\
+    deps_c \\
+    deps_d \\ 
+    deps_n \\
+\end{cases}
+$$
+
+
