@@ -21,17 +21,17 @@ There are several kinds of dependencies.
 ### Control Dependency
 
 $$
-deps_c\subseteq tasks\times tasks
+deps_c\subseteq \mathcal{T}\times \mathcal{T}
 $$
 
-where $(tasks, deps_c)$ is a DAG.
+where $(\mathcal{T}, deps_c)$ is a DAG.
 
 For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
 
 ### Data Dependency
 
 $$
-deps_d\subseteq data\times tasks
+deps_d\subseteq data\times \mathcal{T}
 $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
@@ -48,7 +48,7 @@ $$
 
 ### Path
 
-For $a,b\in tasks$, if $a\neq b$ and there is a path in $(tasks, deps_c)$ from $a$ to $b$, we write $a\leadsto b$.
+For $a,b\in \mathcal{T}$, if $a\neq b$ and there is a path in $(\mathcal{T}, deps_c)$ from $a$ to $b$, we write $a\leadsto b$.
 
 ### Restriction Notation
 
@@ -60,7 +60,7 @@ $$
 
 ### Order
 
-$<_X\subseteq X\times X, X\subseteq tasks$ satisfies the following properties:
+$<_X\subseteq X\times X, X\subseteq \mathcal{T}$ satisfies the following properties:
 
 - $(X, <_X)$ is a strict total order.
 - $\forall (a,b)\in deps_c|_X: a<_X b$
@@ -83,7 +83,7 @@ $$
 Every ordering of the tasks in $T$ can be extended to a topological ordering of the entire task graph.
 
 $$
-\forall <_T\in O(T), \exists <\in O(tasks)\ <_T = <|_T \\
+\forall <_T\in O(T), \exists <\in O(\mathcal{T})\ <_T = <|_T \\
 $$
 
 Because there is no path in $T$ we have $|O(T)|=|T|!$.
@@ -129,14 +129,14 @@ Sometimes, it is useful to consider multiple tasks as a single task. In this way
 ### Dirty
 
 $$
-dirty:tasks\to\mathbb{B}
+dirty:\mathcal{T}\to\mathbb{B}
 $$
 
 $$
 dirty_{i+1}(t)=dirty_i(t)\lor(\exists p\in parent_c(t):dirty_i(t))
 $$
 
-The sequence $\{dirty_i\}_{i\ge 0}$ tasks at least $|tasks|$ steps to reach the final value.
+The sequence $\{dirty_i\}_{i\ge 0}$ takes at least $|\mathcal{T}|$ steps to reach the final value.
 
 ## Problems
 
@@ -199,7 +199,7 @@ graph
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
 $$
-\forall t\in tasks:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge OS]\le 1
+\forall t\in \mathcal{T}:\sum_{d\in parents_d(t)}\mathbb{1}[access(d, t)\ge OS]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
@@ -212,8 +212,8 @@ $$
 
 Each $n=(d, T, a)\in nodes$ satisfies the following properties:
 
-- $d\in data, T\subseteq tasks$
-- $\forall t\in tasks:((d, t)\in deps_d \land access(d, t)\ge OS)\to t\in T$
+- $d\in data, T\subseteq \mathcal{T}$
+- $\forall t\in \mathcal{T}:((d, t)\in deps_d \land access(d, t)\ge OS)\to t\in T$
 - $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} access(d,t)\le a<OS$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
@@ -221,7 +221,7 @@ For convenience, we use subscripts to indicate the relationships among $n$, $d$,
 $nodes$ satisfies the following properties:
 
 - $\{d|(d, T, a)\in nodes\}=data$
-- $\bigcup_{(d, T, a)\in nodes}T=tasks$
+- $\bigcup_{(d, T, a)\in nodes}T=\mathcal{T}$
 - $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
 $deps_n \subseteq nodes\times nodes$ satisfies the following properties:
@@ -266,10 +266,10 @@ $n_b$ satisfies the following properties:
 
 - $n_b\notin nodes$
 - $d_b\notin data$
-- $T_b\cap tasks = \varnothing$
+- $T_b\cap \mathcal{T} = \varnothing$
 - The tasks in $n_b$ can read and write any data item.
 
-Some tasks $t_b\notin tasks$ cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
+Some tasks $t_b\notin \mathcal{T}$ cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
 
 The tasks in $n_b$ are executed after all other tasks.
 
