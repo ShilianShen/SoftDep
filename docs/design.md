@@ -126,6 +126,18 @@ $$
 
 Sometimes, it is useful to consider multiple tasks as a single task. In this way, the minimum access level required by any task group can be determined.
 
+### Dirty
+
+$$
+dirty:tasks\to\mathbb{B}
+$$
+
+$$
+dirty_{i+1}(t)=dirty_i(t)\lor(\exists p\in parent_c(t):dirty_i(t))
+$$
+
+The sequence $\{dirty_i\}_{i\ge 0}$ tasks at least $|tasks|$ steps to reach the final value.
+
 ## Problems
 
 ### Conflict among multiple tasks
