@@ -31,7 +31,7 @@ For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
 ### Data Dependency
 
 $$
-deps_d\subseteq data\times \mathcal{T}
+deps_d\subseteq \mathcal{D}\times \mathcal{T}
 $$
 
 For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
@@ -169,7 +169,7 @@ Obviously, these access levels satisfy $OS = RO\vee OISW$.
 The problem happens if and only if
 
 $$
-\exists d\in data,
+\exists d\in \mathcal{D},
 \exists T\in parallel(d):
 \left(
     \bigvee_{t\in T}access(d, t)\ge OS
@@ -212,7 +212,7 @@ $$
 
 Each $n=(d, T, a)\in nodes$ satisfies the following properties:
 
-- $d\in data, T\subseteq \mathcal{T}$
+- $d\in \mathcal{D}, T\subseteq \mathcal{T}$
 - $\forall t\in \mathcal{T}:((d, t)\in deps_d \land access(d, t)\ge OS)\to t\in T$
 - $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} access(d,t)\le a<OS$
 
@@ -220,7 +220,7 @@ For convenience, we use subscripts to indicate the relationships among $n$, $d$,
 
 $nodes$ satisfies the following properties:
 
-- $\{d|(d, T, a)\in nodes\}=data$
+- $\{d|(d, T, a)\in nodes\}=\mathcal{D}$
 - $\bigcup_{(d, T, a)\in nodes}T=\mathcal{T}$
 - $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
@@ -265,7 +265,7 @@ We call it a "node" because it has properties similar to those of normal nodes.
 $n_b$ satisfies the following properties:
 
 - $n_b\notin nodes$
-- $d_b\notin data$
+- $d_b\notin \mathcal{D}$
 - $T_b\cap \mathcal{T} = \varnothing$
 - The tasks in $n_b$ can read and write any data item.
 
@@ -289,7 +289,7 @@ Case 1, $T\subseteq T_i$
 
 $$
 \begin{aligned}
-    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T 
+    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T
     \\
     & |O(T_i)|=1
     \\
@@ -318,7 +318,7 @@ $$
 Thus,
 
 $$
-\forall d\in data, 
+\forall d\in \mathcal{D},
 \forall T\in parallel(d):
 \left(
     \bigvee_{t\in T}access(d, t)< OS
