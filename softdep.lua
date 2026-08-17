@@ -69,25 +69,36 @@ local function shallowCopy(a)
 	return b
 end
 
+local function isArray(t)
+	if t == nil or type(t) ~= "table" then
+		return false
+	end
+	local count = 0
+	for _, _ in pairs(t) do
+		count = count + 1
+	end
+	return count == #t
+end
+
 local function newTask(func, args, deps)
 	assert(type(func) == "function")
 	assert(args == nil or type(args) == "table")
-	for _, tag in pairs(args or {}) do
-		assert(type(tag) == "string")
+	for atag, ntag in pairs(args or {}) do
+		assert(type(atag) == "string")
+		assert(type(ntag) == "string")
 	end
-	assert(deps == nil or type(deps) == "table")
-	for index, tag in pairs(deps or {}) do
-		assert(type(index) == "number")
-		assert(type(tag) == "string")
+	assert(deps == nil or isArray(deps))
+	for _, ttag in pairs(deps or {}) do
+		assert(type(ttag) == "string")
 	end
 
 	local task = setmetatable({
 		func = func,
 		args = shallowCopy(args or {}),
-		deps = shallowCopy(deps or {}),
+		taskDeps = shallowCopy(deps or {}),
 		dirty = true,
 	}, MT)
-    
+
 	return task
 end
 
@@ -98,39 +109,41 @@ local function newNode(data, tasks, access)
 	assert(ACCESS[access] ~= nil)
 
 	local node = setmetatable({
-		data = data,
+		data = data or {},
 		tasks = {},
 		access = access,
-		deps = {},
-		order = {},
+		nodeDeps = {},
+		taskOrder = {},
 	}, MT)
 
-	for tag, task in pairs(tasks) do
-		node.tasks[tag] = newTask(task.func, task.args, task.deps)
-		for _, key in pairs(task.args) do
-			table.insert(node.deps, key)
+	for ttag, task in pairs(tasks) do
+		node.tasks[ttag] = newTask(task.func, task.args, task.deps)
+		for _, ntag in pairs(task.args) do
+			table.insert(node.nodeDeps, ntag)
 		end
 	end
 
-	node.order = kahn(node.tasks, "deps")
+	node.taskOrder = kahn(node.tasks, "taskDeps")
 
 	return node
 end
 
-local function extendGraph(graph, tag, data, tasks, access)
-	assert(graph.nodes[tag] == nil)
-	graph.nodes[tag] = newNode(data, tasks, access)
-	graph.order = kahn(graph.nodes, "deps")
+local function extendGraph(graph, ntag, data, tasks, access)
+	assert(graph ~= nil)
+	assert(graph.nodes[ntag] == nil)
+	graph.nodes[ntag] = newNode(data, tasks, access)
+	graph.nodeOrder = kahn(graph.nodes, "nodeDeps")
 end
 
 local function tickGraph(graph)
-	for _, nkey in ipairs(graph.order) do
-		local node = graph.nodes[nkey]
-		for _, tkey in ipairs(node.order) do
-			local task = node.tasks[tkey]
+	assert(graph ~= nil)
+	for _, ntag in ipairs(graph.nodeOrder) do
+		local node = graph.nodes[ntag]
+		for _, ttag in ipairs(node.taskOrder) do
+			local task = node.tasks[ttag]
 			local args = {}
-			for akey, key in pairs(task.args) do
-				args[akey] = graph.nodes[key].data
+			for atag, nptag in pairs(task.args) do
+				args[atag] = graph.nodes[nptag].data
 			end
 			task.func(node.data, args)
 		end
@@ -142,7 +155,8 @@ function softdep.newGraph()
 		nodes = {},
 		extend = extendGraph,
 		tick = tickGraph,
-		order = {},
+		nodeOrder = {},
+        taskOrder = {},
 	}, MT)
 	return graph
 end

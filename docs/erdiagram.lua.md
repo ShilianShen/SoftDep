@@ -4,19 +4,19 @@ erDiagram
         Ntag-Node nodes
         Func extend
         Func tick
-        Ntag[] order
+        Ntag[] nodeOrder
     }
     node {
         Data data
-        Task task
+        Ttag-Task tasks
         Access access
-        Ttag[] order
-        Ntag[] deps
+        Ttag[] taskOrder
+        Ntag[] nodeDeps
     }
     task {
         Func func
         Atag-Ntag args
-        Ttag[] deps
+        Ttag[] taskDeps
         Bool dirty
     }
 
