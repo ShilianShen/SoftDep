@@ -6,46 +6,49 @@ softdep.ACCESS = {
 	writable = "writable",
 }
 
-local function sort(nodes, pkey)
+local function kahn(nodes, pkey)
 	assert(type(nodes) == "table")
 	assert(type(pkey) == "string")
 	for _, node in pairs(nodes) do
 		assert(type(node) == "table")
 		assert(node[pkey] == nil or type(node[pkey]) == "table")
-		for _, pname in pairs(node[pkey] or {}) do
-			assert(type(pname) == "string")
+		for _, ptag in pairs(node[pkey] or {}) do
+			assert(type(ptag) == "string")
 		end
 	end
 
 	local infos = {}
-	for name, _ in pairs(nodes) do
-		infos[name] = { indegree = 0, children = {} }
-	end
-	for name, node in pairs(nodes) do
-		for _, pname in pairs(node[pkey] or {}) do
-			infos[name].indegree = infos[name].indegree + 1
-			infos[pname].children[name] = true
-		end
-	end
-
-	local queue = {}
-	for name, _ in pairs(nodes) do
-		if infos[name].indegree == 0 then
-			table.insert(queue, name)
-		end
-	end
-
+	local stack = {}
 	local order = {}
-	while #queue > 0 do
-		local name = table.remove(queue)
-		for cname, _ in pairs(infos[name].children) do
-			infos[name].children[cname] = nil
-			infos[cname].indegree = infos[cname].indegree - 1
-			if infos[cname].indegree == 0 then
-				table.insert(queue, cname)
+	local count = 0
+
+	for tag, _ in pairs(nodes) do
+		infos[tag] = { indegree = 0, children = {} }
+		count = count + 1
+	end
+
+	for tag, node in pairs(nodes) do
+		for _, ptag in pairs(node[pkey] or {}) do
+			assert(infos[ptag] ~= nil)
+			assert(infos[ptag].children[tag] ~= true)
+			infos[tag].indegree = infos[tag].indegree + 1
+			infos[ptag].children[tag] = true
+		end
+		if infos[tag].indegree == 0 then
+			table.insert(stack, tag)
+		end
+	end
+
+	for _ = 1, count do
+        assert(#stack ~= 0)
+		local tag = table.remove(stack)
+		for ctag, _ in pairs(infos[tag].children) do
+			infos[ctag].indegree = infos[ctag].indegree - 1
+			if infos[ctag].indegree == 0 then
+				table.insert(stack, ctag)
 			end
 		end
-		table.insert(order, name)
+		table.insert(order, tag)
 	end
 
 	return order
@@ -60,14 +63,17 @@ local function newTask(func, args, deps)
 		func = func,
 		args = {},
 		deps = {},
+		dirty = true,
 	}
 
 	for key, value in pairs(args or {}) do
 		task.args[key] = value
 	end
+
 	for _, dep in ipairs(deps or {}) do
 		table.insert(task.deps, dep)
 	end
+
 	return task
 end
 
@@ -91,7 +97,7 @@ local function newNode(data, tasks, access)
 		end
 	end
 
-	node.order = sort(tasks, "deps")
+	node.order = kahn(tasks, "deps")
 
 	return node
 end
@@ -99,7 +105,7 @@ end
 local function extendGraph(graph, tag, data, tasks, access)
 	assert(graph.nodes[tag] == nil)
 	graph.nodes[tag] = newNode(data, tasks, access)
-	graph.order = sort(graph.nodes, "deps")
+	graph.order = kahn(graph.nodes, "deps")
 end
 
 local function tickGraph(graph)
