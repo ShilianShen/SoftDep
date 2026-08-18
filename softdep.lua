@@ -1,3 +1,34 @@
+package.preload["adopt"] = function(...)
+	local function adopt(vertices, pkey, ckey)
+		assert(type(vertices) == "table")
+		assert(type(pkey) == "string")
+		assert(type(ckey) == "string")
+		for tag, vertex in pairs(vertices) do
+			assert(type(tag) == "string")
+			assert(type(vertex) == "table")
+			assert(type(vertex[pkey] == "table"))
+			for ptag, _ in pairs(vertex[pkey]) do
+				assert(type(ptag) == "string")
+				assert(vertices[ptag] ~= nil)
+			end
+		end
+
+		for _, vertex in pairs(vertices) do
+			vertex[ckey] = {}
+		end
+
+		for tag, vertex in pairs(vertices) do
+			for ptag, _ in pairs(vertex[pkey]) do
+				local parent = vertices[ptag]
+				vertex[pkey][ptag] = parent
+				parent[ckey][tag] = vertex
+			end
+		end
+	end
+
+	return adopt
+end
+
 package.preload["kahn"] = function(...)
 	local function kahn(vertices, pkey)
 		assert(type(vertices) == "table")
@@ -51,6 +82,39 @@ package.preload["kahn"] = function(...)
 	return kahn
 end
 
+package.preload["spread"] = function(...)
+	local function spread(graph)
+		for _, ntag in ipairs(graph.nodeOrder) do
+			local node = graph.nodes[ntag]
+			for _, ttag in ipairs(node.taskOrder) do
+				local task = node.tasks[ttag]
+				if task.dirty then
+					for _, ctask in pairs(task.children) do
+						ctask.dirty = true
+					end
+					if task.access == "writable" then
+						node.dirty = true
+					end
+				end
+			end
+			if node.dirty then
+				for _, cnode in pairs(node.children) do
+					for _, ctask in pairs(cnode.tasks) do
+						for catag, cntag in pairs(ctask.args) do
+							if cntag == ntag then
+								ctask.dirty = true
+								break
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return spread
+end
+
 local softdep = {}
 
 local ACCESS = {
@@ -65,34 +129,8 @@ local MT = {
 	end,
 }
 
-local kahn = require("kahn.lua")
-
-local function adopt(vertices, pkey, ckey)
-	assert(type(vertices) == "table")
-	assert(type(pkey) == "string")
-	assert(type(ckey) == "string")
-	for tag, vertex in pairs(vertices) do
-		assert(type(tag) == "string")
-		assert(type(vertex) == "table")
-		assert(type(vertex[pkey] == "table"))
-		for ptag, _ in pairs(vertex[pkey]) do
-			assert(type(ptag) == "string")
-			assert(vertices[ptag] ~= nil)
-		end
-	end
-
-	for tag, vertex in pairs(vertices) do
-		vertex[ckey] = {}
-	end
-
-	for tag, vertex in pairs(vertices) do
-		for ptag, _ in pairs(vertex[pkey]) do
-			local parent = vertices[ptag]
-			vertex[pkey][ptag] = parent
-			parent[ckey][tag] = vertex
-		end
-	end
-end
+local kahn = require("kahn")
+local adopt = require("adopt")
 
 local function array2set(array)
 	assert(type(array) == "table")
@@ -194,6 +232,8 @@ local function loadGraph(graph)
 	adopt(graph.nodes, "parents", "children")
 	graph.ready = true
 end
+
+local spread = require("spread")
 
 local function tickGraph(graph)
 	assert(graph ~= nil)
