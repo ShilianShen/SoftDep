@@ -248,9 +248,9 @@ In other words, no two tasks in $T_i$ are parallel.
 
 Because $(\mathcal{N}, E_n)$ is a DAG, there is also a topological order $<_N$.
 
-The task order $<$ is required to satisfy the following properties:
+$E_c$ is required to satisfy the following properties:
 
-- $\forall t_1\in T_1, \forall t_2\in T_2:n_1<_Nn_2\to t_1<t_2$
+- $\forall <\in O(\mathcal{T}),\forall t_1\in T_1, \forall t_2\in T_2:n_1<_Nn_2\to t_1<t_2$
 
 ### Backward Node
 
@@ -340,22 +340,51 @@ Therefore, it's easy to extend an existing system.
 
 ## Inducing
 
+Define
+
 $$
-\begin{rcases}
-    \mathcal{T} \\
-    \mathcal{D} \\
-    \mathcal{N} \\
-    \dots \\
-\end{rcases}
-\leftrightarrow
 \begin{cases}
-    \mathcal{T} \\
-    \mathcal{D} \\
-    \mathcal{N} \\
-    \operatorname{access} \\
-    E_c \\
-    E_d \\
-    E_n \\
+    \delta^-_{c,i}:=\delta^-_c|_{T_i\to T_i\times T_i} \\
+    \delta^-_{d,i}:=\delta^-_d|_{T_i\to \mathcal{D}\times T_i} \\
+    \operatorname{access}_i:=\operatorname{access}|_{\{d_i\}\times T_i\to A} \\
 \end{cases}
+$$
+
+$\mathcal{N}, \mathcal{D}, \mathcal{T}$ are known.
+
+$$
+\begin{pmatrix}
+    \delta^-_n \\
+    \{\delta^-_{d,i}|n_i\in\mathcal{N}\} \\
+    \{\delta^-_{c,i}|n_i\in\mathcal{N}\} \\
+    \{\operatorname{access}_i|n_i\in\mathcal{N}\} \\
+\end{pmatrix}
+\to
+\begin{pmatrix}
+    E_n \\
+    E_d \\
+    E_c \\
+    \operatorname{access} \\
+\end{pmatrix}
+$$
+
+$$
+\begin{aligned}
+E_n &= \bigcup_{n\in\mathcal{N}} \delta^-_n(n) \\
+E_d &= \bigcup_{n_i\in\mathcal{N}} \delta^-_{d,i}(n_i) \\
+E_c &=
+    \bigcup_{n_i\in\mathcal{N}}
+        \delta^-_{c,i}(n_i)
+    \cup
+    \bigcup_{(d_i,t)\in E_d}
+        \{(t_i, t)|t_i\in T_i, \operatorname{access}(d_i,t_i)\ge\mathrm{OS}\}
+    \\
+\operatorname{access} &=
+    \bigcup_{n_i\in\mathcal{N}}
+        \operatorname{access}_i
+    \cup
+    \bigcup_{(d_i, t)\in E_d}
+        \{(d_i,t)\to a_i|t\notin T_i\}
+\end{aligned}
 $$
 
