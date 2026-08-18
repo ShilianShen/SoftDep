@@ -3,7 +3,7 @@ erDiagram
     graph {
         Ntag-Node nodes
         Func[] funcs
-        Node[] nodeOrder
+        Ntag[] nodeOrder
         Task[] taskOrder
         Bool ready
     }
@@ -11,7 +11,7 @@ erDiagram
         Data data
         Ttag-Task tasks
         Access access
-        Task[] taskOrder
+        Ttag[] taskOrder
         Ntag[] deps
     }
     task {
