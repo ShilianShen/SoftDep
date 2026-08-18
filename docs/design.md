@@ -160,11 +160,11 @@ But multiple dependent tasks do not always cause this problem.
 
 Assume that $A$ contains the following access levels:
 
-- $OS$: order-sensitive
-- $RO$: readonly. Example: `print`
-- $OISW$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $\operatorname{access}(d, a), \operatorname{access}(d, b)\le OISW$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
+- $\mathrm{OS}$: order-sensitive
+- $\mathrm{RO}$: readonly. Example: `print`
+- $\mathrm{OISW}$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $\operatorname{access}(d, a), \operatorname{access}(d, b)\le \mathrm{OISW}$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
 
-Obviously, these access levels satisfy $OS = RO\vee OISW$.
+Obviously, these access levels satisfy $\mathrm{OS} = \mathrm{RO}\vee \mathrm{OISW}$.
 
 The problem happens if and only if
 
@@ -172,7 +172,7 @@ $$
 \exists d\in \mathcal{D},
 \exists T\in \operatorname{parallel}(d):
 \left(
-    \bigvee_{t\in T}\operatorname{access}(d, t)\ge OS
+    \bigvee_{t\in T}\operatorname{access}(d, t)\ge \mathrm{OS}
 \right)
 \land (|T|>1)
 $$
@@ -199,7 +199,7 @@ graph
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
 $$
-\forall t\in \mathcal{T}:\sum_{d\in \operatorname{parents}_d(t)}\mathbb{1}[\operatorname{access}(d, t)\ge OS]\le 1
+\forall t\in \mathcal{T}:\sum_{d\in \operatorname{parents}_d(t)}\mathbb{1}[\operatorname{access}(d, t)\ge \mathrm{OS}]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
@@ -213,8 +213,8 @@ $$
 Each $n=(d, T, a)\in nodes$ satisfies the following properties:
 
 - $d\in \mathcal{D}, T\subseteq \mathcal{T}$
-- $\forall t\in \mathcal{T}:((d, t)\in deps_d \land \operatorname{access}(d, t)\ge OS)\to t\in T$
-- $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} \operatorname{access}(d,t)\le a<OS$
+- $\forall t\in \mathcal{T}:((d, t)\in deps_d \land \operatorname{access}(d, t)\ge \mathrm{OS})\to t\in T$
+- $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} \operatorname{access}(d,t)\le a<\mathrm{OS}$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
 
@@ -309,7 +309,7 @@ $$
 \begin{aligned}
     \because & T\subseteq\overline{T_i}
     \\
-    \therefore & \bigvee_{t\in T}\operatorname{access}(d_i,t)\le\bigvee_{t\in \overline{T_i}}\operatorname{access}(d_i,t)\le a_i< OS
+    \therefore & \bigvee_{t\in T}\operatorname{access}(d_i,t)\le\bigvee_{t\in \overline{T_i}}\operatorname{access}(d_i,t)\le a_i< \mathrm{OS}
 \end{aligned}
 $$
 
@@ -321,7 +321,7 @@ $$
 \forall d\in \mathcal{D},
 \forall T\in \operatorname{parallel}(d):
 \left(
-    \bigvee_{t\in T}\operatorname{access}(d, t)< OS
+    \bigvee_{t\in T}\operatorname{access}(d, t)< \mathrm{OS}
 \right)
 \lor (|T|\le1)
 $$
