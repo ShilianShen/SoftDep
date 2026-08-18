@@ -60,21 +60,21 @@ $$
 
 ### Order
 
-$<_X\subseteq X\times X, X\subseteq \mathcal{T}$ satisfies the following properties:
+$<_T\subseteq T\times T, T\subseteq \mathcal{T}$ satisfies the following properties:
 
-- $(X, <_X)$ is a strict total order.
-- $\forall (a,b)\in deps_c|_X: a<_X b$
+- $(T, <_T)$ is a strict total order.
+- $\forall (a,b)\in deps_c|_T: a<_T b$
 
 Hereafter, all orders are assumed to be topological orders.
 
 $$
-O(X)=\{<_X\subseteq X\times X|(X, <_X)\ \text{is a topological order}\}
+O(T)=\{<_T\subseteq T\times T|(T, <_T)\ \text{is a topological order}\}
 $$
 
 ### Parallel Tasks
 
 $$
-parallel(d) = \{
+\operatorname{parallel}(d) = \{
 T\subseteq \operatorname{children}_d(d)\mid
 \forall a,b\in T: \neg(a\leadsto b\lor b\leadsto a)
 \}
@@ -129,14 +129,14 @@ Sometimes, it is useful to consider multiple tasks as a single task. In this way
 ### Dirty
 
 $$
-dirty:\mathcal{T}\to\mathbb{B}
+\operatorname{dirty}:\mathcal{T}\to\mathbb{B}
 $$
 
 $$
-dirty_{i+1}(t)=dirty_i(t)\lor(\exists p\in parent_c(t):dirty_i(t))
+\operatorname{dirty}_{i+1}(t)=\operatorname{dirty}_i(t)\lor(\exists p\in \operatorname{parents}_c(t):\operatorname{dirty}_i(p))
 $$
 
-The sequence $\{dirty_i\}_{i\ge 0}$ takes at least $|\mathcal{T}|$ steps to reach the final value.
+The sequence $\{\operatorname{dirty}_i\}_{i\ge 0}$ takes at least $|\mathcal{T}|$ steps to reach the final value.
 
 ## Problems
 
@@ -170,7 +170,7 @@ The problem happens if and only if
 
 $$
 \exists d\in \mathcal{D},
-\exists T\in parallel(d):
+\exists T\in \operatorname{parallel}(d):
 \left(
     \bigvee_{t\in T}\operatorname{access}(d, t)\ge OS
 \right)
@@ -281,7 +281,7 @@ For each data item $d_i$ we can split the $\operatorname{children}_d(d_i)$ in tw
 
 Because of node order there is $\forall a\in T_i,\forall b\in\overline{T_i}:a< b$.
 
-Thus $\forall T\in parallel(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
+Thus $\forall T\in \operatorname{parallel}(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
 
 ---
 
@@ -289,11 +289,11 @@ Case 1, $T\subseteq T_i$
 
 $$
 \begin{aligned}
-    \because & \forall T\in parallel(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T
+    \because & \forall T\in \operatorname{parallel}(d),\forall <_T\in O(T),\exists <_{T_i}\in O(T_i): <_T=<_{T_i}|_T
     \\
     & |O(T_i)|=1
     \\
-    \therefore & \forall T\in parallel(d),|O(T)|\le|O(T_i)| = 1
+    \therefore & \forall T\in \operatorname{parallel}(d),|O(T)|\le|O(T_i)| = 1
     \\
     \because & |O(T)|=|T|!= 1
     \\
@@ -319,7 +319,7 @@ Thus,
 
 $$
 \forall d\in \mathcal{D},
-\forall T\in parallel(d):
+\forall T\in \operatorname{parallel}(d):
 \left(
     \bigvee_{t\in T}\operatorname{access}(d, t)< OS
 \right)
