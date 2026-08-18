@@ -21,34 +21,34 @@ There are several kinds of dependencies.
 ### Control Dependency
 
 $$
-deps_c\subseteq \mathcal{T}\times \mathcal{T}
+E_c\subseteq \mathcal{T}\times \mathcal{T}
 $$
 
-where $(\mathcal{T}, deps_c)$ is a DAG.
+where $(\mathcal{T}, E_c)$ is a DAG.
 
-For $(a,b)\in deps_c$, we say that $b$ depends on $a$.
+For $(a,b)\in E_c$, we say that $b$ depends on $a$.
 
 ### Data Dependency
 
 $$
-deps_d\subseteq \mathcal{D}\times \mathcal{T}
+E_d\subseteq \mathcal{D}\times \mathcal{T}
 $$
 
-For $(d, t)\in deps_d$, we say that $t$ depends on $d$.
+For $(d, t)\in E_d$, we say that $t$ depends on $d$.
 
 ### Parents and Children
 
 $$
-\operatorname{parents}_i(x)=\{p|(p, x)\in deps_i\}
+\operatorname{parents}_i(x)=\{p|(p, x)\in E_i\}
 $$
 
 $$
-\operatorname{children}_i(x)=\{c|(x, c)\in deps_i\}
+\operatorname{children}_i(x)=\{c|(x, c)\in E_i\}
 $$
 
 ### Path
 
-For $a,b\in \mathcal{T}$, if $a\neq b$ and there is a path in $(\mathcal{T}, deps_c)$ from $a$ to $b$, we write $a\leadsto b$.
+For $a,b\in \mathcal{T}$, if $a\neq b$ and there is a path in $(\mathcal{T}, E_c)$ from $a$ to $b$, we write $a\leadsto b$.
 
 ### Restriction Notation
 
@@ -63,7 +63,7 @@ $$
 $<_T\subseteq T\times T, T\subseteq \mathcal{T}$ satisfies the following properties:
 
 - $(T, <_T)$ is a strict total order.
-- $\forall (a,b)\in deps_c|_T: a<_T b$
+- $\forall (a,b)\in E_c|_T: a<_T b$
 
 Hereafter, all orders are assumed to be topological orders.
 
@@ -91,7 +91,7 @@ Because there is no path in $T$ we have $|O(T)|=|T|!$.
 ### Access
 
 $$
-\operatorname{access}: deps_d\to A
+\operatorname{access}: E_d\to A
 $$
 
 We use $\operatorname{access}(d,t)$ as shorthand for $\operatorname{access}((d,t))$.
@@ -207,14 +207,14 @@ If an existing task does not satisfy this property, it can be split into smaller
 ### Encapsulation
 
 $$
-(\mathcal{N}, deps_n)
+(\mathcal{N}, E_n)
 $$
 
 Each $n=(d, T, a)\in \mathcal{N}$ satisfies the following properties:
 
 - $d\in \mathcal{D}, T\subseteq \mathcal{T}$
-- $\forall t\in \mathcal{T}:((d, t)\in deps_d \land \operatorname{access}(d, t)\ge \mathrm{OS})\to t\in T$
-- $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} \operatorname{access}(d,t)\le a<\mathrm{OS}$
+- $\forall t\in \mathcal{T}:((d, t)\in E_d \land \operatorname{access}(d, t)\ge \mathrm{OS})\to t\in T$
+- $a\in A, \bigvee_{(d, t)\in E_d,t\notin T} \operatorname{access}(d,t)\le a<\mathrm{OS}$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i, a_i)$ and $t_i\in T_i$.
 
@@ -224,19 +224,19 @@ $\mathcal{N}$ satisfies the following properties:
 - $\bigcup_{(d, T, a)\in \mathcal{N}}T=\mathcal{T}$
 - $\forall n_1, n_2 \in \mathcal{N}, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
-$deps_n \subseteq \mathcal{N}\times \mathcal{N}$ satisfies the following properties:
+$E_n \subseteq \mathcal{N}\times \mathcal{N}$ satisfies the following properties:
 
-- $\forall n_1,n_2\in \mathcal{N}:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
+- $\forall n_1,n_2\in \mathcal{N}:(n_1,n_2)\in E_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in E_c$
 
 ### DAG Constraint
 
-The strongest constraint of SoftDep is that $(\mathcal{N}, deps_n)$ must also be a DAG.
+The strongest constraint of SoftDep is that $(\mathcal{N}, E_n)$ must also be a DAG.
 
 Note that this constraint cannot be derived from the previous definitions.
 
 ### Local Total Ordering
 
-This constraint requires $deps_c$ to satisfy the following property:
+This constraint requires $E_c$ to satisfy the following property:
 
 $$
 \forall n_i\in \mathcal{N}:|O(T_i)|=1
@@ -246,7 +246,7 @@ In other words, no two tasks in $T_i$ are parallel.
 
 ### Node Order
 
-Because $(\mathcal{N}, deps_n)$ is a DAG, there is also a topological order $<_N$.
+Because $(\mathcal{N}, E_n)$ is a DAG, there is also a topological order $<_N$.
 
 The task order $<$ is required to satisfy the following properties:
 
@@ -258,7 +258,7 @@ $$
 n_b
 $$
 
-This node is introduced to address the problem that nodes cannot affect parent nodes in $(\mathcal{N}, deps_n)$.
+This node is introduced to address the problem that nodes cannot affect parent nodes in $(\mathcal{N}, E_n)$.
 
 We call it a "node" because it has properties similar to those of normal nodes.
 
@@ -330,9 +330,9 @@ Therefore, there is no conflict.
 
 ### Better Extensibility
 
-For every $X\subseteq \mathcal{N}:\delta^-(X)=\varnothing$, $(X, deps_n|_X)$ is also a DAG.
+For every $X\subseteq \mathcal{N}:\delta^-(X)=\varnothing$, $(X, E_n|_X)$ is also a DAG.
 
-In this case, $(\mathcal{N}, deps_n)$ can be considered as an extension of $(X, deps_n|_X)$.
+In this case, $(\mathcal{N}, E_n)$ can be considered as an extension of $(X, E_n|_X)$.
 
 Obviously, in this structure, extension can't affect the system before.
 
@@ -353,10 +353,9 @@ $$
     \mathcal{D} \\
     \mathcal{N} \\
     \operatorname{access} \\
-    deps_c \\
-    deps_d \\ 
-    deps_n \\
+    E_c \\
+    E_d \\
+    E_n \\
 \end{cases}
 $$
-
 
