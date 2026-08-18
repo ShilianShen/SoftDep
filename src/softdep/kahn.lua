@@ -41,7 +41,7 @@ local function kahn(vertices, pkey)
 				table.insert(stack, ctag)
 			end
 		end
-		table.insert(order, tag)
+		table.insert(order, vertices[tag])
 	end
 
 	return order

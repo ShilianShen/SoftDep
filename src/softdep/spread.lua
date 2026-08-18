@@ -1,9 +1,7 @@
 local function spread(graph)
-	for _, ntag in ipairs(graph.nodeOrder) do
-		local node = graph.nodes[ntag]
+	for _, node in ipairs(graph.nodeOrder) do
 		local dirty = false
-		for _, ttag in ipairs(node.taskOrder) do
-			local task = node.tasks[ttag]
+		for _, task in ipairs(node.taskOrder) do
 			if task.dirty then
 				for _, ctask in pairs(task.children) do
 					ctask.dirty = true

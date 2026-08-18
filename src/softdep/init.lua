@@ -120,10 +120,8 @@ local function loadGraph(graph)
 	adopt(graph.nodes, "parents", "children")
 
 	graph.taskOrder = {}
-	for _, ntag in ipairs(graph.nodeOrder) do
-		local node = graph.nodes[ntag]
-		for _, ttag in ipairs(node.taskOrder) do
-			local task = node.tasks[ttag]
+	for _, node in ipairs(graph.nodeOrder) do
+		for _, task in ipairs(node.taskOrder) do
 			task.data = node.data
 			for atag, antag in pairs(task.args) do
 				task._args[atag] = graph.nodes[antag].data
