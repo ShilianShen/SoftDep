@@ -15,10 +15,11 @@ local MT = {
 local function kahn(vertices, pkey)
 	assert(type(vertices) == "table")
 	assert(type(pkey) == "string")
-	for _, vertex in pairs(vertices) do
+	for tag, vertex in pairs(vertices) do
+		assert(type(tag) == "string")
 		assert(type(vertex) == "table")
 		assert(vertex[pkey] == nil or type(vertex[pkey]) == "table")
-		for _, ptag in pairs(vertex[pkey] or {}) do
+		for ptag, _ in pairs(vertex[pkey] or {}) do
 			assert(type(ptag) == "string")
 		end
 	end
@@ -34,7 +35,7 @@ local function kahn(vertices, pkey)
 	end
 
 	for tag, vertex in pairs(vertices) do
-		for _, ptag in pairs(vertex[pkey] or {}) do
+		for ptag, _ in pairs(vertex[pkey] or {}) do
 			assert(infos[ptag] ~= nil)
 			assert(infos[ptag].children[tag] ~= true)
 			infos[tag].indegree = infos[tag].indegree + 1
@@ -58,6 +59,15 @@ local function kahn(vertices, pkey)
 	end
 
 	return order
+end
+
+local function array2set(array)
+	assert(type(array) == "table")
+	local set = {}
+	for _, value in ipairs(array) do
+		set[value] = true
+	end
+	return set
 end
 
 local function shallowCopy(a)
@@ -98,7 +108,7 @@ local function newTask(func, args, parents, access)
 	local task = setmetatable({
 		func = func,
 		args = shallowCopy(args or {}),
-		parents = shallowCopy(parents or {}),
+		parents = array2set(parents or {}),
 		children = {},
 		dirty = true,
 		access = access,
@@ -127,7 +137,7 @@ local function newNode(data, tasks, access)
 	for ttag, task in pairs(tasks) do
 		node.tasks[ttag] = newTask(task.func, task.args, task.parents, task.access)
 		for _, ntag in pairs(task.args) do
-			table.insert(node.parents, ntag)
+			node.parents[ntag] = true
 		end
 	end
 
