@@ -1,6 +1,7 @@
 local function spread(graph)
 	for _, ntag in ipairs(graph.nodeOrder) do
 		local node = graph.nodes[ntag]
+		local dirty = false
 		for _, ttag in ipairs(node.taskOrder) do
 			local task = node.tasks[ttag]
 			if task.dirty then
@@ -8,11 +9,11 @@ local function spread(graph)
 					ctask.dirty = true
 				end
 				if task.access == "writable" then
-					node.dirty = true
+					dirty = true
 				end
 			end
 		end
-		if node.dirty then
+		if dirty then
 			for _, cnode in pairs(node.children) do
 				for _, ctask in pairs(cnode.tasks) do
 					for catag, cntag in pairs(ctask.args) do

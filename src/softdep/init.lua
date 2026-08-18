@@ -14,6 +14,7 @@ local MT = {
 
 local kahn = require("src.softdep.kahn")
 local adopt = require("src.softdep.adopt")
+local spread = require("src.softdep.spread")
 
 local function array2set(array)
 	assert(type(array) == "table")
@@ -61,7 +62,9 @@ local function newTask(func, args, parents, access)
 
 	local task = setmetatable({
 		func = func,
+		data = false,
 		args = shallowCopy(args or {}),
+		_args = {},
 		parents = array2set(parents or {}),
 		children = {},
 		dirty = true,
@@ -111,25 +114,37 @@ end
 local function loadGraph(graph)
 	assert(graph ~= nil)
 	assert(not graph.ready)
+
 	graph.nodeOrder = kahn(graph.nodes, "parents")
+
 	adopt(graph.nodes, "parents", "children")
-	graph.ready = true
-end
 
-local spread = require("src.softdep.spread")
-
-local function tickGraph(graph)
-	assert(graph ~= nil)
-	assert(graph.ready)
+	graph.taskOrder = {}
 	for _, ntag in ipairs(graph.nodeOrder) do
 		local node = graph.nodes[ntag]
 		for _, ttag in ipairs(node.taskOrder) do
 			local task = node.tasks[ttag]
-			local args = {}
-			for atag, nptag in pairs(task.args) do
-				args[atag] = graph.nodes[nptag].data
+			task.data = node.data
+			for atag, antag in pairs(task.args) do
+				task._args[atag] = graph.nodes[antag].data
 			end
-			task.func(node.data, args)
+			table.insert(graph.taskOrder, task)
+		end
+	end
+
+	graph.ready = true
+end
+
+local function tickGraph(graph)
+	assert(graph ~= nil)
+	assert(graph.ready)
+
+	spread(graph)
+
+	for _, task in ipairs(graph.taskOrder) do
+		if task.dirty then
+			task.func(task.data, task._args)
+			task.dirty = false
 		end
 	end
 end

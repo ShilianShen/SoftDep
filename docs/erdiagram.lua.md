@@ -5,7 +5,7 @@ erDiagram
         Func[] funcs
         Ntag[] nodeOrder
         Task[] taskOrder
-        Bool dirty
+        Bool ready
     }
     node {
         Data data
@@ -13,11 +13,12 @@ erDiagram
         Access access
         Ttag[] taskOrder
         Ntag[] deps
-        Bool dirty
     }
     task {
         Func func
         Atag-Ntag args
+        Data data
+        Atag-Data _args
         Ttag[] deps
         Bool dirty
         Access access
