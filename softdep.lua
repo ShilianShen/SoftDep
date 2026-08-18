@@ -80,15 +80,15 @@ local function isArray(t)
 	return count == #t
 end
 
-local function newTask(func, args, deps, access)
+local function newTask(func, args, parents, access)
 	assert(type(func) == "function")
 	assert(args == nil or type(args) == "table")
 	for atag, ntag in pairs(args or {}) do
 		assert(type(atag) == "string")
 		assert(type(ntag) == "string")
 	end
-	assert(deps == nil or isArray(deps))
-	for _, ttag in pairs(deps or {}) do
+	assert(parents == nil or isArray(parents))
+	for _, ttag in pairs(parents or {}) do
 		assert(type(ttag) == "string")
 	end
 	assert(access == nil or type(access) == "string")
@@ -98,7 +98,8 @@ local function newTask(func, args, deps, access)
 	local task = setmetatable({
 		func = func,
 		args = shallowCopy(args or {}),
-		taskDeps = shallowCopy(deps or {}),
+		parents = shallowCopy(parents or {}),
+		children = {},
 		dirty = true,
 		access = access,
 	}, MT)
@@ -117,19 +118,20 @@ local function newNode(data, tasks, access)
 		data = data or {},
 		tasks = {},
 		access = access,
-		nodeDeps = {},
+		parents = {},
+		children = {},
 		taskOrder = {},
 		dirty = true,
 	}, MT)
 
 	for ttag, task in pairs(tasks) do
-		node.tasks[ttag] = newTask(task.func, task.args, task.deps, task.access)
+		node.tasks[ttag] = newTask(task.func, task.args, task.parents, task.access)
 		for _, ntag in pairs(task.args) do
-			table.insert(node.nodeDeps, ntag)
+			table.insert(node.parents, ntag)
 		end
 	end
 
-	node.taskOrder = kahn(node.tasks, "taskDeps")
+	node.taskOrder = kahn(node.tasks, "parents")
 
 	return node
 end
@@ -143,7 +145,8 @@ end
 
 local function loadGraph(graph)
 	assert(graph ~= nil)
-	graph.nodeOrder = kahn(graph.nodes, "nodeDeps")
+	assert(not graph.ready)
+	graph.nodeOrder = kahn(graph.nodes, "parents")
 	graph.ready = true
 end
 

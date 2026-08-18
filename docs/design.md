@@ -354,23 +354,21 @@ $\mathcal{N}, \mathcal{D}, \mathcal{T}$ are known.
 
 $$
 \begin{pmatrix}
-    \delta^-_n \\
     \{\delta^-_{d,i}|n_i\in\mathcal{N}\} \\
     \{\delta^-_{c,i}|n_i\in\mathcal{N}\} \\
     \{\operatorname{access}_i|n_i\in\mathcal{N}\} \\
 \end{pmatrix}
 \to
 \begin{pmatrix}
-    E_n \\
     E_d \\
     E_c \\
+    E_n \\
     \operatorname{access} \\
 \end{pmatrix}
 $$
 
 $$
 \begin{aligned}
-E_n &= \bigcup_{n\in\mathcal{N}} \delta^-_n(n) \\
 E_d &= \bigcup_{n_i\in\mathcal{N}} \delta^-_{d,i}(n_i) \\
 E_c &=
     \bigcup_{n_i\in\mathcal{N}}
@@ -379,6 +377,7 @@ E_c &=
     \bigcup_{(d_i,t)\in E_d}
         \{(t_i, t)|t_i\in T_i, \operatorname{access}(d_i,t_i)\ge\mathrm{OS}\}
     \\
+E_n &= \{(n_1,n_2)|n_1,n_2\in\mathcal{N},n_1\neq n_2, (t_1,t_2)\in E_c\lor (d_1,t_2)\in E_d\} \\
 \operatorname{access} &=
     \bigcup_{n_i\in\mathcal{N}}
         \operatorname{access}_i

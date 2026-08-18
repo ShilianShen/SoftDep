@@ -12,13 +12,13 @@ erDiagram
         Ttag-Task tasks
         Access access
         Ttag[] taskOrder
-        Ntag[] nodeDeps
+        Ntag[] deps
         Bool dirty
     }
     task {
         Func func
         Atag-Ntag args
-        Ttag[] taskDeps
+        Ttag[] deps
         Bool dirty
         Access access
     }
