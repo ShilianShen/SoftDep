@@ -6,3 +6,4 @@ main.lua
 *_local.*
 *.local
 scripts
+dist
