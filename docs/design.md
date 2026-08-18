@@ -207,30 +207,30 @@ If an existing task does not satisfy this property, it can be split into smaller
 ### Encapsulation
 
 $$
-(nodes, deps_n)
+(\mathcal{N}, deps_n)
 $$
 
-Each $n=(d, T, a)\in nodes$ satisfies the following properties:
+Each $n=(d, T, a)\in \mathcal{N}$ satisfies the following properties:
 
 - $d\in \mathcal{D}, T\subseteq \mathcal{T}$
 - $\forall t\in \mathcal{T}:((d, t)\in deps_d \land \operatorname{access}(d, t)\ge \mathrm{OS})\to t\in T$
 - $a\in A, \bigvee_{(d, t)\in deps_d,t\notin T} \operatorname{access}(d,t)\le a<\mathrm{OS}$
 
-For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i)$ and $t_i\in T_i$.
+For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i, a_i)$ and $t_i\in T_i$.
 
-$nodes$ satisfies the following properties:
+$\mathcal{N}$ satisfies the following properties:
 
-- $\{d|(d, T, a)\in nodes\}=\mathcal{D}$
-- $\bigcup_{(d, T, a)\in nodes}T=\mathcal{T}$
-- $\forall n_1, n_2 \in nodes, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
+- $\{d|(d, T, a)\in \mathcal{N}\}=\mathcal{D}$
+- $\bigcup_{(d, T, a)\in \mathcal{N}}T=\mathcal{T}$
+- $\forall n_1, n_2 \in \mathcal{N}, n_1\neq n_2: T_1\cap T_2=\varnothing, d_1\neq d_2$
 
-$deps_n \subseteq nodes\times nodes$ satisfies the following properties:
+$deps_n \subseteq \mathcal{N}\times \mathcal{N}$ satisfies the following properties:
 
-- $\forall n_1,n_2\in nodes:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
+- $\forall n_1,n_2\in \mathcal{N}:(n_1,n_2)\in deps_n\leftrightarrow n_1\neq n_2\land \exists (t_1, t_2)\in deps_c$
 
 ### DAG Constraint
 
-The strongest constraint of SoftDep is that $(nodes, deps_n)$ must also be a DAG.
+The strongest constraint of SoftDep is that $(\mathcal{N}, deps_n)$ must also be a DAG.
 
 Note that this constraint cannot be derived from the previous definitions.
 
@@ -239,14 +239,14 @@ Note that this constraint cannot be derived from the previous definitions.
 This constraint requires $deps_c$ to satisfy the following property:
 
 $$
-\forall n_i\in nodes:|O(T_i)|=1
+\forall n_i\in \mathcal{N}:|O(T_i)|=1
 $$
 
 In other words, no two tasks in $T_i$ are parallel.
 
 ### Node Order
 
-Because $(nodes, deps_n)$ is a DAG, there is also a topological order $<_N$.
+Because $(\mathcal{N}, deps_n)$ is a DAG, there is also a topological order $<_N$.
 
 The task order $<$ is required to satisfy the following properties:
 
@@ -258,18 +258,18 @@ $$
 n_b
 $$
 
-This node is introduced to address the problem that nodes cannot affect parent nodes in $(nodes, deps_n)$.
+This node is introduced to address the problem that nodes cannot affect parent nodes in $(\mathcal{N}, deps_n)$.
 
 We call it a "node" because it has properties similar to those of normal nodes.
 
 $n_b$ satisfies the following properties:
 
-- $n_b\notin nodes$
+- $n_b\notin \mathcal{N}$
 - $d_b\notin \mathcal{D}$
 - $T_b\cap \mathcal{T} = \varnothing$
 - The tasks in $n_b$ can read and write any data item.
 
-Some tasks $t_b\notin \mathcal{T}$ cannot belong to any node in $nodes$ because of the DAG constraint, but they can belong to $n_b$.
+Some tasks $t_b\notin \mathcal{T}$ cannot belong to any node in $\mathcal{N}$ because of the DAG constraint, but they can belong to $n_b$.
 
 The tasks in $n_b$ are executed after all other tasks.
 
@@ -281,7 +281,7 @@ For each data item $d_i$ we can split the $\operatorname{children}_d(d_i)$ in tw
 
 Because of node order there is $\forall a\in T_i,\forall b\in\overline{T_i}:a< b$.
 
-Thus $\forall T\in \operatorname{parallel}(d):T\subseteq T_i\veebar T\subseteq\overline{T_i}$.
+Thus $\forall T\in \operatorname{parallel}(d):T\subseteq T_i\lor T\subseteq\overline{T_i}$.
 
 ---
 
@@ -330,9 +330,9 @@ Therefore, there is no conflict.
 
 ### Better Extensibility
 
-For every $X\subseteq nodes:\delta^-(X)=\varnothing$, $(X, deps_N|_X)$ is also a DAG.
+For every $X\subseteq \mathcal{N}:\delta^-(X)=\varnothing$, $(X, deps_n|_X)$ is also a DAG.
 
-In this case, $(nodes, deps_N)$ can be considered as an extension of $(X, deps_N|_X)$.
+In this case, $(\mathcal{N}, deps_n)$ can be considered as an extension of $(X, deps_n|_X)$.
 
 Obviously, in this structure, extension can't affect the system before.
 
@@ -342,17 +342,17 @@ Therefore, it's easy to extend an existing system.
 
 $$
 \begin{rcases}
-    tasks \\
-    data \\
-    nodes \\
+    \mathcal{T} \\
+    \mathcal{D} \\
+    \mathcal{N} \\
     \dots \\
 \end{rcases}
 \leftrightarrow
 \begin{cases}
-    tasks \\
-    data \\
-    nodes \\
-    access \\
+    \mathcal{T} \\
+    \mathcal{D} \\
+    \mathcal{N} \\
+    \operatorname{access} \\
     deps_c \\
     deps_d \\ 
     deps_n \\
