@@ -10,34 +10,38 @@ $$
 \end{cases}
 $$
 
-$\mathcal{N}, \mathcal{D}, \mathcal{T}$ are known.
+$\mathcal{N}$ is known.
 
 $$
 \begin{pmatrix}
+    \{d_i|n_i\in\mathcal{N}\} \\
+    \{T_i|n_i\in\mathcal{N}\} \\
     \{\delta^-_{d,i}|n_i\in\mathcal{N}\} \\
     \{\delta^-_{c,i}|n_i\in\mathcal{N}\} \\
     \{\operatorname{access}_i|n_i\in\mathcal{N}\} \\
 \end{pmatrix}
 \to
 \begin{pmatrix}
+    \mathcal{D} \\
+    \mathcal{T} \\
     E_d \\
     E_c \\
-    E_n \\
     \operatorname{access} \\
 \end{pmatrix}
 $$
 
 $$
 \begin{aligned}
+\mathcal{D} &= {d_i|n_i\in\mathcal{N}} \\
+\mathcal{T} &= \bigcup_{n_i\in\mathcal{N}}T_i \\
 E_d &= \bigcup_{n_i\in\mathcal{N}} \delta^-_{d,i}(n_i) \\
 E_c &=
     \bigcup_{n_i\in\mathcal{N}}
         \delta^-_{c,i}(n_i)
     \cup
     \bigcup_{(d_i,t)\in E_d}
-        \{(t_i, t)|t_i\in T_i, \operatorname{access}(d_i,t_i)\ge\mathrm{OS}\}
+        \{(t_i, t)|t_i\in T_i, t\notin T_i\operatorname{access}(d_i,t_i)\ge\mathrm{OS}\}
     \\
-E_n &= \{(n_1,n_2)|n_1,n_2\in\mathcal{N},n_1\neq n_2, (t_1,t_2)\in E_c\lor (d_1,t_2)\in E_d\} \\
 \operatorname{access} &=
     \bigcup_{n_i\in\mathcal{N}}
         \operatorname{access}_i
