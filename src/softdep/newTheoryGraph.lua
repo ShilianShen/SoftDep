@@ -55,6 +55,11 @@ local function clean(G, nodes)
 	for _, node in pairs(nodes) do
 		for _, task in pairs(node.tasks) do
 			table.insert(G.E_d, { n = node, d = node.data, t = task })
+			for atag, arg in pairs(task.args) do
+				task.args[atag] = nodes[arg].data
+			end
+			task.parents = nil
+			task.access = nil
 		end
 	end
 	for _, e_d in ipairs(G.E_d) do

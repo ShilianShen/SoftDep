@@ -1,39 +1,29 @@
-local function deepCopy(value, seen)
-	if type(value) ~= "table" then
-		return value
-	end
-
-	seen = seen or {}
-	if seen[value] then
-		return seen[value]
-	end
-
-	local copy = {}
-	seen[value] = copy
-
-	for key, item in pairs(value) do
-		copy[deepCopy(key, seen)] = deepCopy(item, seen)
-	end
-
-	return copy
-end
-
 local function pass() end
 
 local function newConfigGraph(nodes)
-	local configGraph = deepCopy(nodes)
-	for _, node in pairs(configGraph) do
-		node.data = node.data or {}
-		node.tasks = node.tasks or {}
-		node.access = node.access or "none"
-		for _, task in pairs(node.tasks) do
-			task.func = task.func or pass
-			task.args = task.args or {}
-            task.parents = task.parents or {}
-            task.access = task.access or "writable"
+	local config = {}
+	for ntag, node in pairs(nodes or {}) do
+		config[ntag] = {
+			data = node.data or {},
+			access = node.access or "none",
+			tasks = {},
+		}
+		for ttag, task in pairs(node.tasks or {}) do
+			config[ntag].tasks[ttag] = {
+				func = task.func or pass,
+				access = task.access or "writable",
+				args = {},
+				parents = {},
+			}
+			for atag, arg in pairs(task.args or {}) do
+				config[ntag].tasks[ttag].args[atag] = arg
+			end
+			for ptag, parent in pairs(task.parents or {}) do
+				config[ntag].tasks[ttag].parents[ptag] = parent
+			end
 		end
 	end
-	return configGraph
+	return config
 end
 
 return newConfigGraph
