@@ -3,7 +3,7 @@ erDiagram
     graph {
         Ntag-Node nodes
         Func[] funcs
-        Ntag[] nodeOrder
+        Ntag[] ntagOrder
         Task[] taskOrder
         Bool ready
     }
@@ -11,15 +11,17 @@ erDiagram
         Data data
         Ttag-Task tasks
         Access access
-        Ttag[] taskOrder
-        Ntag[] deps
+        Ttag[] ttagOrder
+        Ntag-Node parents
+        Ntag-Node children
     }
     task {
         Func func
         Atag-Ntag args
         Data data
         Atag-Data _args
-        Ttag[] deps
+        Ttag-Task parents
+        Ttag-Task children
         Bool dirty
         Access access
     }

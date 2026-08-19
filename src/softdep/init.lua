@@ -87,7 +87,7 @@ local function newNode(data, tasks, access)
 		access = access,
 		parents = {},
 		children = {},
-		taskOrder = {},
+		ttagOrder = {},
 		dirty = true,
 	}, MT)
 
@@ -98,7 +98,7 @@ local function newNode(data, tasks, access)
 		end
 	end
 
-	node.taskOrder = kahn(node.tasks, "parents")
+	node.ttagOrder = kahn(node.tasks, "parents")
 	adopt(node.tasks, "parents", "children")
 
 	return node
@@ -115,14 +115,14 @@ local function loadGraph(graph)
 	assert(graph ~= nil)
 	assert(not graph.ready)
 
-	graph.nodeOrder = kahn(graph.nodes, "parents")
+	graph.ntagOrder = kahn(graph.nodes, "parents")
 
 	adopt(graph.nodes, "parents", "children")
 
 	graph.taskOrder = {}
-	for _, ntag in ipairs(graph.nodeOrder) do
+	for _, ntag in ipairs(graph.ntagOrder) do
 		local node = graph.nodes[ntag]
-		for _, ttag in ipairs(node.taskOrder) do
+		for _, ttag in ipairs(node.ttagOrder) do
 			local task = node.tasks[ttag]
 			task.data = node.data
 			for atag, antag in pairs(task.args) do
@@ -155,7 +155,7 @@ function softdep.newGraph()
 		extend = extendGraph,
 		tick = tickGraph,
 		load = loadGraph,
-		nodeOrder = {},
+		ntagOrder = {},
 		taskOrder = {},
 		ready = false,
 	}, MT)
