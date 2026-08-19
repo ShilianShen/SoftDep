@@ -1,6 +1,9 @@
+local deepCopy = require("src.softdep.deepCopy")
+
 local function pass() end
 
-local function newConfigGraph(nodes)
+local function newConfig(nodes)
+	nodes = deepCopy(nodes)
 	local config = {}
 	for ntag, node in pairs(nodes or {}) do
 		config[ntag] = {
@@ -26,4 +29,4 @@ local function newConfigGraph(nodes)
 	return config
 end
 
-return newConfigGraph
+return newConfig

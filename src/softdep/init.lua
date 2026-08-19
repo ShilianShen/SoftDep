@@ -12,8 +12,8 @@ local MT = {
 	end,
 }
 
-softdep.newConfigGraph = require("src.softdep.newConfigGraph")
-softdep.newTheoryGraph = require("src.softdep.newTheoryGraph")
-softdep.newEngineGraph = require("src.softdep.newEngineGraph")
+softdep.newConfig = require("src.softdep.newConfig")
+softdep.newTheory = require("src.softdep.newTheory")
+softdep.newEngine = require("src.softdep.newEngine")
 
 return softdep

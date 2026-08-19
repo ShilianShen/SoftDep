@@ -1,10 +1,12 @@
+local deepCopy = require("src.softdep.deepCopy")
+
 local function get_E_d(nodes)
 	local E_d = {}
 	for _, node in pairs(nodes) do
 		for _, task in pairs(node.tasks) do
-			for _, antag in pairs(task.args) do
+			for atag, antag in pairs(task.args) do
 				local anode = nodes[antag]
-				table.insert(E_d, { n = anode, d = anode.data, t = task })
+				table.insert(E_d, { n = anode, d = anode.data, t = task, a = atag })
 			end
 		end
 	end
@@ -54,10 +56,8 @@ end
 local function clean(G, nodes)
 	for _, node in pairs(nodes) do
 		for _, task in pairs(node.tasks) do
-			table.insert(G.E_d, { n = node, d = node.data, t = task })
-			for atag, arg in pairs(task.args) do
-				task.args[atag] = nodes[arg].data
-			end
+			table.insert(G.E_d, { n = node, d = node.data, t = task, a = 0 })
+			task.args = nil
 			task.parents = nil
 			task.access = nil
 		end
@@ -67,7 +67,8 @@ local function clean(G, nodes)
 	end
 end
 
-local function newTheoryGraph(nodes)
+local function newTheory(nodes)
+	nodes = deepCopy(nodes)
 	local G = { D = {}, T = {} }
 
 	for _, node in pairs(nodes) do
@@ -86,4 +87,4 @@ local function newTheoryGraph(nodes)
 	return G
 end
 
-return newTheoryGraph
+return newTheory

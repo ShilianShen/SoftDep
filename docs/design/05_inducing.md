@@ -10,10 +10,9 @@ $$
 \end{cases}
 $$
 
-$\mathcal{N}$ is known.
-
 $$
 \begin{pmatrix}
+    \mathcal{N} \\
     \{d_i|n_i\in\mathcal{N}\} \\
     \{T_i|n_i\in\mathcal{N}\} \\
     \{\delta^-_{d,i}|n_i\in\mathcal{N}\} \\

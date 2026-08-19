@@ -1,3 +1,5 @@
+local deepCopy = require("src.softdep.deepCopy")
+
 local function kahn(G)
 	local infos = {}
 	local stack = {}
@@ -36,11 +38,12 @@ local function kahn(G)
 	return order
 end
 
-local function newEngineGraph(theoryGraph)
+local function newEngine(theory)
+	theory = deepCopy(theory)
 	local engineGraph = {}
-    engineGraph.tasks = theoryGraph.tasks
-    engineGraph.order = kahn(theoryGraph)
+	engineGraph.tasks = theory.tasks
+	engineGraph.order = kahn(theory)
 	return engineGraph
 end
 
-return newEngineGraph
+return newEngine
