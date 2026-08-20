@@ -2,10 +2,10 @@ local deepCopy = require("src.softdep.deepCopy")
 
 local function pass() end
 
-local function newConfig(nodes)
-	nodes = deepCopy(nodes)
+local function newConfig(N)
+	N = deepCopy(N)
 	local config = {}
-	for ntag, node in pairs(nodes or {}) do
+	for ntag, node in pairs(N or {}) do
 		config[ntag] = {
 			data = node.data or {},
 			access = node.access or "none",

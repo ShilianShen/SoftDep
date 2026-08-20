@@ -67,22 +67,22 @@ local function clean(G, nodes)
 	end
 end
 
-local function newTheory(nodes)
-	nodes = deepCopy(nodes)
+local function newTheory(config)
+	config = deepCopy(config)
 	local G = { D = {}, T = {} }
 
-	for _, node in pairs(nodes) do
+	for _, node in pairs(config) do
 		table.insert(G.D, node.data)
 		for _, task in pairs(node.tasks) do
 			table.insert(G.T, task)
 		end
 	end
 
-	G.E_d = get_E_d(nodes)
-	G.E_c = get_E_c(nodes, G.E_d)
-	G.access = get_access(nodes, G.E_d)
+	G.E_d = get_E_d(config)
+	G.E_c = get_E_c(config, G.E_d)
+	G.access = get_access(config, G.E_d)
 
-	clean(G, nodes)
+	clean(G, config)
 
 	return G
 end
