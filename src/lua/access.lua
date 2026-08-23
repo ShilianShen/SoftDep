@@ -1,4 +1,4 @@
-local access = {}
+local Access = {}
 
 local poset = {
 	elements = {
@@ -28,18 +28,18 @@ local poset = {
 
 local mt = {
 	__eq = function(a, b)
-		return a == b
+		return rawequal(a, b)
 	end,
 	__lt = function(a, b)
-		return poset.le[a.key][b.key] and a ~= b
+		return poset.le[a.key][b.key] and not rawequal(a, b)
 	end,
 }
 
 for key, func in pairs(poset.elements) do
-	access[key] = setmetatable({
+	Access[key] = setmetatable({
 		key = key,
 		func = func,
 	}, mt)
 end
 
-return access
+return Access

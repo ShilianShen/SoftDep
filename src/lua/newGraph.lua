@@ -8,6 +8,11 @@ local function tick(graph, modules)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 		node:tick(graph.parents_n[ntag])
+		if node.dirty then
+			for ctag, cnode in pairs(graph.children_n[ntag]) do
+			end
+			node.dirty = false
+		end
 	end
 end
 

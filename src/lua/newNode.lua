@@ -3,6 +3,7 @@ local decreaseOnly = require("src.lua.decreaseOnly")
 local getChildSets = require("src.lua.getChildSets")
 local kahn = require("src.lua.kahn")
 local MathSet = require("src.lua.MathSet")
+local Access = require("src.lua.Access")
 
 local function tick(node, parents_n)
 	for _, ttag in ipairs(node.order) do
@@ -15,7 +16,11 @@ local function tick(node, parents_n)
 			for ctag, _ in pairs(node.children_c[ttag]) do
 				node.tasks[ctag].dirty = true
 			end
+			if task.access >= Access.writable then
+				node.dirty = true
+			end
 			task.func(node.data, parents_d)
+			task.count = task.count + 1
 			task.dirty = false
 		end
 	end
@@ -25,7 +30,7 @@ local function newNode(data, tasks, access)
 	local node = setmetatable({
 		data = data or {},
 		tasks = {},
-		access = access or "none",
+		access = Access[access or "none"],
 
 		parents_c = {},
 		parents_d = {},
@@ -37,8 +42,13 @@ local function newNode(data, tasks, access)
 	}, decreaseOnly)
 
 	local parentSets_c = {}
-	for ttag, t in pairs(tasks) do
-		node.tasks[ttag] = { func = t.func, dirty = true, a = t.access }
+	for ttag, t in pairs(tasks or {}) do
+		node.tasks[ttag] = {
+			func = t.func,
+			dirty = true,
+			access = Access[t.access or "none"],
+			count = 0,
+		}
 		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
 		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
 	end
