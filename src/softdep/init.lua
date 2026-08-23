@@ -1,11 +1,6 @@
 local softdep = {}
 
-local MT = {
-	__newindex = function(t, key)
-		assert(false)
-	end,
-}
-
-local access = require("src.softdep.access")
+softdep.newNode = require("src.softdep.newNode")
+softdep.newGraph = require("src.softdep.newGraph")
 
 return softdep
