@@ -6,14 +6,14 @@ local MathSet = require("src.lua.MathSet")
 
 local function tick(graph, modules)
 	for _, ntag in ipairs(graph.order) do
-		local node = graph.N[ntag]
+		local node = graph.nodes[ntag]
 		node:tick(graph.parents_n[ntag])
 	end
 end
 
 local function newGraph(nodes)
 	local graph = setmetatable({
-		N = nodes,
+		nodes = nodes,
 		parents_n = {},
 		children_n = {},
 		order = false,
@@ -21,7 +21,7 @@ local function newGraph(nodes)
 	}, decreaseOnly)
 
 	local parentSets = {}
-	for ntag, node in pairs(graph.N) do
+	for ntag, node in pairs(graph.nodes) do
 		parentSets[ntag] = {}
 		for ttag, _ in pairs(node.parents_d) do
 			for _, ptag in pairs(node.parents_d[ttag]) do
@@ -33,9 +33,9 @@ local function newGraph(nodes)
 
 	graph.order = kahn(parentSets, childSets)
 
-	for ntag, _ in pairs(graph.N) do
-		graph.parents_n[ntag] = MathSet.set2tab(parentSets[ntag], graph.N)
-		graph.children_n[ntag] = MathSet.set2tab(childSets[ntag], graph.N)
+	for ntag, _ in pairs(graph.nodes) do
+		graph.parents_n[ntag] = MathSet.set2tab(parentSets[ntag], graph.nodes)
+		graph.children_n[ntag] = MathSet.set2tab(childSets[ntag], graph.nodes)
 	end
 	return graph
 end
