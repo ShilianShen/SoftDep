@@ -1,8 +1,8 @@
-local deepCopy = require("src.softdep.deepCopy")
-local decreaseOnly = require("src.softdep.decreaseOnly")
-local getChildSets = require("src.softdep.getChildSets")
-local kahn = require("src.softdep.kahn")
-local MathSet = require("src.softdep.MathSet")
+local deepCopy = require("src.lua.deepCopy")
+local decreaseOnly = require("src.lua.decreaseOnly")
+local getChildSets = require("src.lua.getChildSets")
+local kahn = require("src.lua.kahn")
+local MathSet = require("src.lua.MathSet")
 
 local function tick(node, parents_n)
 	for _, ttag in ipairs(node.order) do
