@@ -1,29 +1,24 @@
 ```mermaid
 erDiagram
     graph {
-        Ntag-Node nodes
-        Func[] funcs
-        Ntag[] ntagOrder
-        Task[] taskOrder
-        Bool ready
+        NTag-Node N
+        NTag-(Key-NTag)s parents_n
+        NTag-(Key-NTag)s children_n
+        Int-NTag order
     }
     node {
-        Data data
-        Ttag-Task tasks
-        Access access
-        Ttag[] ttagOrder
-        Ntag-Node parents
-        Ntag-Node children
+        Data d
+        TTag-Task T
+        Access a
+        TTag-(Key-TTag)s parents_c
+        TTag-(ATag-NTag)s parents_d
+        TTag-(Key-TTag)s children_c
+        Int-TTags order
     }
     task {
         Func func
-        Atag-Ntag args
-        Data data
-        Atag-Data _args
-        Ttag-Task parents
-        Ttag-Task children
         Bool dirty
-        Access access
+        Access a
     }
 
     graph ||--|{ node : "graph.nodes[ntag]=node"
