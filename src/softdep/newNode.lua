@@ -10,9 +10,9 @@ local function tick(node, parents_n)
 		if task.dirty then
 			local parents = {}
 			for atag, ntag in pairs(node.parents_d[ttag]) do
-				parents[atag] = parents_n[ntag]
+				parents[atag] = parents_n[ntag].d
 			end
-			for _, ctag in pairs(node.children_c[ttag]) do
+			for ctag, _ in pairs(node.children_c[ttag]) do
 				node.T[ctag].dirty = true
 			end
 			task.func(node.d, parents)
