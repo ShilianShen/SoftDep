@@ -24,4 +24,12 @@ function MathSet.set2tab(set, data)
 	return tab
 end
 
+function MathSet.count(set)
+	local count = 0
+	for _, _ in pairs(set) do
+		count = count + 1
+	end
+	return count
+end
+
 return MathSet

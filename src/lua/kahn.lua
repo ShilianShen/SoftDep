@@ -1,10 +1,4 @@
-local function count(t)
-	local n = 0
-	for _, _ in pairs(t) do
-		n = n + 1
-	end
-	return n
-end
+local MathSet = require("src.lua.MathSet")
 
 local function kahn(parentSets, childSets)
 	local indegrees = {}
@@ -12,7 +6,7 @@ local function kahn(parentSets, childSets)
 	local order = {}
 
 	for v, _ in pairs(parentSets) do
-		indegrees[v] = count(parentSets[v])
+		indegrees[v] = MathSet.count(parentSets[v])
 		if indegrees[v] == 0 then
 			table.insert(stack, v)
 		end
