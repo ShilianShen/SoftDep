@@ -6,21 +6,21 @@ local function count(t)
 	return n
 end
 
-local function kahn(parents, children)
+local function kahn(parentSets, childSets)
 	local indegrees = {}
 	local stack = {}
 	local order = {}
 
-	for v, _ in pairs(parents) do
-		indegrees[v] = count(parents[v])
+	for v, _ in pairs(parentSets) do
+		indegrees[v] = count(parentSets[v])
 		if indegrees[v] == 0 then
 			table.insert(stack, v)
 		end
 	end
 
-	for _, _ in pairs(parents) do
+	for _, _ in pairs(parentSets) do
 		local v = table.remove(stack)
-		for _, c in pairs(children[v]) do
+		for c, _ in pairs(childSets[v]) do
 			indegrees[c] = indegrees[c] - 1
 			if indegrees[c] == 0 then
 				table.insert(stack, c)

@@ -1,7 +1,8 @@
 local deepCopy = require("src.softdep.deepCopy")
 local decreaseOnly = require("src.softdep.decreaseOnly")
-local getChildren = require("src.softdep.getChildren")
+local getChildSets = require("src.softdep.getChildSets")
 local kahn = require("src.softdep.kahn")
+local MathSet = require("src.softdep.MathSet")
 
 local function tick(node, parents_n)
 	for _, ttag in ipairs(node.order) do
@@ -25,22 +26,30 @@ local function newNode(d, T, a)
 		d = d or {},
 		T = {},
 		a = a or "none",
+
 		parents_c = {},
 		parents_d = {},
-		children_c = false,
+		children_c = {},
 		order = false,
+
 		dirty = true,
 		tick = tick,
 	}, decreaseOnly)
 
+	local parentSets_c = {}
 	for ttag, t in pairs(T) do
 		node.T[ttag] = { func = t.func, dirty = true, a = t.access }
-		node.parents_c[ttag] = deepCopy(t.parents_c) or {}
+		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
 		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
 	end
-	node.children_c = getChildren(node.parents_c)
+	local childSets_c = getChildSets(parentSets_c)
 
-	node.order = kahn(node.parents_c, node.children_c)
+	for ttag, _ in pairs(node.T) do
+		node.parents_c[ttag] = MathSet.set2tab(parentSets_c[ttag], node.T)
+		node.children_c[ttag] = MathSet.set2tab(childSets_c[ttag], node.T)
+	end
+
+	node.order = kahn(parentSets_c, childSets_c)
 
 	return node
 end

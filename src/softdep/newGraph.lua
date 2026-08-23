@@ -1,15 +1,8 @@
 local deepCopy = require("src.softdep.deepCopy")
 local decreaseOnly = require("src.softdep.decreaseOnly")
-local getChildren = require("src.softdep.getChildren")
+local getChildSets = require("src.softdep.getChildSets")
 local kahn = require("src.softdep.kahn")
-
-local function set2arr(set)
-	local arr = {}
-	for k, _ in pairs(set) do
-		table.insert(arr, k)
-	end
-	return arr
-end
+local MathSet = require("src.softdep.MathSet")
 
 local function tick(graph, modules)
 	for _, ntag in ipairs(graph.order) do
@@ -22,23 +15,28 @@ local function newGraph(nodes)
 	local graph = setmetatable({
 		N = nodes,
 		parents_n = {},
-		children_n = false,
+		children_n = {},
 		order = false,
 		tick = tick,
 	}, decreaseOnly)
 
+	local parentSets = {}
 	for ntag, node in pairs(graph.N) do
-		local set = {}
+		parentSets[ntag] = {}
 		for ttag, _ in pairs(node.parents_d) do
 			for _, ptag in pairs(node.parents_d[ttag]) do
-				set[ptag] = true
+				parentSets[ntag][ptag] = true
 			end
 		end
-		graph.parents_n[ntag] = set2arr(set)
 	end
+	local childSets = getChildSets(parentSets)
 
-	graph.children_n = getChildren(graph.parents_n)
-	graph.order = kahn(graph.parents_n, graph.children_n)
+	graph.order = kahn(parentSets, childSets)
+
+	for ntag, _ in pairs(graph.N) do
+		graph.parents_n[ntag] = MathSet.set2tab(parentSets[ntag], graph.N)
+		graph.children_n[ntag] = MathSet.set2tab(childSets[ntag], graph.N)
+	end
 	return graph
 end
 
