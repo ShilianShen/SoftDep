@@ -7,16 +7,5 @@ local MT = {
 }
 
 local access = require("src.softdep.access")
-local newConfig = require("src.softdep.newConfig")
-local newTheory = require("src.softdep.newTheory")
-local newEngine = require("src.softdep.newEngine")
-
-function softdep.newGraph(nodes)
-	local config = newConfig(nodes)
-	local theory = newTheory(config)
-	local engine = newEngine(theory)
-	setmetatable(engine, MT)
-	return engine
-end
 
 return softdep

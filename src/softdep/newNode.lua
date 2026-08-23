@@ -15,7 +15,7 @@ local function newNode(d, T, a)
 	}, decreaseOnly)
 
 	for ttag, t in pairs(T) do
-		node.T[ttag] = { func = t.func, dirty = true }
+		node.T[ttag] = { func = t.func, dirty = true, a = t.access }
 		node.parents_c[ttag] = deepCopy(t.parents_c) or {}
 		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
 	end

@@ -1,9 +1,9 @@
-local function getCount(t)
-	local count = 0
+local function count(t)
+	local n = 0
 	for _, _ in pairs(t) do
-		count = count + 1
+		n = n + 1
 	end
-	return count
+	return n
 end
 
 local function kahn(parents, children)
@@ -12,7 +12,7 @@ local function kahn(parents, children)
 	local order = {}
 
 	for v, _ in pairs(parents) do
-		indegrees[v] = getCount(parents[v])
+		indegrees[v] = count(parents[v])
 		if indegrees[v] == 0 then
 			table.insert(stack, v)
 		end
@@ -22,7 +22,9 @@ local function kahn(parents, children)
 		local v = table.remove(stack)
 		for _, c in pairs(children[v]) do
 			indegrees[c] = indegrees[c] - 1
-			table.insert(stack, c)
+			if indegrees[c] == 0 then
+				table.insert(stack, c)
+			end
 		end
 		table.insert(order, v)
 	end
