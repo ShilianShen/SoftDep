@@ -11,12 +11,20 @@ local function set2arr(set)
 	return arr
 end
 
+local function tick(graph, modules)
+	for _, ntag in ipairs(graph.order) do
+		local node = graph.N[ntag]
+		node:tick(graph.parents_n[ntag])
+	end
+end
+
 local function newGraph(nodes)
 	local graph = setmetatable({
 		N = nodes,
 		parents_n = {},
 		children_n = false,
 		order = false,
+		tick = tick,
 	}, decreaseOnly)
 
 	for ntag, node in pairs(graph.N) do
