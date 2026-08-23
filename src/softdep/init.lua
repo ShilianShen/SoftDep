@@ -1,17 +1,12 @@
 local softdep = {}
 
-local ACCESS = {
-	none = "none",
-	readonly = "readonly",
-	writable = "writable",
-}
-
 local MT = {
 	__newindex = function(t, key)
 		assert(false)
 	end,
 }
 
+local access = require("src.softdep.access")
 local newConfig = require("src.softdep.newConfig")
 local newTheory = require("src.softdep.newTheory")
 local newEngine = require("src.softdep.newEngine")
