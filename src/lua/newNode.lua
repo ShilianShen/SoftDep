@@ -21,7 +21,7 @@ local function spread(node)
 	return dirty
 end
 
-local function tick(node, parents_n)
+local function run(node, parents_n)
 	for _, ttag in ipairs(node.order) do
 		local task = node.tasks[ttag]
 		if task.dirty then
@@ -49,7 +49,7 @@ local function newNode(data, tasks, access)
 		children_c = {},
 		order = false,
 
-		tick = tick,
+		run = run,
 		spread = spread,
 	}, decreaseOnly)
 

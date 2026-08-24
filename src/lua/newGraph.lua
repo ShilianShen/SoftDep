@@ -15,11 +15,16 @@ local function spread(graph, modules)
 	end
 end
 
-local function tick(graph, modules)
+local function run(graph, modules)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
-		node:tick(graph.parents_n[ntag])
+		node:run(graph.parents_n[ntag])
 	end
+end
+
+local function tick(graph, modules)
+	graph:spread()
+	graph:run()
 end
 
 local function newGraph(nodes)
@@ -29,8 +34,9 @@ local function newGraph(nodes)
 		children_n = {},
 		children_d = {},
 		order = false,
-		tick = tick,
+		run = run,
 		spread = spread,
+		tick = tick,
 	}, decreaseOnly)
 
 	local parentSets_n = {}
