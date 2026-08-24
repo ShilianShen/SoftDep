@@ -48,6 +48,7 @@ local function newNode(data, tasks, access)
 		parents_d = {},
 		children_c = {},
 		order = false,
+		dirty = true,
 
 		run = run,
 		spread = spread,

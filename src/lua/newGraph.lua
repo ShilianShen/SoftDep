@@ -7,7 +7,8 @@ local MathSet = require("src.lua.MathSet")
 local function spread(graph, modules)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
-		if node:spread() then
+		node.dirty = node:spread()
+		if node.dirty then
 			for _, task in ipairs(graph.children_d[ntag]) do
 				task.dirty = true
 			end
@@ -19,6 +20,7 @@ local function run(graph, modules)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 		node:run(graph.parents_n[ntag])
+		node.dirty = false
 	end
 end
 
