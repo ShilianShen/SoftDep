@@ -1,4 +1,10 @@
-local softdraw = {}
+local softdraw = {
+	theme = {
+		dirty = { 1, 0, 0 },
+		clean = { 0, 1, 0 },
+		default = { 1, 1, 1 },
+	},
+}
 
 local function getDist(parents, order)
 	local depth = {}
@@ -18,40 +24,78 @@ local function getDist(parents, order)
 	return depthDist
 end
 
-function softdraw.drawNode(node, X, Y, W, H)
+local function newContent(vertices, parents, children, order, X, Y, W, H)
 	X = X or 0
 	Y = Y or 0
 	W = W or love.graphics.getWidth()
 	H = H or love.graphics.getHeight()
 
-	local dist = getDist(node.parents_c, node.order)
-	local info = {}
+	local content = {}
+	content.dist = getDist(parents, order)
 
-	love.graphics.setColor(1, 1, 1, 1)
-	local D = #dist
+	content.vertices = {}
+	local D = #content.dist
 	for j = 1, D do
-		local B = #dist[j]
+		local B = #content.dist[j]
 		for i = 1, B do
-			local x = X + W / B * (i - 0.5)
-			local y = Y + H / D * (j - 0.5)
-			local tag = dist[j][i]
-			love.graphics.circle("line", x, y, 8)
-			love.graphics.print(tag, x, y)
-			info[tag] = { x = x, y = y }
+			local vtag = content.dist[j][i]
+			content.vertices[vtag] = {
+				x = X + W / B * (i - 0.5),
+				y = Y + H / D * (j - 0.5),
+				c = softdraw.theme.default,
+			}
 		end
 	end
 
-	for ttag, _ in pairs(node.tasks) do
-		local x1 = info[ttag].x
-		local y1 = info[ttag].y
-		for ctag, _ in pairs(node.children_c[ttag]) do
-			local x2 = info[ctag].x
-			local y2 = info[ctag].y
-			love.graphics.line(x1, y1, x2, y2)
+	content.edges = {}
+	for vtag, _ in pairs(vertices) do
+		local x1 = content.vertices[vtag].x
+		local y1 = content.vertices[vtag].y
+		for ctag, _ in pairs(children[vtag]) do
+			local x2 = content.vertices[ctag].x
+			local y2 = content.vertices[ctag].y
+			local edge = {
+				x1 = x1,
+				y1 = y1,
+				x2 = x2,
+				y2 = y2,
+				c = softdraw.theme.default,
+			}
+			table.insert(content.edges, edge)
 		end
+	end
+
+	return content
+end
+
+local function drawContent(content)
+	for vtag, vertex in pairs(content.vertices) do
+		love.graphics.setColor(vertex.c)
+		love.graphics.circle("line", vertex.x, vertex.y, 8)
+		love.graphics.print(vtag, vertex.x, vertex.y)
+	end
+
+	for _, edge in ipairs(content.edges) do
+		love.graphics.setColor(edge.c)
+		love.graphics.line(edge.x1, edge.y1, edge.x2, edge.y2)
 	end
 end
 
-local function drawGraph(graph) end
+function softdraw.drawNode(node, X, Y, W, H)
+	local content = newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
+	for ttag, task in pairs(node.tasks) do
+		if task.dirty then
+			content.vertices[ttag].c = softdraw.theme.dirty
+		else
+			content.vertices[ttag].c = softdraw.theme.clean
+		end
+	end
+	drawContent(content)
+end
+
+function softdraw.drawGraph(graph, X, Y, W, H)
+	local content = newContent(graph.nodes, graph.parents_n, graph.children_n, graph.order, X, Y, W, H)
+	drawContent(content)
+end
 
 return softdraw
