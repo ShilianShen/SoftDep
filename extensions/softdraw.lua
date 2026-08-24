@@ -2,7 +2,9 @@ local softdraw = {
 	theme = {
 		dirty = { 1, 0, 0 },
 		clean = { 0, 1, 0 },
-		default = { 1, 1, 1 },
+		light = { 1, 1, 1 },
+		dark = { 0, 0, 0 },
+		font = love.graphics.newFont(12),
 	},
 }
 
@@ -42,7 +44,10 @@ local function newContent(vertices, parents, children, order, X, Y, W, H)
 			content.vertices[vtag] = {
 				x = X + W / B * (i - 0.5),
 				y = Y + H / D * (j - 0.5),
-				c = softdraw.theme.default,
+				cb = softdraw.theme.dark,
+				cf = softdraw.theme.light,
+				ct = softdraw.theme.light,
+				t = love.graphics.newText(softdraw.theme.font, vtag),
 			}
 		end
 	end
@@ -59,7 +64,7 @@ local function newContent(vertices, parents, children, order, X, Y, W, H)
 				y1 = y1,
 				x2 = x2,
 				y2 = y2,
-				c = softdraw.theme.default,
+				c = softdraw.theme.light,
 			}
 			table.insert(content.edges, edge)
 		end
@@ -69,15 +74,22 @@ local function newContent(vertices, parents, children, order, X, Y, W, H)
 end
 
 local function drawContent(content)
-	for vtag, vertex in pairs(content.vertices) do
-		love.graphics.setColor(vertex.c)
-		love.graphics.circle("line", vertex.x, vertex.y, 8)
-		love.graphics.print(vtag, vertex.x, vertex.y)
-	end
-
 	for _, edge in ipairs(content.edges) do
 		love.graphics.setColor(edge.c)
 		love.graphics.line(edge.x1, edge.y1, edge.x2, edge.y2)
+	end
+
+	for _, vertex in pairs(content.vertices) do
+		local w, h = vertex.t:getDimensions()
+		local x = vertex.x - w / 2
+		local y = vertex.y - h / 2
+
+		love.graphics.setColor(vertex.cb)
+		love.graphics.rectangle("fill", x, y, w, h)
+		love.graphics.setColor(vertex.cf)
+		love.graphics.rectangle("line", x, y, w, h)
+		love.graphics.setColor(vertex.ct)
+		love.graphics.draw(vertex.t, x, y)
 	end
 end
 
@@ -85,9 +97,9 @@ function softdraw.drawNode(node, X, Y, W, H)
 	local content = newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
 	for ttag, task in pairs(node.tasks) do
 		if task.dirty then
-			content.vertices[ttag].c = softdraw.theme.dirty
+			content.vertices[ttag].cf = softdraw.theme.dirty
 		else
-			content.vertices[ttag].c = softdraw.theme.clean
+			content.vertices[ttag].cf = softdraw.theme.clean
 		end
 	end
 	drawContent(content)
