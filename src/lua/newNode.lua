@@ -5,21 +5,32 @@ local kahn = require("src.lua.kahn")
 local MathSet = require("src.lua.MathSet")
 local Access = require("src.lua.Access")
 
+local function spread(node)
+	local dirty = false
+	for _, ttag in ipairs(node.order) do
+		local task = node.tasks[ttag]
+		if task.dirty then
+			for ctag, _ in pairs(node.children_c[ttag]) do
+				node.tasks[ctag].dirty = true
+			end
+			if Access[task.access] >= Access.writable then
+				dirty = true
+			end
+		end
+	end
+	return dirty
+end
+
 local function tick(node, parents_n)
 	for _, ttag in ipairs(node.order) do
 		local task = node.tasks[ttag]
 		if task.dirty then
 			local parents_d = {}
 			for atag, ntag in pairs(node.parents_d[ttag]) do
-				parents_d[atag] = parents_n[ntag].data
+				local parent = parents_n[ntag]
+				parents_d[atag] = parent.data_a[parent.access]
 			end
-			for ctag, _ in pairs(node.children_c[ttag]) do
-				node.tasks[ctag].dirty = true
-			end
-			if task.access >= Access.writable then
-				node.dirty = true
-			end
-			task.func(node.data, parents_d)
+			task.func(node.data_a[task.access], parents_d)
 			task.count = task.count + 1
 			task.dirty = false
 		end
@@ -30,15 +41,16 @@ local function newNode(data, tasks, access)
 	local node = setmetatable({
 		data = data or {},
 		tasks = {},
-		access = Access[access or "none"],
+		access = access or "none",
+		data_a = {},
 
 		parents_c = {},
 		parents_d = {},
 		children_c = {},
 		order = false,
 
-		dirty = true,
 		tick = tick,
+		spread = spread,
 	}, decreaseOnly)
 
 	local parentSets_c = {}
@@ -46,7 +58,7 @@ local function newNode(data, tasks, access)
 		node.tasks[ttag] = {
 			func = t.func,
 			dirty = true,
-			access = Access[t.access or "none"],
+			access = t.access or "writable",
 			count = 0,
 		}
 		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
@@ -60,6 +72,10 @@ local function newNode(data, tasks, access)
 	end
 
 	node.order = kahn(parentSets_c, childSets_c)
+
+	for atag, a in pairs(Access) do
+		node.data_a[atag] = a.func(node.data)
+	end
 
 	return node
 end
