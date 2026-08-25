@@ -1,3 +1,4 @@
+local Content = {}
 local style = require("extensions.softdraw.style")
 
 local function getDist(parents, order)
@@ -18,6 +19,31 @@ local function getDist(parents, order)
 	return dist
 end
 
+function Content.newVertex(x, y, t)
+	return {
+		x = x,
+		y = y,
+		cb = "dark",
+		cl = "light",
+		ct = "light",
+		t = t,
+	}
+end
+
+function Content.newEdge(x1, y1, x2, y2)
+	return {
+		x1 = x1,
+		y1 = y1,
+		x2 = x2,
+		y2 = y2,
+		cl = "light",
+		cb = "dark",
+		ct = "light",
+		t = "",
+		s = "line",
+	}
+end
+
 local function _newContent(vertices, parents, children, order, X, Y, W, H)
 	local content = {}
 	content.dist = getDist(parents, order)
@@ -28,14 +54,9 @@ local function _newContent(vertices, parents, children, order, X, Y, W, H)
 		local B = #content.dist[j]
 		for i = 1, B do
 			local vtag = content.dist[j][i]
-			content.vertices[vtag] = {
-				x = X + W / B * (i - 0.5),
-				y = Y + H / D * (j - 0.5),
-				cb = "dark",
-				cl = "light",
-				ct = "light",
-				t = vtag,
-			}
+			local x = X + W / B * (i - 0.5)
+			local y = Y + H / D * (j - 0.5)
+			content.vertices[vtag] = Content.newVertex(x, y, vtag)
 		end
 	end
 
@@ -46,17 +67,7 @@ local function _newContent(vertices, parents, children, order, X, Y, W, H)
 		for ctag, _ in pairs(children[vtag]) do
 			local x2 = content.vertices[ctag].x
 			local y2 = content.vertices[ctag].y
-			local edge = {
-				x1 = x1,
-				y1 = y1,
-				x2 = x2,
-				y2 = y2,
-				cl = "light",
-				cb = "dark",
-				ct = "light",
-				t = "",
-				s = "line",
-			}
+			local edge = Content.newEdge(x1, y1, x2, y2)
 			table.insert(content.edges, edge)
 		end
 	end
@@ -92,10 +103,10 @@ local function drawContent(content, theme)
 	end
 end
 
-local function newContent(...)
+function Content.newContent(...)
 	local content = _newContent(...)
 	content.draw = drawContent
 	return content
 end
 
-return newContent
+return Content
