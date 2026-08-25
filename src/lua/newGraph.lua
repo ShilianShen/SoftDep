@@ -4,7 +4,7 @@ local getChildSets = require("src.lua.getChildSets")
 local kahn = require("src.lua.kahn")
 local MathSet = require("src.lua.MathSet")
 
-local function spread(graph, modules)
+local function spread(graph)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 		node.dirty = node:spread()
@@ -14,6 +14,23 @@ local function spread(graph, modules)
 			end
 		end
 	end
+end
+
+local function newModule(graph, ntags)
+	local module = {}
+	module.nodes = MathSet.set2tab(MathSet.arr2set(ntags), graph.nodes)
+	module.parents_n = {}
+
+	for ntag, _ in pairs(module.nodes) do
+		for ptag, _ in pairs(graph.parents_n[ntag]) do
+			if module.nodes[ptag] == nil then
+				module.parents_n[ptag] = true
+			end
+		end
+	end
+	module.parents_n = MathSet.set2tab(module.parents_n, graph.nodes)
+
+	return module
 end
 
 local function run(graph, modules)
@@ -26,7 +43,7 @@ end
 
 local function tick(graph, modules)
 	graph:spread()
-	graph:run()
+	graph:run(modules)
 end
 
 local function newGraph(nodes)
@@ -39,6 +56,7 @@ local function newGraph(nodes)
 		run = run,
 		spread = spread,
 		tick = tick,
+		newModule = newModule,
 	}
 
 	local parentSets_n = {}
