@@ -15,39 +15,19 @@ local softdraw = {
 }
 local newContent = require("extensions.softdraw.newContent")
 
-local function stylizeNode(content, node)
+local function getNodeContent(node, X, Y, W, H)
+	local content = newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
 	for ttag, task in pairs(node.tasks) do
 		content.vertices[ttag].ct = task.dirty and "dirty" or "clean"
 	end
-end
-
-local function stylizeGraph(content, graph)
-	for ntag, node in pairs(graph.nodes) do
-		content.vertices[ntag].ct = node.dirty and "dirty" or "clean"
-	end
-end
-
-function softdraw.drawNode(node, X, Y, W, H)
-	X = X or 0
-	Y = Y or 0
-	W = W or love.graphics.getWidth()
-	H = H or love.graphics.getHeight()
-
-	local content = newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
-	stylizeNode(content, node)
-	content:draw(softdraw.theme)
 	return content
 end
 
-function softdraw.drawGraph(graph, X, Y, W, H)
-	X = X or 0
-	Y = Y or 0
-	W = W or love.graphics.getWidth()
-	H = H or love.graphics.getHeight()
-
+local function getGraphContent(graph, X, Y, W, H)
 	local content = newContent(graph.nodes, graph.parents_n, graph.children_n, graph.order, X, Y, W, H)
-	stylizeGraph(content, graph)
-	content:draw(softdraw.theme)
+	for ntag, node in pairs(graph.nodes) do
+		content.vertices[ntag].ct = node.dirty and "dirty" or "clean"
+	end
 	return content
 end
 
@@ -57,7 +37,8 @@ function softdraw.drawGraphNode(graph, X, Y, W, H)
 	W = W or love.graphics.getWidth()
 	H = H or love.graphics.getHeight()
 
-	local graphContent = softdraw.drawGraph(graph, X, Y, W / 2, H)
+	local graphContent = getGraphContent(graph, X, Y, W / 2, H)
+	graphContent:draw(softdraw.theme)
 	local mouseX, mouseY = love.mouse.getPosition()
 	for ntag, vertex in pairs(graphContent.vertices) do
 		local w = softdraw.theme.font:getWidth(vertex.t)
@@ -70,7 +51,7 @@ function softdraw.drawGraphNode(graph, X, Y, W, H)
 	end
 
 	if softdraw.memory.node ~= nil then
-		softdraw.drawNode(softdraw.memory.node, X + W / 2, Y, W / 2, H)
+		getNodeContent(softdraw.memory.node, X + W / 2, Y, W / 2, H):draw(softdraw.theme)
 	end
 end
 
