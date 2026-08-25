@@ -4,11 +4,12 @@ local softdraw = {
 		clean = { 0.20, 0.90, 0.35 },
 		light = { 0.85, 0.92, 0.85 },
 		dark = { 0.03, 0.05, 0.04 },
+		highlight = { 0.95, 0.78, 0.20 },
 		font = love.graphics.newFont(12),
 	},
 	memory = {
 		ntag = nil,
-        ttag = nil,
+		ttag = nil,
 	},
 }
 local Content = require("extensions.softdraw.Content")
@@ -29,6 +30,19 @@ local function getGraphContent(graph, X, Y, W, H)
 	return content
 end
 
+local function getFocus(content)
+	local mouseX, mouseY = love.mouse.getPosition()
+	for vtag, vertex in pairs(content.vertices) do
+		local w = softdraw.theme.font:getWidth(vertex.t)
+		local h = softdraw.theme.font:getHeight()
+		local dx = (mouseX - vertex.x) / w + 0.5
+		local dy = (mouseY - vertex.y) / h + 0.5
+		if 0 < dx and dx < 1 and 0 < dy and dy < 1 then
+			return vtag
+		end
+	end
+end
+
 function softdraw.drawGraphNode(graph, X, Y, W, H)
 	X = X or 0
 	Y = Y or 0
@@ -37,24 +51,26 @@ function softdraw.drawGraphNode(graph, X, Y, W, H)
 
 	local graphContent = getGraphContent(graph, X, Y, W / 2, H)
 	local nodeContent = nil
-	local ntag = softdraw.memory.ntag
 
-	local mouseX, mouseY = love.mouse.getPosition()
-	for vtag, vertex in pairs(graphContent.vertices) do
-		local w = softdraw.theme.font:getWidth(vertex.t)
-		local h = softdraw.theme.font:getHeight()
-		local dx = (mouseX - vertex.x) / w + 0.5
-		local dy = (mouseY - vertex.y) / h + 0.5
-		if 0 < dx and dx < 1 and 0 < dy and dy < 1 then
-			ntag = vtag
-		end
+	local ntag = getFocus(graphContent)
+	if ntag ~= softdraw.memory.ntag and ntag ~= nil then
+		softdraw.memory.ttag = nil
 	end
-	softdraw.memory.ntag = ntag
+
+	softdraw.memory.ntag = ntag or softdraw.memory.ntag
+	ntag = softdraw.memory.ntag
 
 	if ntag then
+		graphContent.vertices[ntag].cb = "highlight"
 		local node = graph.nodes[ntag]
 		nodeContent = getNodeContent(node, X + W / 2, Y, W / 2, H)
-		for ttag, task in pairs(node.tasks) do
+		softdraw.memory.ttag = getFocus(nodeContent) or softdraw.memory.ttag
+		local ttag = softdraw.memory.ttag
+
+		if ttag then
+			nodeContent.vertices[ttag].cb = "highlight"
+			local task = node.tasks[ttag]
+
 			local v2 = nodeContent.vertices[ttag]
 			for _, dtag in pairs(node.parents_d[ttag]) do
 				local v1 = graphContent.vertices[dtag]
