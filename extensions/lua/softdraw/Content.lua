@@ -1,5 +1,5 @@
 local Content = {}
-local style = require("extensions.softdraw.style")
+local style = require("extensions.lua.softdraw.style")
 
 local function getDist(parents, order)
 	local depth = {}

@@ -13,7 +13,7 @@ local softdraw = {
 		ttag = nil,
 	},
 }
-local Content = require("extensions.softdraw.Content")
+local Content = require("extensions.lua.softdraw.Content")
 
 local function getNodeContent(node, X, Y, W, H)
 	local content = Content.newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
