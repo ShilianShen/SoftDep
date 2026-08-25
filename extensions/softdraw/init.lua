@@ -6,7 +6,6 @@ local softdraw = {
 		dark = { 0.03, 0.05, 0.04 },
 		highlight_b = { 0.14, 0.16, 0.07 },
 		highlight_l = { 0.85, 0.70, 0.18 },
-		highlight_t = { 0.95, 0.25, 0.20 },
 		font = love.graphics.newFont(12),
 	},
 	memory = {
