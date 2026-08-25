@@ -1,3 +1,5 @@
+local style = require("extensions.softdraw.style")
+
 local function getDist(parents, order)
 	local depth = {}
 	for _, vtag in ipairs(order) do
@@ -30,7 +32,7 @@ local function _newContent(vertices, parents, children, order, X, Y, W, H)
 				x = X + W / B * (i - 0.5),
 				y = Y + H / D * (j - 0.5),
 				cb = "dark",
-				cf = "light",
+				cl = "light",
 				ct = "light",
 				t = vtag,
 			}
@@ -49,8 +51,11 @@ local function _newContent(vertices, parents, children, order, X, Y, W, H)
 				y1 = y1,
 				x2 = x2,
 				y2 = y2,
-				c = "light",
+				cl = "light",
+				cb = "dark",
+				ct = "light",
 				t = "",
+				s = "line",
 			}
 			table.insert(content.edges, edge)
 		end
@@ -61,8 +66,16 @@ end
 
 local function drawContent(content, theme)
 	for _, edge in ipairs(content.edges) do
-		love.graphics.setColor(theme[edge.c])
-		love.graphics.line(edge.x1, edge.y1, edge.x2, edge.y2)
+		local w = theme.font:getWidth(edge.t)
+		local h = theme.font:getHeight()
+		local x = (edge.x1 + edge.x2 - w) / 2
+		local y = (edge.y1 + edge.y2 - h) / 2
+		love.graphics.setColor(theme[edge.cl])
+		style[edge.s](edge.x1, edge.y1, edge.x2, edge.y2)
+		love.graphics.setColor(theme[edge.cb])
+		love.graphics.rectangle("fill", x, y, w, h)
+		love.graphics.setColor(theme[edge.ct])
+		love.graphics.print(edge.t, x, y)
 	end
 
 	for _, vertex in pairs(content.vertices) do
@@ -72,7 +85,7 @@ local function drawContent(content, theme)
 		local y = vertex.y - h / 2
 		love.graphics.setColor(theme[vertex.cb])
 		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
-		love.graphics.setColor(theme[vertex.cf])
+		love.graphics.setColor(theme[vertex.cl])
 		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
 		love.graphics.setColor(theme[vertex.ct])
 		love.graphics.print(vertex.t, x, y)
