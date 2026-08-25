@@ -4,7 +4,9 @@ local softdraw = {
 		clean = { 0.20, 0.90, 0.35 },
 		light = { 0.85, 0.92, 0.85 },
 		dark = { 0.03, 0.05, 0.04 },
-		highlight = { 0.95, 0.78, 0.20 },
+		highlight_b = { 0.14, 0.16, 0.07 },
+		highlight_l = { 0.85, 0.70, 0.18 },
+		highlight_t = { 0.95, 0.25, 0.20 },
 		font = love.graphics.newFont(12),
 	},
 	memory = {
@@ -61,14 +63,16 @@ function softdraw.drawGraphNode(graph, X, Y, W, H)
 	ntag = softdraw.memory.ntag
 
 	if ntag then
-		graphContent.vertices[ntag].cb = "highlight"
+		graphContent.vertices[ntag].cb = "highlight_b"
+		graphContent.vertices[ntag].cl = "highlight_l"
 		local node = graph.nodes[ntag]
 		nodeContent = getNodeContent(node, X + W / 2, Y, W / 2, H)
 		softdraw.memory.ttag = getFocus(nodeContent) or softdraw.memory.ttag
 		local ttag = softdraw.memory.ttag
 
 		if ttag then
-			nodeContent.vertices[ttag].cb = "highlight"
+			nodeContent.vertices[ttag].cb = "highlight_b"
+			nodeContent.vertices[ttag].cl = "highlight_l"
 			local task = node.tasks[ttag]
 
 			local v2 = nodeContent.vertices[ttag]
