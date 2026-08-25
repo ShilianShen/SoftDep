@@ -16,6 +16,10 @@ local function getDist(parents, order)
 		table.insert(dist[d], vtag)
 	end
 
+	for d = 1, #dist do
+		table.sort(dist[d])
+	end
+
 	return dist
 end
 
