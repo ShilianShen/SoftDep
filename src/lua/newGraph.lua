@@ -34,10 +34,20 @@ local function newModule(graph, ntags)
 end
 
 local function run(graph, modules)
+	if modules ~= nil then
+		local clean = true
+		for _, pnode in pairs(modules.parents_n) do
+			clean = clean and pnode
+		end
+		assert(clean)
+	end
+
 	for _, ntag in ipairs(graph.order) do
-		local node = graph.nodes[ntag]
-		node:run(graph.parents_n[ntag])
-		node.dirty = false
+		if modules == nil or modules.nodes[ntag] ~= nil then
+			local node = graph.nodes[ntag]
+			node:run(graph.parents_n[ntag])
+			node.dirty = false
+		end
 	end
 end
 
