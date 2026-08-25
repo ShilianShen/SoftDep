@@ -1,6 +1,3 @@
-local Content = {}
-local theme = require("extensions.softdraw.theme")
-
 local function getDist(parents, order)
 	local depth = {}
 	for _, vtag in ipairs(order) do
@@ -19,26 +16,7 @@ local function getDist(parents, order)
 	return dist
 end
 
-local function drawContent(content)
-	for _, edge in ipairs(content.edges) do
-		love.graphics.setColor(edge.c)
-		love.graphics.line(edge.x1, edge.y1, edge.x2, edge.y2)
-	end
-
-	for _, vertex in pairs(content.vertices) do
-		local w, h = vertex.t:getDimensions()
-		local x = vertex.x - w / 2
-		local y = vertex.y - h / 2
-		love.graphics.setColor(vertex.cb)
-		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
-		love.graphics.setColor(vertex.cf)
-		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
-		love.graphics.setColor(vertex.ct)
-		love.graphics.draw(vertex.t, x, y)
-	end
-end
-
-local function newContent(vertices, parents, children, order, X, Y, W, H)
+local function _newContent(vertices, parents, children, order, X, Y, W, H)
 	local content = {}
 	content.dist = getDist(parents, order)
 
@@ -51,10 +29,10 @@ local function newContent(vertices, parents, children, order, X, Y, W, H)
 			content.vertices[vtag] = {
 				x = X + W / B * (i - 0.5),
 				y = Y + H / D * (j - 0.5),
-				cb = theme.dark,
-				cf = theme.light,
-				ct = theme.light,
-				t = love.graphics.newText(theme.font, vtag),
+				cb = "dark",
+				cf = "light",
+				ct = "light",
+				t = vtag,
 			}
 		end
 	end
@@ -71,12 +49,38 @@ local function newContent(vertices, parents, children, order, X, Y, W, H)
 				y1 = y1,
 				x2 = x2,
 				y2 = y2,
-				c = theme.light,
+				c = "light",
+				t = "",
 			}
 			table.insert(content.edges, edge)
 		end
 	end
 
+	return content
+end
+
+local function drawContent(content, theme)
+	for _, edge in ipairs(content.edges) do
+		love.graphics.setColor(theme[edge.c])
+		love.graphics.line(edge.x1, edge.y1, edge.x2, edge.y2)
+	end
+
+	for _, vertex in pairs(content.vertices) do
+		local w = theme.font:getWidth(vertex.t)
+		local h = theme.font:getHeight()
+		local x = vertex.x - w / 2
+		local y = vertex.y - h / 2
+		love.graphics.setColor(theme[vertex.cb])
+		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
+		love.graphics.setColor(theme[vertex.cf])
+		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
+		love.graphics.setColor(theme[vertex.ct])
+		love.graphics.print(vertex.t, x, y)
+	end
+end
+
+local function newContent(...)
+	local content = _newContent(...)
 	content.draw = drawContent
 	return content
 end
