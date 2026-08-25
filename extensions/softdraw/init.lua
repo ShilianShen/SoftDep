@@ -44,7 +44,7 @@ local function getFocus(content)
 	end
 end
 
-function softdraw.drawGraphNode(graph, X, Y, W, H)
+function softdraw.draw(graph, X, Y, W, H)
 	X = X or 0
 	Y = Y or 0
 	W = W or love.graphics.getWidth()
@@ -73,7 +73,6 @@ function softdraw.drawGraphNode(graph, X, Y, W, H)
 			nodeContent.vertices[ttag].cb = "highlight_b"
 			nodeContent.vertices[ttag].cl = "highlight_l"
 			local task = node.tasks[ttag]
-
 			local v2 = nodeContent.vertices[ttag]
 			for _, dtag in pairs(node.parents_d[ttag]) do
 				local v1 = graphContent.vertices[dtag]

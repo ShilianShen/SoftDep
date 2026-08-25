@@ -30,7 +30,7 @@ local function tick(graph, modules)
 end
 
 local function newGraph(nodes)
-	local graph = setmetatable({
+	local graph = {
 		nodes = nodes,
 		parents_n = {},
 		children_n = {},
@@ -39,7 +39,7 @@ local function newGraph(nodes)
 		run = run,
 		spread = spread,
 		tick = tick,
-	}, decreaseOnly)
+	}
 
 	local parentSets_n = {}
 	for ntag, node in pairs(graph.nodes) do
