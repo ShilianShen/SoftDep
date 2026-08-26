@@ -1,9 +1,9 @@
-local deepCopy = require("src.lua.deepCopy")
-local decreaseOnly = require("src.lua.decreaseOnly")
-local getChildSets = require("src.lua.getChildSets")
-local kahn = require("src.lua.kahn")
-local MathSet = require("src.lua.MathSet")
-local Access = require("src.lua.Access")
+local deepCopy = require("softdep.deepCopy")
+local decreaseOnly = require("softdep.decreaseOnly")
+local getChildSets = require("softdep.getChildSets")
+local kahn = require("softdep.kahn")
+local MathSet = require("softdep.MathSet")
+local Access = require("softdep.Access")
 
 local function spread(node)
 	local dirty = false

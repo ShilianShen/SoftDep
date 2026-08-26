@@ -1,8 +1,8 @@
-local deepCopy = require("src.lua.deepCopy")
-local decreaseOnly = require("src.lua.decreaseOnly")
-local getChildSets = require("src.lua.getChildSets")
-local kahn = require("src.lua.kahn")
-local MathSet = require("src.lua.MathSet")
+local deepCopy = require("softdep.deepCopy")
+local decreaseOnly = require("softdep.decreaseOnly")
+local getChildSets = require("softdep.getChildSets")
+local kahn = require("softdep.kahn")
+local MathSet = require("softdep.MathSet")
 
 local function spread(graph)
 	for _, ntag in ipairs(graph.order) do

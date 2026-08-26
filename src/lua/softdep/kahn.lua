@@ -1,4 +1,4 @@
-local MathSet = require("src.lua.MathSet")
+local MathSet = require("softdep.MathSet")
 
 local function kahn(parentSets, childSets)
 	local indegrees = {}
