@@ -94,8 +94,15 @@ local function load(graph)
 end
 
 local function extend(graph, ntag, node)
-	assert(graph.nodes[ntag] == nil)
-	graph.nodes[ntag] = node
+	if type(ntag) == "string" then
+		assert(graph.nodes[ntag] == nil)
+		graph.nodes[ntag] = node
+	elseif type(ntag) == "table" then
+		for t, n in pairs(ntag) do
+			assert(graph.nodes[t] == nil)
+			graph.nodes[t] = n
+		end
+	end
 	graph:load()
 end
 
