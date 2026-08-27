@@ -1,6 +1,6 @@
 local deepCopy = require("softdep.deepCopy")
 local decreaseOnly = require("softdep.decreaseOnly")
-local getChildSets = require("softdep.getChildSets")
+local adopt = require("src.lua.softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 
@@ -78,7 +78,7 @@ local function load(graph)
 			end
 		end
 	end
-	local childSets_n = getChildSets(parentSets_n)
+	local childSets_n = adopt(parentSets_n)
 
 	for ntag, _ in pairs(graph.nodes) do
 		graph.children_d[ntag] = {}

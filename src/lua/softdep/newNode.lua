@@ -1,6 +1,6 @@
 local deepCopy = require("softdep.deepCopy")
 local decreaseOnly = require("softdep.decreaseOnly")
-local getChildSets = require("softdep.getChildSets")
+local adopt = require("src.lua.softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
@@ -65,7 +65,7 @@ local function newNode(data, tasks, access)
 		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
 		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
 	end
-	local childSets_c = getChildSets(parentSets_c)
+	local childSets_c = adopt(parentSets_c)
 
 	for ttag, _ in pairs(node.tasks) do
 		node.parents_c[ttag] = MathSet.set2tab(parentSets_c[ttag], node.tasks)

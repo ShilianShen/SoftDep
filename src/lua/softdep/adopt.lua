@@ -1,4 +1,4 @@
-local function getChildSets(parentSets)
+local function adopt(parentSets)
 	local ChildSets = {}
 	for v, _ in pairs(parentSets) do
 		ChildSets[v] = {}
@@ -11,4 +11,4 @@ local function getChildSets(parentSets)
 	return ChildSets
 end
 
-return getChildSets
+return adopt
