@@ -1,5 +1,3 @@
-local deepCopy = require("softdep.deepCopy")
-local decreaseOnly = require("softdep.decreaseOnly")
 local adopt = require("src.lua.softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")

@@ -1,5 +1,4 @@
 local deepCopy = require("softdep.deepCopy")
-local decreaseOnly = require("softdep.decreaseOnly")
 local adopt = require("src.lua.softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
@@ -38,7 +37,7 @@ local function run(node, parents_n)
 end
 
 local function newNode(data, tasks, access)
-	local node = setmetatable({
+	local node = {
 		data = data or {},
 		tasks = {},
 		access = access or "none",
@@ -52,7 +51,7 @@ local function newNode(data, tasks, access)
 
 		run = run,
 		spread = spread,
-	}, decreaseOnly)
+	}
 
 	local parentSets_c = {}
 	for ttag, t in pairs(tasks or {}) do
