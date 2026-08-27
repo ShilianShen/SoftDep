@@ -5,6 +5,7 @@ local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 
 local function spread(graph)
+	assert(graph.ready)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 		node.dirty = node:spread()
@@ -17,6 +18,7 @@ local function spread(graph)
 end
 
 local function newModule(graph, ntags)
+	assert(graph.ready)
 	local module = {}
 	module.nodes = MathSet.set2tab(MathSet.arr2set(ntags), graph.nodes)
 	module.parents_n = {}
@@ -34,6 +36,7 @@ local function newModule(graph, ntags)
 end
 
 local function run(graph, modules)
+	assert(graph.ready)
 	if modules ~= nil then
 		local clean = true
 		for _, pnode in pairs(modules.parents_n) do
@@ -52,23 +55,13 @@ local function run(graph, modules)
 end
 
 local function tick(graph, modules)
+	assert(graph.ready)
 	graph:spread()
 	graph:run(modules)
 end
 
-local function newGraph(nodes)
-	local graph = {
-		nodes = nodes,
-		parents_n = {},
-		children_n = {},
-		children_d = {},
-		order = false,
-		run = run,
-		spread = spread,
-		tick = tick,
-		newModule = newModule,
-	}
-
+local function load(graph)
+	graph.ready = false
 	local parentSets_n = {}
 	for ntag, node in pairs(graph.nodes) do
 		parentSets_n[ntag] = {}
@@ -97,6 +90,31 @@ local function newGraph(nodes)
 		graph.parents_n[ntag] = MathSet.set2tab(parentSets_n[ntag], graph.nodes)
 		graph.children_n[ntag] = MathSet.set2tab(childSets_n[ntag], graph.nodes)
 	end
+	graph.ready = true
+end
+
+local function extend(graph, ntag, node)
+	assert(graph.nodes[ntag] == nil)
+	graph.nodes[ntag] = node
+	graph:load()
+end
+
+local function newGraph(nodes)
+	local graph = {
+		nodes = nodes,
+		parents_n = {},
+		children_n = {},
+		children_d = {},
+		order = false,
+		run = run,
+		spread = spread,
+		tick = tick,
+		newModule = newModule,
+		ready = false,
+		load = load,
+		extend = extend,
+	}
+	graph:load()
 	return graph
 end
 
