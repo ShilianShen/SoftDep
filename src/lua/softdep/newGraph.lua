@@ -20,18 +20,25 @@ end
 local function newModule(graph, ntags)
 	assert(graph.ready)
 	local module = {}
-	module.nodes = MathSet.set2tab(MathSet.arr2set(ntags), graph.nodes)
-	module.parents_n = {}
+	if type(ntags) == "table" then
+		module.nodes = MathSet.set2tab(MathSet.arr2set(ntags), graph.nodes)
+		module.parents_n = {}
 
-	for ntag, _ in pairs(module.nodes) do
-		for ptag, _ in pairs(graph.parents_n[ntag]) do
-			if module.nodes[ptag] == nil then
-				module.parents_n[ptag] = true
+		for ntag, _ in pairs(module.nodes) do
+			for ptag, _ in pairs(graph.parents_n[ntag]) do
+				if module.nodes[ptag] == nil then
+					module.parents_n[ptag] = true
+				end
 			end
 		end
+		module.parents_n = MathSet.set2tab(module.parents_n, graph.nodes)
+	elseif type(ntags) == "nil" then
+		ntags = {}
+		for ntag, _ in pairs(graph.nodes) do
+			table.insert(ntags, ntag)
+		end
+		module = newModule(graph, ntags)
 	end
-	module.parents_n = MathSet.set2tab(module.parents_n, graph.nodes)
-
 	return module
 end
 
