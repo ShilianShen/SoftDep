@@ -1,8 +1,27 @@
-local deepCopy = require("softdep.deepCopy")
 local adopt = require("src.lua.softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
+
+local function deepCopy(value, seen)
+	if type(value) ~= "table" then
+		return value
+	end
+
+	seen = seen or {}
+	if seen[value] then
+		return seen[value]
+	end
+
+	local copy = {}
+	seen[value] = copy
+
+	for key, item in pairs(value) do
+		copy[deepCopy(key, seen)] = deepCopy(item, seen)
+	end
+
+	return copy
+end
 
 local function spread(node)
 	local dirty = false
