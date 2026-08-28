@@ -6,7 +6,7 @@ local function spread(graph)
 	assert(graph.ready)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
-		node.dirty = node:spread()
+		node.dirty = node.dirty or node:spread()
 		if node.dirty then
 			for _, task in ipairs(graph.children_d[ntag]) do
 				task.dirty = true
