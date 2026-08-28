@@ -1,3 +1,4 @@
+local Content = require("softdraw.Content")
 local softdraw = {
 	theme = {
 		dirty = { 0.95, 0.25, 0.20 },
@@ -13,7 +14,6 @@ local softdraw = {
 		ttag = nil,
 	},
 }
-local Content = require("softdraw.Content")
 
 local function getNodeContent(node, X, Y, W, H)
 	local content = Content.newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
@@ -44,7 +44,7 @@ local function getFocus(content)
 	end
 end
 
-function softdraw.draw(graph, X, Y, W, H)
+local function draw(graph, X, Y, W, H)
 	X = X or 0
 	Y = Y or 0
 	W = W or love.graphics.getWidth()
@@ -93,6 +93,12 @@ function softdraw.draw(graph, X, Y, W, H)
 		nodeContent:draw(softdraw.theme)
 	end
 	graphContent:draw(softdraw.theme)
+end
+
+function softdraw.draw(...)
+	love.graphics.push("all")
+	draw(...)
+	love.graphics.pop()
 end
 
 return softdraw
