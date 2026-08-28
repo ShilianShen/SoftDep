@@ -3,6 +3,8 @@ local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
 
+local function pass(...) end
+
 local function deepCopy(value, seen)
 	if type(value) ~= "table" then
 		return value
@@ -55,12 +57,13 @@ local function run(node, parents_n)
 	end
 end
 
-local function newNode(data, tasks, access)
+local function newNode(data, tasks, access, api)
 	local node = {
 		data = data or {},
 		tasks = {},
 		access = access or "none",
 		data_a = {},
+		api = {},
 
 		parents_c = {},
 		parents_d = {},
@@ -72,10 +75,22 @@ local function newNode(data, tasks, access)
 		spread = spread,
 	}
 
+	for key, val in pairs(api or {}) do
+		local func = val.func or pass
+		local ttag = val.task
+		node.api[key] = function(...)
+			func(...)
+			if ttag then
+				node.tasks[ttag].dirty = true
+			end
+			node.dirty = true
+		end
+	end
+
 	local parentSets_c = {}
 	for ttag, t in pairs(tasks or {}) do
 		node.tasks[ttag] = {
-			func = t.func,
+			func = t.func or pass,
 			dirty = true,
 			access = t.access or "writable",
 			count = 0,
