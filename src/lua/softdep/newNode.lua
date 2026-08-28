@@ -1,4 +1,4 @@
-local adopt = require("src.lua.softdep.adopt")
+local adopt = require("softdep.adopt")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
