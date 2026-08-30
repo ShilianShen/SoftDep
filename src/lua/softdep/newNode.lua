@@ -38,7 +38,7 @@ local function spread(node)
 			end
 		end
 	end
-	return dirty
+	node.dirty = node.dirty or dirty
 end
 
 local function run(node, parents_n)
