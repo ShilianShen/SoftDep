@@ -26,7 +26,6 @@ local function deepCopy(value, seen)
 end
 
 local function spread(node)
-	local dirty = false
 	for _, ttag in ipairs(node.order) do
 		local task = node.tasks[ttag]
 		if task.dirty then
@@ -34,11 +33,10 @@ local function spread(node)
 				node.tasks[ctag].dirty = true
 			end
 			if Access[task.access] >= Access.writable then
-				dirty = true
+				node.dirty = true
 			end
 		end
 	end
-	node.dirty = node.dirty or dirty
 end
 
 local function run(node, parents_n)
