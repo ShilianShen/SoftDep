@@ -90,7 +90,7 @@ local function drawContent(content, theme)
 		love.graphics.setColor(theme[edge.cb])
 		love.graphics.rectangle("fill", x, y, w, h)
 		love.graphics.setColor(theme[edge.ct])
-		love.graphics.print(edge.t, x, y)
+		love.graphics.print(edge.t, theme.font, x, y)
 	end
 
 	for _, vertex in pairs(content.vertices) do
@@ -103,7 +103,7 @@ local function drawContent(content, theme)
 		love.graphics.setColor(theme[vertex.cl])
 		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
 		love.graphics.setColor(theme[vertex.ct])
-		love.graphics.print(vertex.t, x, y)
+		love.graphics.print(vertex.t, theme.font, x, y)
 	end
 end
 

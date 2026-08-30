@@ -28,6 +28,9 @@ end
 local function spread(node)
 	for _, ttag in ipairs(node.order) do
 		local task = node.tasks[ttag]
+		if task.auto then
+			task.dirty = task.dirty or task.auto(node.data_a.readonly)
+		end
 		if task.dirty then
 			for ctag, _ in pairs(node.children_c[ttag]) do
 				node.tasks[ctag].dirty = true
@@ -73,11 +76,14 @@ local function newNode(data, tasks, access, api)
 		spread = spread,
 	}
 
+	api = api or {}
 	for key, val in pairs(api or {}) do
 		local func = val.func or pass
 		local ttag = val.task
 		node.api[key] = function(...)
-			func(...)
+			if func then
+				func(...)
+			end
 			if ttag then
 				node.tasks[ttag].dirty = true
 			end
@@ -92,6 +98,7 @@ local function newNode(data, tasks, access, api)
 			dirty = true,
 			access = t.access or "writable",
 			count = 0,
+			auto = t.auto or false,
 		}
 		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
 		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
