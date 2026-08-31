@@ -1,12 +1,17 @@
 local Content = require("softdraw.Content")
 local softdraw = {
 	theme = {
-		dirty = { 0.95, 0.25, 0.20 },
-		clean = { 0.20, 0.90, 0.35 },
-		light = { 0.85, 0.92, 0.85 },
-		dark = { 0.03, 0.05, 0.04 },
-		highlight_b = { 0.14, 0.16, 0.07 },
-		highlight_l = { 0.85, 0.70, 0.18 },
+		background = { 0.025, 0.035, 0.030, 0.5 },
+		text = { 0.78, 0.86, 0.80 },
+		border = { 0.20, 0.28, 0.23 },
+		transparent = { 0, 0, 0, 0 },
+
+		surface = { 0.045, 0.060, 0.052 },
+
+		warning = { 0.95, 0.55, 0.22 },
+		success = { 0.30, 0.88, 0.48 },
+
+		accent = { 0.35, 0.95, 0.58, 0.14 },
 		font = love.graphics.newFont(12),
 	},
 	memory = {
@@ -18,7 +23,7 @@ local softdraw = {
 local function getNodeContent(node, X, Y, W, H)
 	local content = Content.newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
 	for ttag, task in pairs(node.tasks) do
-		content.vertices[ttag].ct = task.dirty and "dirty" or "clean"
+		content.vertices[ttag].ct = task.dirty and "warning" or "success"
 	end
 	return content
 end
@@ -26,7 +31,7 @@ end
 local function getGraphContent(graph, X, Y, W, H)
 	local content = Content.newContent(graph.nodes, graph.parents_n, graph.children_n, graph.order, X, Y, W, H)
 	for ntag, node in pairs(graph.nodes) do
-		content.vertices[ntag].ct = node.dirty and "dirty" or "clean"
+		content.vertices[ntag].ct = node.dirty and "warning" or "success"
 	end
 	return content
 end
@@ -62,16 +67,14 @@ local function draw(graph, X, Y, W, H)
 	ntag = softdraw.memory.ntag
 
 	if ntag then
-		graphContent.vertices[ntag].cb = "highlight_b"
-		graphContent.vertices[ntag].cl = "highlight_l"
+		graphContent.vertices[ntag].cm = "accent"
 		local node = graph.nodes[ntag]
 		nodeContent = getNodeContent(node, X + W / 2, Y, W / 2, H)
 		softdraw.memory.ttag = getFocus(nodeContent) or softdraw.memory.ttag
 		local ttag = softdraw.memory.ttag
 
 		if ttag then
-			nodeContent.vertices[ttag].cb = "highlight_b"
-			nodeContent.vertices[ttag].cl = "highlight_l"
+			nodeContent.vertices[ttag].cm = "accent"
 			local task = node.tasks[ttag]
 			local v2 = nodeContent.vertices[ttag]
 			for _, dtag in pairs(node.parents_d[ttag]) do

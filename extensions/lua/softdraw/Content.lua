@@ -27,9 +27,10 @@ function Content.newVertex(x, y, t)
 	return {
 		x = x,
 		y = y,
-		cb = "dark",
-		cl = "light",
-		ct = "light",
+		cb = "surface",
+		cl = "border",
+		ct = "text",
+		cm = "transparent",
 		t = t,
 	}
 end
@@ -40,9 +41,9 @@ function Content.newEdge(x1, y1, x2, y2)
 		y1 = y1,
 		x2 = x2,
 		y2 = y2,
-		cl = "light",
-		cb = "dark",
-		ct = "light",
+		cl = "border",
+		cb = "surface",
+		ct = "text",
 		t = "",
 		s = "line",
 	}
@@ -102,6 +103,8 @@ local function drawContent(content, theme)
 		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
 		love.graphics.setColor(theme[vertex.cl])
 		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
+		love.graphics.setColor(theme[vertex.cm])
+		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
 		love.graphics.setColor(theme[vertex.ct])
 		love.graphics.print(vertex.t, theme.font, x, y)
 	end
