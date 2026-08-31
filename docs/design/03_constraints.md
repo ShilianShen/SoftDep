@@ -5,7 +5,7 @@
 Each task can have an access level greater than or equal to order-sensitive for at most one data item.
 
 $$
-\forall t\in \mathcal{T}:\sum_{d\in \operatorname{parents}_d(t)}\mathbb{1}[\operatorname{access}(d, t)\ge \mathrm{OS}]\le 1
+\forall t\in \mathcal{T}:\sum_{d\in \mathop{\text{parents}}_d(t)}\mathbb{1}[\mathop{\text{access}}(d, t)\ge \mathrm{OS}]\le 1
 $$
 
 If an existing task does not satisfy this property, it can be split into smaller tasks that do.
@@ -19,8 +19,8 @@ $$
 Each $n=(d, T, a)\in \mathcal{N}$ satisfies the following properties:
 
 - $d\in \mathcal{D}, T\subseteq \mathcal{T}$
-- $\forall t\in \mathcal{T}:((d, t)\in E_d \land \operatorname{access}(d, t)\ge \mathrm{OS})\to t\in T$
-- $a\in A, \bigvee_{(d, t)\in E_d,t\notin T} \operatorname{access}(d,t)\le a<\mathrm{OS}$
+- $\forall t\in \mathcal{T}:((d, t)\in E_d \land \mathop{\text{access}}(d, t)\ge \mathrm{OS})\to t\in T$
+- $a\in A, \bigvee_{(d, t)\in E_d,t\notin T} \mathop{\text{access}}(d,t)\le a<\mathrm{OS}$
 
 For convenience, we use subscripts to indicate the relationships among $n$, $d$, $T$, and $t$. Variables sharing the same subscript satisfy the relations $n_i=(d_i, T_i, a_i)$ and $t_i\in T_i$.
 

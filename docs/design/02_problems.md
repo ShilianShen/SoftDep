@@ -22,7 +22,7 @@ Assume that $A$ contains the following access levels:
 
 - $\mathrm{OS}$: order-sensitive
 - $\mathrm{RO}$: readonly. Example: `print`
-- $\mathrm{OISW}$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $\operatorname{access}(d, a), \operatorname{access}(d, b)\le \mathrm{OISW}$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
+- $\mathrm{OISW}$: order-insensitive write without read, meaning that for a data item $d$ and two tasks $a, b$ with $\mathop{\text{access}}(d, a), \mathop{\text{access}}(d, b)\le \mathrm{OISW}$, the results of $(a, b)$ and $(b, a)$ are the same. Example: `x++`
 
 Obviously, these access levels satisfy $\mathrm{OS} = \mathrm{RO}\vee \mathrm{OISW}$.
 
@@ -30,9 +30,9 @@ The problem happens if and only if
 
 $$
 \exists d\in \mathcal{D},
-\exists T\in \operatorname{parallel}(d):
+\exists T\in \mathop{\text{parallel}}(d):
 \left(
-    \bigvee_{t\in T}\operatorname{access}(d, t)\ge \mathrm{OS}
+    \bigvee_{t\in T}\mathop{\text{access}}(d, t)\ge \mathrm{OS}
 \right)
 \land (|T|>1)
 $$

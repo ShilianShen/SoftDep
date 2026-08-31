@@ -29,11 +29,11 @@ For $(d, t)\in E_d$, we say that $t$ depends on $d$.
 ### Parents and Children
 
 $$
-\operatorname{parents}_i(x)=\{p|(p, x)\in E_i\}
+\mathop{\text{parents}}_i(x)=\{p|(p, x)\in E_i\}
 $$
 
 $$
-\operatorname{children}_i(x)=\{c|(x, c)\in E_i\}
+\mathop{\text{children}}_i(x)=\{c|(x, c)\in E_i\}
 $$
 
 ### Path
@@ -64,8 +64,8 @@ $$
 ### Parallel Tasks
 
 $$
-\operatorname{parallel}(d) = \{
-T\subseteq \operatorname{children}_d(d)\mid
+\mathop{\text{parallel}}(d) = \{
+T\subseteq \mathop{\text{children}}_d(d)\mid
 \forall a,b\in T: \neg(a\leadsto b\lor b\leadsto a)
 \}
 $$
@@ -81,10 +81,10 @@ Because there is no path in $T$ we have $|O(T)|=|T|!$.
 ### Access
 
 $$
-\operatorname{access}: E_d\to A
+\mathop{\text{access}}: E_d\to A
 $$
 
-We use $\operatorname{access}(d,t)$ as shorthand for $\operatorname{access}((d,t))$.
+We use $\mathop{\text{access}}(d,t)$ as shorthand for $\mathop{\text{access}}((d,t))$.
 
 ---
 
@@ -99,7 +99,7 @@ For $a, b\in A^\circ$ with $a<b$, we say that $b$ is a higher access level than 
 
 ---
 
-$A=\operatorname{DM}(A^\circ)$ is the Dedekind–MacNeille completion of $A^\circ$.
+$A=\mathop{\text{DM}}(A^\circ)$ is the Dedekind–MacNeille completion of $A^\circ$.
 
 Thus, $(A, \le)$ satisfies the following properties:
 
@@ -111,7 +111,7 @@ Thus, $(A, \le)$ satisfies the following properties:
 A task can be considered a list of operations or smaller tasks $t = (t_1, \dots, t_n)$. In this case, we can determine the minimum access level required by $t$:
 
 $$
-\operatorname{access}(d, t)=\bigvee_{i\le |t|}\operatorname{access}(d, t_i)
+\mathop{\text{access}}(d, t)=\bigvee_{i\le |t|}\mathop{\text{access}}(d, t_i)
 $$
 
 Sometimes, it is useful to consider multiple tasks as a single task. In this way, the minimum access level required by any task group can be determined.
@@ -119,11 +119,11 @@ Sometimes, it is useful to consider multiple tasks as a single task. In this way
 ### Dirty
 
 $$
-\operatorname{dirty}:\mathcal{T}\to\mathbb{B}
+\mathop{\text{dirty}}:\mathcal{T}\to\mathbb{B}
 $$
 
 $$
-\operatorname{dirty}_{i+1}(t)=\operatorname{dirty}_i(t)\lor(\exists p\in \operatorname{parents}_c(t):\operatorname{dirty}_i(p))
+\mathop{\text{dirty}}_{i+1}(t)=\mathop{\text{dirty}}_i(t)\lor(\exists p\in \mathop{\text{parents}}_c(t):\mathop{\text{dirty}}_i(p))
 $$
 
-The sequence $\{\operatorname{dirty}_i\}_{i\ge 0}$ takes at least $|\mathcal{T}|$ steps to reach the final value.
+The sequence $\{\mathop{\text{dirty}}_i\}_{i\ge 0}$ takes at least $|\mathcal{T}|$ steps to reach the final value.
