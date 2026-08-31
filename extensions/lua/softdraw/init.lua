@@ -2,14 +2,12 @@ local Content = require("softdraw.Content")
 local softdraw = {
 	theme = {
 		colors = {
-			background = { 0.025, 0.025, 0.025 },
+			background = { 0.025, 0.025, 0.025, 0.7 },
 
 			text = { 0.88, 0.88, 0.84 },
 			border = { 0.72, 0.72, 0.68 },
 			surface = { 0.055, 0.055, 0.050 },
 
-			accent = { 0.95, 0.78, 0.20 },
-			accent_text = { 1.00, 0.84, 0.28 },
 			accent_border = { 0.72, 0.58, 0.12 },
 			accent_surface = { 0.12, 0.10, 0.04 },
 
