@@ -26,7 +26,7 @@ local softdraw = {
 local function getNodeContent(node, X, Y, W, H)
 	local content = Content.newContent(node.tasks, node.parents_c, node.children_c, node.order, X, Y, W, H)
 	for ttag, task in pairs(node.tasks) do
-		content.vertices[ttag].ct = task.dirty and "warning" or "success"
+		content.vertices[ttag].textColor = task.dirty and "warning" or "success"
 	end
 	return content
 end
@@ -34,7 +34,7 @@ end
 local function getGraphContent(graph, X, Y, W, H)
 	local content = Content.newContent(graph.nodes, graph.parents_n, graph.children_n, graph.order, X, Y, W, H)
 	for ntag, node in pairs(graph.nodes) do
-		content.vertices[ntag].ct = node.dirty and "warning" or "success"
+		content.vertices[ntag].textColor = node.dirty and "warning" or "success"
 	end
 	return content
 end
@@ -42,7 +42,7 @@ end
 local function getFocus(content)
 	local mouseX, mouseY = love.mouse.getPosition()
 	for vtag, vertex in pairs(content.vertices) do
-		local w = softdraw.theme.font:getWidth(vertex.t)
+		local w = softdraw.theme.font:getWidth(vertex.text)
 		local h = softdraw.theme.font:getHeight()
 		local dx = (mouseX - vertex.x) / w + 0.5
 		local dy = (mouseY - vertex.y) / h + 0.5
@@ -73,29 +73,29 @@ local function draw(graph, X, Y, W, H)
 	ntag = softdraw.memory.ntag
 
 	if ntag then
-		graphContent.vertices[ntag].cl = "accent_border"
-		graphContent.vertices[ntag].cb = "accent_surface"
+		graphContent.vertices[ntag].borderColor = "accent_border"
+		graphContent.vertices[ntag].surfaceColor = "accent_surface"
 		local node = graph.nodes[ntag]
 		nodeContent = getNodeContent(node, X + W / 2, Y, W / 2, H)
 		softdraw.memory.ttag = getFocus(nodeContent) or softdraw.memory.ttag
 		local ttag = softdraw.memory.ttag
 
 		if ttag then
-			nodeContent.vertices[ttag].cl = "accent_border"
-			nodeContent.vertices[ttag].cb = "accent_surface"
+			nodeContent.vertices[ttag].borderColor = "accent_border"
+			nodeContent.vertices[ttag].surfaceColor = "accent_surface"
 			local task = node.tasks[ttag]
 			local v2 = nodeContent.vertices[ttag]
 			for _, dtag in pairs(node.parents_d[ttag]) do
 				local v1 = graphContent.vertices[dtag]
 				local edge = Content.newEdge(v1.x, v1.y, v2.x, v2.y)
-				edge.s = "dot"
-				edge.t = graph.nodes[dtag].access
+				edge.style = "dot"
+				edge.text = graph.nodes[dtag].access
 				table.insert(nodeContent.edges, edge)
 			end
 			local v1 = graphContent.vertices[ntag]
 			local edge = Content.newEdge(v1.x, v1.y, v2.x, v2.y)
-			edge.s = "dot"
-			edge.t = task.access
+			edge.style = "dot"
+			edge.text = task.access
 			table.insert(nodeContent.edges, edge)
 		end
 	end

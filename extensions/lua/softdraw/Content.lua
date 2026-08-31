@@ -27,10 +27,10 @@ function Content.newVertex(x, y, t)
 	return {
 		x = x,
 		y = y,
-		cb = "surface",
-		cl = "border",
-		ct = "text",
-		t = t,
+		surfaceColor = "surface",
+		borderColor = "border",
+		textColor = "text",
+		text = t,
 	}
 end
 
@@ -40,11 +40,11 @@ function Content.newEdge(x1, y1, x2, y2)
 		y1 = y1,
 		x2 = x2,
 		y2 = y2,
-		cl = "border",
-		cb = "surface",
-		ct = "text",
-		t = "",
-		s = "line",
+		surfaceColor = "surface",
+		borderColor = "border",
+		textColor = "text",
+		text = "",
+		style = "line",
 	}
 end
 
@@ -81,29 +81,29 @@ end
 
 local function drawContent(content, theme)
 	for _, edge in ipairs(content.edges) do
-		local w = theme.font:getWidth(edge.t)
+		local w = theme.font:getWidth(edge.text)
 		local h = theme.font:getHeight()
 		local x = (edge.x1 + edge.x2 - w) / 2
 		local y = (edge.y1 + edge.y2 - h) / 2
-		love.graphics.setColor(theme[edge.cl])
-		style[edge.s](edge.x1, edge.y1, edge.x2, edge.y2)
-		love.graphics.setColor(theme[edge.cb])
+		love.graphics.setColor(theme[edge.borderColor])
+		style[edge.style](edge.x1, edge.y1, edge.x2, edge.y2)
+		love.graphics.setColor(theme[edge.surfaceColor])
 		love.graphics.rectangle("fill", x, y, w, h)
-		love.graphics.setColor(theme[edge.ct])
-		love.graphics.print(edge.t, theme.font, x, y)
+		love.graphics.setColor(theme[edge.textColor])
+		love.graphics.print(edge.text, theme.font, x, y)
 	end
 
 	for _, vertex in pairs(content.vertices) do
-		local w = theme.font:getWidth(vertex.t)
+		local w = theme.font:getWidth(vertex.text)
 		local h = theme.font:getHeight()
 		local x = vertex.x - w / 2
 		local y = vertex.y - h / 2
-		love.graphics.setColor(theme[vertex.cb])
+		love.graphics.setColor(theme[vertex.surfaceColor])
 		love.graphics.rectangle("fill", x - 1, y - 1, w + 2, h + 2)
-		love.graphics.setColor(theme[vertex.cl])
+		love.graphics.setColor(theme[vertex.borderColor])
 		love.graphics.rectangle("line", x - 1, y - 1, w + 2, h + 2)
-		love.graphics.setColor(theme[vertex.ct])
-		love.graphics.print(vertex.t, theme.font, x, y)
+		love.graphics.setColor(theme[vertex.textColor])
+		love.graphics.print(vertex.text, theme.font, x, y)
 	end
 end
 
