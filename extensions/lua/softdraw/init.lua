@@ -1,22 +1,23 @@
 local Content = require("softdraw.Content")
 local softdraw = {
 	theme = {
-		background = { 0.025, 0.025, 0.025 },
+		colors = {
+			background = { 0.025, 0.025, 0.025 },
 
-		text = { 0.88, 0.88, 0.84 },
-		border = { 0.72, 0.72, 0.68 },
-		surface = { 0.055, 0.055, 0.050 },
+			text = { 0.88, 0.88, 0.84 },
+			border = { 0.72, 0.72, 0.68 },
+			surface = { 0.055, 0.055, 0.050 },
 
-		accent = { 0.95, 0.78, 0.20 },
-		accent_text = { 1.00, 0.84, 0.28 },
-		accent_border = { 0.72, 0.58, 0.12 },
-		accent_surface = { 0.12, 0.10, 0.04 },
+			accent = { 0.95, 0.78, 0.20 },
+			accent_text = { 1.00, 0.84, 0.28 },
+			accent_border = { 0.72, 0.58, 0.12 },
+			accent_surface = { 0.12, 0.10, 0.04 },
 
-		warning = { 0.95, 0.40, 0.18 },
-		success = { 0.40, 0.85, 0.45 },
-
-		font = love.graphics.newFont(12),
+			warning = { 0.95, 0.40, 0.18 },
+			success = { 0.40, 0.85, 0.45 },
+		},
 	},
+	font = love.graphics.newFont(12),
 	memory = {
 		ntag = nil,
 		ttag = nil,
@@ -42,8 +43,8 @@ end
 local function getFocus(content)
 	local mouseX, mouseY = love.mouse.getPosition()
 	for vtag, vertex in pairs(content.vertices) do
-		local w = softdraw.theme.font:getWidth(vertex.text)
-		local h = softdraw.theme.font:getHeight()
+		local w = softdraw.font:getWidth(vertex.text)
+		local h = softdraw.font:getHeight()
 		local dx = (mouseX - vertex.x) / w + 0.5
 		local dy = (mouseY - vertex.y) / h + 0.5
 		if 0 < dx and dx < 1 and 0 < dy and dy < 1 then
@@ -58,7 +59,7 @@ local function draw(graph, X, Y, W, H)
 	W = W or love.graphics.getWidth()
 	H = H or love.graphics.getHeight()
 
-	love.graphics.setColor(softdraw.theme.background)
+	love.graphics.setColor(softdraw.theme.colors.background)
 	love.graphics.rectangle("fill", X, Y, W, H)
 
 	local graphContent = getGraphContent(graph, X, Y, W / 2, H)
@@ -101,9 +102,9 @@ local function draw(graph, X, Y, W, H)
 	end
 
 	if nodeContent ~= nil then
-		nodeContent:draw(softdraw.theme)
+		nodeContent:draw(softdraw.theme, softdraw.font)
 	end
-	graphContent:draw(softdraw.theme)
+	graphContent:draw(softdraw.theme, softdraw.font)
 end
 
 function softdraw.draw(...)
