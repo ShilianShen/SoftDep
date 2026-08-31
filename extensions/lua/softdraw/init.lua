@@ -1,17 +1,20 @@
 local Content = require("softdraw.Content")
 local softdraw = {
 	theme = {
-		background = { 0.025, 0.035, 0.030, 0.5 },
-		text = { 0.78, 0.86, 0.80 },
-		border = { 0.20, 0.28, 0.23 },
-		transparent = { 0, 0, 0, 0 },
+		background = { 0.025, 0.025, 0.025 },
 
-		surface = { 0.045, 0.060, 0.052 },
+		text = { 0.88, 0.88, 0.84 },
+		border = { 0.72, 0.72, 0.68 },
+		surface = { 0.055, 0.055, 0.050 },
 
-		warning = { 0.95, 0.55, 0.22 },
-		success = { 0.30, 0.88, 0.48 },
+		accent = { 0.95, 0.78, 0.20 },
+		accent_text = { 1.00, 0.84, 0.28 },
+		accent_border = { 0.72, 0.58, 0.12 },
+		accent_surface = { 0.12, 0.10, 0.04 },
 
-		accent = { 0.35, 0.95, 0.58, 0.14 },
+		warning = { 0.95, 0.40, 0.18 },
+		success = { 0.40, 0.85, 0.45 },
+
 		font = love.graphics.newFont(12),
 	},
 	memory = {
@@ -55,6 +58,9 @@ local function draw(graph, X, Y, W, H)
 	W = W or love.graphics.getWidth()
 	H = H or love.graphics.getHeight()
 
+	love.graphics.setColor(softdraw.theme.background)
+	love.graphics.rectangle("fill", X, Y, W, H)
+
 	local graphContent = getGraphContent(graph, X, Y, W / 2, H)
 	local nodeContent = nil
 
@@ -67,14 +73,16 @@ local function draw(graph, X, Y, W, H)
 	ntag = softdraw.memory.ntag
 
 	if ntag then
-		graphContent.vertices[ntag].cm = "accent"
+		graphContent.vertices[ntag].cl = "accent_border"
+		graphContent.vertices[ntag].cb = "accent_surface"
 		local node = graph.nodes[ntag]
 		nodeContent = getNodeContent(node, X + W / 2, Y, W / 2, H)
 		softdraw.memory.ttag = getFocus(nodeContent) or softdraw.memory.ttag
 		local ttag = softdraw.memory.ttag
 
 		if ttag then
-			nodeContent.vertices[ttag].cm = "accent"
+			nodeContent.vertices[ttag].cl = "accent_border"
+			nodeContent.vertices[ttag].cb = "accent_surface"
 			local task = node.tasks[ttag]
 			local v2 = nodeContent.vertices[ttag]
 			for _, dtag in pairs(node.parents_d[ttag]) do
