@@ -6,6 +6,5 @@ return {
 
 	include = {
 		"^src/lua/softdep",
-		"^extensions/lua/softdraw",
 	},
 }
