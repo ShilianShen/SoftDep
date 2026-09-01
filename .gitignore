@@ -7,3 +7,4 @@ main.lua
 *.local
 dist
 assets
+luacov.report.html

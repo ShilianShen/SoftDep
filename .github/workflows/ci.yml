@@ -24,6 +24,8 @@ jobs:
         run: |
           luarocks install busted
           luarocks install luacheck
+          luarocks install luacov
+          luarocks install luacov-cobertura
 
       - name: Run CI
         run: bash ./scripts/ci.sh

@@ -1,0 +1,8 @@
+return {
+	reporter = "html",
+	reportfile = "luacov.report.html",
+	include = {
+		"^src/lua/softdep",
+        "^extensions/lua/softdraw"
+	},
+}
