@@ -110,7 +110,7 @@ local function newNode(data, tasks, access, api)
 		node.children_c[ttag] = MathSet.set2tab(childSets_c[ttag], node.tasks)
 	end
 
-	node.order = kahn(parentSets_c, childSets_c)
+	node.order = kahn(parentSets_c)
 
 	for atag, a in pairs(Access) do
 		node.data_a[atag] = a.func(node.data)

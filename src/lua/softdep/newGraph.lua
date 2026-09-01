@@ -89,7 +89,7 @@ local function load(graph)
 		end
 	end
 
-	graph.order = kahn(parentSets_n, childSets_n)
+	graph.order = kahn(parentSets_n)
 
 	for ntag, _ in pairs(graph.nodes) do
 		graph.parents_n[ntag] = MathSet.set2tab(parentSets_n[ntag], graph.nodes)
