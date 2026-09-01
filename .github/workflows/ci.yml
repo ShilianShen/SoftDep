@@ -2,7 +2,16 @@ name: CI
 
 on:
   push:
+    paths:
+      - "**/*.lua"
+      - "scripts/ci.sh"
+      - ".github/workflows/ci.yml"
+
   pull_request:
+    paths:
+      - "**/*.lua"
+      - "scripts/ci.sh"
+      - ".github/workflows/ci.yml"
 
 jobs:
   test:
