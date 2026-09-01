@@ -2,6 +2,9 @@
 
 SoftDep is a library designed to manage complex dependency relationships, facilitating the efficient implementation of software structural dependencies and dynamic data flows.
 
+[![CI](https://github.com/ShilianShen/SoftDep/actions/workflows/ci.yml/badge.svg)](https://github.com/ShilianShen/SoftDep/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ShilianShen/SoftDep/branch/main/graph/badge.svg)](https://codecov.io/gh/ShilianShen/SoftDep)
+
 Well, I'm still developing it, so if you want to know what I'm working on, take a look here:
 
 - [00_introduction](docs/design/00_introduction.md)
