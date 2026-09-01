@@ -5,6 +5,5 @@ main.lua
 *.local.*
 *_local.*
 *.local
-scripts
 dist
 assets
