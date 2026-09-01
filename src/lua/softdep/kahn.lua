@@ -1,6 +1,10 @@
 local MathSet = require("softdep.MathSet")
+local adopt = require("softdep.adopt")
+local shapes = require("softdep.shapes")
 
-local function kahn(parentSets, childSets)
+local function kahn(parentSets, _)
+	assert(shapes.parentSets(parentSets))
+	local childSets = adopt(parentSets)
 	local indegrees = {}
 	local stack = {}
 	local order = {}
