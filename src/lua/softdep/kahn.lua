@@ -1,30 +1,34 @@
 local MathSet = require("softdep.MathSet")
 local adopt = require("softdep.adopt")
 local shapes = require("softdep.shapes")
+local check = require("softdep.check")
 
 local function kahn(parentSets)
-	assert(shapes.parentSets(parentSets))
+	check(2, shapes.parentSets(parentSets))
+
 	local childSets = adopt(parentSets)
 	local indegrees = {}
 	local stack = {}
 	local order = {}
 
-	for v, _ in pairs(parentSets) do
-		indegrees[v] = MathSet.count(parentSets[v])
-		if indegrees[v] == 0 then
-			table.insert(stack, v)
+	for vtag, _ in pairs(parentSets) do
+		indegrees[vtag] = MathSet.count(parentSets[vtag])
+		if indegrees[vtag] == 0 then
+			table.insert(stack, vtag)
 		end
 	end
 
 	for _, _ in pairs(parentSets) do
-		local v = table.remove(stack)
-		for c, _ in pairs(childSets[v]) do
-			indegrees[c] = indegrees[c] - 1
-			if indegrees[c] == 0 then
-				table.insert(stack, c)
+		local vtag = table.remove(stack)
+		check(2, vtag ~= nil, "not a DAG")
+
+		for ctag, _ in pairs(childSets[vtag]) do
+			indegrees[ctag] = indegrees[ctag] - 1
+			if indegrees[ctag] == 0 then
+				table.insert(stack, ctag)
 			end
 		end
-		table.insert(order, v)
+		table.insert(order, vtag)
 	end
 
 	return order
