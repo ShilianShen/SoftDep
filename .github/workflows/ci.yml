@@ -25,7 +25,9 @@ jobs:
           luarocks install busted
           luarocks install luacheck
           luarocks install luacov
-          luarocks install luacov-cobertura
+          luarocks install \
+            --server=https://luarocks.org/manifests/britzl \
+            luacov-cobertura 1.1-0
 
       - name: Run CI
         run: bash ./scripts/ci.sh
