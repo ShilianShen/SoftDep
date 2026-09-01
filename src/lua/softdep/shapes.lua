@@ -1,4 +1,4 @@
-local types = require("libs.tableshape").types
+local types = require("softdep.tableshape").types
 local shapes = {}
 
 shapes.set = types.map_of(types.any, types.literal(true))

@@ -1,5 +1,5 @@
 local shapes = require("softdep.shapes")
-local types = require("libs.tableshape").types
+local types = require("softdep.tableshape").types
 local check = require("softdep.check")
 local MathSet = {}
 

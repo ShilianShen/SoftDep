@@ -7,4 +7,7 @@ return {
 	include = {
 		"^src/lua/softdep",
 	},
+	exclude = {
+		"src/lua/softdep/tableshape"
+	}
 }
