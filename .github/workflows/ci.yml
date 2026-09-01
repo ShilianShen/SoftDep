@@ -40,3 +40,8 @@ jobs:
 
       - name: Run CI
         run: bash ./scripts/ci.sh
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: luacov.report.out

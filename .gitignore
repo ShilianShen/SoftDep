@@ -8,3 +8,5 @@ main.lua
 dist
 assets
 coverage/
+luacov.report.out
+luacov.stats.out
