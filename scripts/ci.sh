@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-rm -f luacov.stats.out luacov.report.out
+mkdir -p coverage
+rm -f coverage/luacov.stats.out
+rm -f coverage/lcov.info
+
 busted spec/lua -c
 luacov -r lcov

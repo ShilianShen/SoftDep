@@ -1,6 +1,9 @@
 return {
 	-- reporter = "html",
 	-- reportfile = "coverage/luacov.report.html",
+	statsfile = "coverage/luacov.stats.out",
+	reportfile = "coverage/lcov.info",
+
 	include = {
 		"^src/lua/softdep",
 		"^extensions/lua/softdraw",

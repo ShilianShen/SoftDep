@@ -47,6 +47,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           use_oidc: true
-          files: luacov.report.out
+          files: coverage/lcov.info
           disable_search: true
           fail_ci_if_error: true
