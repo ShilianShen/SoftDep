@@ -100,8 +100,8 @@ local function newNode(data, tasks, access, api)
 			count = 0,
 			auto = t.auto or false,
 		}
-		parentSets_c[ttag] = MathSet.arr2set(t.parents_c) or {}
-		node.parents_d[ttag] = deepCopy(t.parents_d) or {}
+		parentSets_c[ttag] = MathSet.arr2set(t.parents_c or {})
+		node.parents_d[ttag] = deepCopy(t.parents_d or {})
 	end
 	local childSets_c = adopt(parentSets_c)
 

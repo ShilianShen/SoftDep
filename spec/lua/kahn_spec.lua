@@ -1,6 +1,6 @@
 package.path = "src/lua/?.lua;" .. "src/lua/?/init.lua;" .. package.path
-local kahn = require("softdep.kahn")
 local assert = require("luassert")
+local kahn = require("softdep.kahn")
 
 local function set(...)
     local result = {}
