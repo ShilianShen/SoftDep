@@ -26,4 +26,4 @@ jobs:
           luarocks install luacheck
 
       - name: Run CI
-        run: ./scripts/ci.sh
+        run: bash ./scripts/ci.sh
