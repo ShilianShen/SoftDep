@@ -29,6 +29,15 @@ function MathSet.set2tab(set, data)
 	return tab
 end
 
+function MathSet.tab2set(tab)
+	check(2, types.table(tab))
+	local set = {}
+	for k, _ in pairs(tab) do
+		set[k] = true
+	end
+	return set
+end
+
 function MathSet.count(set)
 	check(2, types.set(set))
 	local count = 0
