@@ -60,26 +60,26 @@ function MathGraph.reachAdjList(adjList)
 	return reachAdjList
 end
 
-function MathGraph.sort(parentSets)
-	check(2, types.parentSets(parentSets))
+function MathGraph.sort(adjList)
+	check(2, types.adjList(adjList))
 
-	local childSets = MathGraph.revAdjList(parentSets)
+	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
 	local stack = {}
 	local order = {}
 
-	for vtag, _ in pairs(parentSets) do
-		indegrees[vtag] = MathSet.count(parentSets[vtag])
+	for vtag, _ in pairs(revAdjList) do
+		indegrees[vtag] = MathSet.count(revAdjList[vtag])
 		if indegrees[vtag] == 0 then
 			table.insert(stack, vtag)
 		end
 	end
 
-	for _, _ in pairs(parentSets) do
+	for _, _ in pairs(adjList) do
 		local vtag = table.remove(stack)
 		check(2, vtag ~= nil, "not a DAG")
 
-		for ctag, _ in pairs(childSets[vtag]) do
+		for ctag, _ in pairs(adjList[vtag]) do
 			indegrees[ctag] = indegrees[ctag] - 1
 			if indegrees[ctag] == 0 then
 				table.insert(stack, ctag)

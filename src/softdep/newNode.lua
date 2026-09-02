@@ -109,7 +109,7 @@ local function newNode(data, tasks, access, api)
 		node.children_c[ttag] = MathSet.set2tab(childSets_c[ttag], node.tasks)
 	end
 
-	node.order = MathGraph.sort(parentSets_c)
+	node.order = MathGraph.sort(childSets_c)
 
 	for atag, a in pairs(Access.levels) do
 		node.data_a[atag] = a.func(node.data)

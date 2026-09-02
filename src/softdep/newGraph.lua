@@ -88,7 +88,7 @@ local function load(graph)
 		end
 	end
 
-	graph.order = MathGraph.sort(parentSets_n)
+	graph.order = MathGraph.sort(childSets_n)
 
 	for ntag, _ in pairs(graph.nodes) do
 		graph.parents_n[ntag] = MathSet.set2tab(parentSets_n[ntag], graph.nodes)
