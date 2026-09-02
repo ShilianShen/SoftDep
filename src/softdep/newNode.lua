@@ -35,7 +35,7 @@ local function spread(node)
 			for ctag, _ in pairs(node.children_c[ttag]) do
 				node.tasks[ctag].dirty = true
 			end
-			if Access[task.access] >= Access.writable then
+			if Access.levels[task.access] >= Access.levels.writable then
 				node.dirty = true
 			end
 		end
@@ -112,7 +112,7 @@ local function newNode(data, tasks, access, api)
 
 	node.order = kahn(parentSets_c)
 
-	for atag, a in pairs(Access) do
+	for atag, a in pairs(Access.levels) do
 		node.data_a[atag] = a.func(node.data)
 	end
 

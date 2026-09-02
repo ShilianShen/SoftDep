@@ -1,7 +1,9 @@
-local Access = {}
+local Access = {
+	levels = {}
+}
 
 local poset = {
-	elements = {
+	levels = {
 		none = function(a)
 			return {}
 		end,
@@ -35,8 +37,8 @@ local mt = {
 	end,
 }
 
-for key, func in pairs(poset.elements) do
-	Access[key] = setmetatable({
+for key, func in pairs(poset.levels) do
+	Access.levels[key] = setmetatable({
 		key = key,
 		func = func,
 	}, mt)
