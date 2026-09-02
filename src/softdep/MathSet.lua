@@ -111,4 +111,39 @@ function MathSet.allSubsets(set)
 	end
 end
 
+function MathSet.cup(...)
+	local args = { ... }
+	for _, arg in ipairs(args) do
+		check(2, types.set(arg))
+	end
+
+	local set = {}
+	for _, arg in ipairs(args) do
+		for k, _ in pairs(arg) do
+			set[k] = true
+		end
+	end
+	return set
+end
+
+function MathSet.cap(...)
+	local args = { ... }
+	for _, arg in ipairs(args) do
+		check(2, types.set(arg))
+	end
+
+	local set = {}
+	for k, _ in pairs(table.remove(args)) do
+		set[k] = true
+	end
+	for _, arg in ipairs(args) do
+		for k, _ in pairs(set) do
+			if not arg[k] then
+				set[k] = nil
+			end
+		end
+	end
+	return set
+end
+
 return MathSet

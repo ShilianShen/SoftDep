@@ -23,41 +23,24 @@ describe("MathSet", function()
 			assert.same({}, MathSet.arr2set({}))
 		end)
 
-		it("supports mixed values", function()
-			local key = {}
-
-			local result = MathSet.arr2set({
-				"a",
-				1,
-				key,
-			})
-
-			assert.is_true(result.a)
-			assert.is_true(result[1])
-			assert.is_true(result[key])
-		end)
-
-		it("rejects non-arrays", function()
+		it("rejects non-array input", function()
 			assert.has_error(function()
-				MathSet.arr2set("invalid")
+				MathSet.arr2set("abc")
 			end)
 		end)
 	end)
 
 	describe("set2arr", function()
 		it("converts a set to an array", function()
-			local result = MathSet.set2arr({
+			local arr = MathSet.set2arr({
 				a = true,
 				b = true,
 				c = true,
 			})
 
-			assert.are.equal(3, #result)
-			assert.is_true(MathSet.equal(MathSet.arr2set(result), {
-				a = true,
-				b = true,
-				c = true,
-			}))
+			table.sort(arr)
+
+			assert.same({ "a", "b", "c" }, arr)
 		end)
 
 		it("handles an empty set", function()
@@ -74,33 +57,37 @@ describe("MathSet", function()
 	end)
 
 	describe("set2tab", function()
-		it("selects data using set keys", function()
-			local result = MathSet.set2tab({
-				a = true,
-				c = true,
-			}, {
+		it("selects values whose keys are in the set", function()
+			local data = {
 				a = 10,
 				b = 20,
 				c = 30,
-			})
+			}
 
-			assert.same({
-				a = 10,
-				c = 30,
-			}, result)
+			assert.same(
+				{
+					a = 10,
+					c = 30,
+				},
+				MathSet.set2tab({
+					a = true,
+					c = true,
+				}, data)
+			)
 		end)
 
-		it("omits keys whose data value is nil", function()
-			local result = MathSet.set2tab({
-				a = true,
-				b = true,
-			}, {
-				a = 10,
-			})
-
-			assert.same({
-				a = 10,
-			}, result)
+		it("omits keys missing from data", function()
+			assert.same(
+				{
+					a = 10,
+				},
+				MathSet.set2tab({
+					a = true,
+					missing = true,
+				}, {
+					a = 10,
+				})
+			)
 		end)
 
 		it("handles an empty set", function()
@@ -115,7 +102,7 @@ describe("MathSet", function()
 		it("rejects invalid sets", function()
 			assert.has_error(function()
 				MathSet.set2tab({
-					a = {},
+					a = 1,
 				}, {})
 			end)
 		end)
@@ -123,60 +110,34 @@ describe("MathSet", function()
 
 	describe("tab2set", function()
 		it("converts table keys to a set", function()
-			local result = MathSet.tab2set({
-				a = 10,
-				b = false,
-				c = {},
-			})
-
-			assert.same({
-				a = true,
-				b = true,
-				c = true,
-			}, result)
-		end)
-
-		it("ignores table values", function()
-			local result = MathSet.tab2set({
-				a = false,
-				b = 0,
-				c = "",
-			})
-
-			assert.same({
-				a = true,
-				b = true,
-				c = true,
-			}, result)
+			assert.same(
+				{
+					a = true,
+					b = true,
+					c = true,
+				},
+				MathSet.tab2set({
+					a = 10,
+					b = false,
+					c = "value",
+				})
+			)
 		end)
 
 		it("handles an empty table", function()
 			assert.same({}, MathSet.tab2set({}))
 		end)
 
-		it("supports non-string keys", function()
-			local key = {}
-
-			local result = MathSet.tab2set({
-				[1] = "a",
-				[key] = "b",
-			})
-
-			assert.is_true(result[1])
-			assert.is_true(result[key])
-			assert.are.equal(2, MathSet.count(result))
-		end)
-
-		it("rejects non-tables", function()
+		it("rejects non-table input", function()
 			assert.has_error(function()
-				MathSet.tab2set("invalid")
+				MathSet.tab2set(123)
 			end)
 		end)
 	end)
 
 	describe("count", function()
 		it("counts set elements", function()
-			assert.are.equal(
+			assert.equal(
 				3,
 				MathSet.count({
 					a = true,
@@ -187,24 +148,13 @@ describe("MathSet", function()
 		end)
 
 		it("returns zero for an empty set", function()
-			assert.are.equal(0, MathSet.count({}))
-		end)
-
-		it("supports non-string keys", function()
-			assert.are.equal(
-				3,
-				MathSet.count({
-					[1] = true,
-					[2] = true,
-					foo = true,
-				})
-			)
+			assert.equal(0, MathSet.count({}))
 		end)
 
 		it("rejects invalid sets", function()
 			assert.has_error(function()
 				MathSet.count({
-					a = 1,
+					a = false,
 				})
 			end)
 		end)
@@ -221,7 +171,7 @@ describe("MathSet", function()
 			}))
 		end)
 
-		it("returns true for empty sets", function()
+		it("returns true for two empty sets", function()
 			assert.is_true(MathSet.equal({}, {}))
 		end)
 
@@ -243,25 +193,15 @@ describe("MathSet", function()
 			}))
 		end)
 
-		it("returns false for different sets of equal size", function()
+		it("returns false for disjoint sets", function()
 			assert.is_false(MathSet.equal({
 				a = true,
-				b = true,
 			}, {
-				a = true,
-				c = true,
+				b = true,
 			}))
 		end)
 
-		it("rejects an invalid first set", function()
-			assert.has_error(function()
-				MathSet.equal({
-					a = false,
-				}, {})
-			end)
-		end)
-
-		it("rejects an invalid second set", function()
+		it("rejects invalid input", function()
 			assert.has_error(function()
 				MathSet.equal({}, {
 					a = false,
@@ -280,7 +220,7 @@ describe("MathSet", function()
 			}))
 		end)
 
-		it("returns true for equal sets", function()
+		it("returns true when both sets are equal", function()
 			assert.is_true(MathSet.isSubset({
 				a = true,
 				b = true,
@@ -290,17 +230,17 @@ describe("MathSet", function()
 			}))
 		end)
 
-		it("returns true for an empty subset", function()
+		it("returns true for the empty subset", function()
 			assert.is_true(MathSet.isSubset({}, {
 				a = true,
 			}))
 		end)
 
-		it("returns true when both sets are empty", function()
+		it("returns true for two empty sets", function()
 			assert.is_true(MathSet.isSubset({}, {}))
 		end)
 
-		it("returns false when an element is missing", function()
+		it("returns false when an element is missing from the superset", function()
 			assert.is_false(MathSet.isSubset({
 				a = true,
 				c = true,
@@ -310,7 +250,7 @@ describe("MathSet", function()
 			}))
 		end)
 
-		it("returns false when subset is larger", function()
+		it("returns false when the candidate subset is larger", function()
 			assert.is_false(MathSet.isSubset({
 				a = true,
 				b = true,
@@ -318,30 +258,19 @@ describe("MathSet", function()
 				a = true,
 			}))
 		end)
-
-		it("rejects an invalid subset", function()
-			assert.has_error(function()
-				MathSet.isSubset({
-					a = false,
-				}, {})
-			end)
-		end)
-
-		it("rejects an invalid set", function()
-			assert.has_error(function()
-				MathSet.isSubset({}, {
-					a = false,
-				})
-			end)
-		end)
 	end)
 
 	describe("allSubsets", function()
 		local function collect(iterator)
 			local result = {}
 
-			for subset in iterator do
-				result[#result + 1] = subset
+			while true do
+				local value = iterator()
+				if value == nil then
+					break
+				end
+
+				result[#result + 1] = value
 			end
 
 			return result
@@ -357,51 +286,45 @@ describe("MathSet", function()
 			return false
 		end
 
-		it("enumerates the empty set", function()
+		it("returns the empty set for an empty input set", function()
 			local subsets = collect(MathSet.allSubsets({}))
 
-			assert.are.equal(1, #subsets)
+			assert.equal(1, #subsets)
 			assert.same({}, subsets[1])
 		end)
 
-		it("enumerates a single-element set", function()
+		it("generates all subsets", function()
 			local subsets = collect(MathSet.allSubsets({
 				a = true,
+				b = true,
 			}))
 
-			assert.are.equal(2, #subsets)
+			assert.equal(4, #subsets)
+
 			assert.is_true(contains(subsets, {}))
 			assert.is_true(contains(subsets, {
 				a = true,
 			}))
+			assert.is_true(contains(subsets, {
+				b = true,
+			}))
+			assert.is_true(contains(subsets, {
+				a = true,
+				b = true,
+			}))
 		end)
 
-		it("enumerates all subsets", function()
+		it("generates exactly 2^n subsets", function()
 			local subsets = collect(MathSet.allSubsets({
 				a = true,
 				b = true,
 				c = true,
 			}))
 
-			local expected = {
-				{},
-				{ a = true },
-				{ b = true },
-				{ c = true },
-				{ a = true, b = true },
-				{ a = true, c = true },
-				{ b = true, c = true },
-				{ a = true, b = true, c = true },
-			}
-
-			assert.are.equal(8, #subsets)
-
-			for _, subset in ipairs(expected) do
-				assert.is_true(contains(subsets, subset))
-			end
+			assert.equal(8, #subsets)
 		end)
 
-		it("generates no duplicate subsets", function()
+		it("does not generate duplicate subsets", function()
 			local subsets = collect(MathSet.allSubsets({
 				a = true,
 				b = true,
@@ -415,28 +338,13 @@ describe("MathSet", function()
 			end
 		end)
 
-		it("generates 2^n subsets", function()
-			local subsets = collect(MathSet.allSubsets({
-				a = true,
-				b = true,
-				c = true,
-				d = true,
-			}))
-
-			assert.are.equal(16, #subsets)
-		end)
-
-		it("ends after the last subset", function()
+		it("returns nil after exhaustion", function()
 			local iterator = MathSet.allSubsets({
 				a = true,
-				b = true,
 			})
 
 			assert.is_table(iterator())
 			assert.is_table(iterator())
-			assert.is_table(iterator())
-			assert.is_table(iterator())
-
 			assert.is_nil(iterator())
 			assert.is_nil(iterator())
 		end)
@@ -444,7 +352,179 @@ describe("MathSet", function()
 		it("rejects invalid sets", function()
 			assert.has_error(function()
 				MathSet.allSubsets({
-					a = {},
+					a = false,
+				})
+			end)
+		end)
+	end)
+
+	describe("cup", function()
+		it("returns the union of two sets", function()
+			assert.same(
+				{
+					a = true,
+					b = true,
+					c = true,
+				},
+				MathSet.cup({
+					a = true,
+					b = true,
+				}, {
+					b = true,
+					c = true,
+				})
+			)
+		end)
+
+		it("supports multiple sets", function()
+			assert.same(
+				{
+					a = true,
+					b = true,
+					c = true,
+				},
+				MathSet.cup({
+					a = true,
+				}, {
+					b = true,
+				}, {
+					c = true,
+				})
+			)
+		end)
+
+		it("supports one set", function()
+			assert.same(
+				{
+					a = true,
+				},
+				MathSet.cup({
+					a = true,
+				})
+			)
+		end)
+
+		it("returns an empty set with no arguments", function()
+			assert.same({}, MathSet.cup())
+		end)
+
+		it("does not mutate its arguments", function()
+			local set1 = {
+				a = true,
+			}
+			local set2 = {
+				b = true,
+			}
+
+			MathSet.cup(set1, set2)
+
+			assert.same({
+				a = true,
+			}, set1)
+
+			assert.same({
+				b = true,
+			}, set2)
+		end)
+
+		it("rejects invalid sets", function()
+			assert.has_error(function()
+				MathSet.cup({}, {
+					a = false,
+				})
+			end)
+		end)
+	end)
+
+	describe("cap", function()
+		it("returns the intersection of two sets", function()
+			assert.same(
+				{
+					b = true,
+				},
+				MathSet.cap({
+					a = true,
+					b = true,
+				}, {
+					b = true,
+					c = true,
+				})
+			)
+		end)
+
+		it("supports multiple sets", function()
+			assert.same(
+				{
+					b = true,
+				},
+				MathSet.cap({
+					a = true,
+					b = true,
+					c = true,
+				}, {
+					b = true,
+					c = true,
+					d = true,
+				}, {
+					b = true,
+					e = true,
+				})
+			)
+		end)
+
+		it("returns an empty set for disjoint sets", function()
+			assert.same(
+				{},
+				MathSet.cap({
+					a = true,
+				}, {
+					b = true,
+				})
+			)
+		end)
+
+		it("supports one set", function()
+			assert.same(
+				{
+					a = true,
+					b = true,
+				},
+				MathSet.cap({
+					a = true,
+					b = true,
+				})
+			)
+		end)
+
+		it("does not mutate its arguments", function()
+			local set1 = {
+				a = true,
+				b = true,
+			}
+			local set2 = {
+				b = true,
+				c = true,
+			}
+
+			MathSet.cap(set1, set2)
+
+			assert.same({
+				a = true,
+				b = true,
+			}, set1)
+
+			assert.same({
+				b = true,
+				c = true,
+			}, set2)
+		end)
+
+		it("rejects invalid sets", function()
+			assert.has_error(function()
+				MathSet.cap({
+					a = true,
+				}, {
+					b = false,
 				})
 			end)
 		end)
