@@ -1,4 +1,4 @@
-local shapes = require("softdep.shapes")
+local types = require("softdep.types")
 local types = require("softdep.tableshape").types
 local check = require("softdep.check")
 local MathSet = {}
@@ -13,7 +13,7 @@ function MathSet.arr2set(arr)
 end
 
 function MathSet.set2arr(set)
-	check(2, shapes.set(set))
+	check(2, types.set(set))
 	local arr = {}
 	for k, _ in pairs(set) do
 		table.insert(arr, k)
@@ -22,7 +22,7 @@ function MathSet.set2arr(set)
 end
 
 function MathSet.set2tab(set, data)
-	check(2, shapes.set(set))
+	check(2, types.set(set))
 	local tab = {}
 	for k, _ in pairs(set) do
 		tab[k] = data[k]
@@ -31,7 +31,7 @@ function MathSet.set2tab(set, data)
 end
 
 function MathSet.count(set)
-	check(2, shapes.set(set))
+	check(2, types.set(set))
 	local count = 0
 	for _, _ in pairs(set) do
 		count = count + 1

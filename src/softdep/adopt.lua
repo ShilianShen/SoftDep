@@ -1,9 +1,9 @@
-local shapes = require("softdep.shapes")
+local types = require("softdep.types")
 local types = require("softdep.tableshape").types
 local check = require("softdep.check")
 
 local function adopt(parentSets)
-	check(2, shapes.parentSets(parentSets))
+	check(2, types.parentSets(parentSets))
 
 	local ChildSets = {}
 	for v, _ in pairs(parentSets) do
