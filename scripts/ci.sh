@@ -5,5 +5,5 @@ mkdir -p coverage
 rm -f coverage/luacov.stats.out
 rm -f coverage/lcov.info
 
-busted spec/lua -c
+busted spec -c
 luacov -r lcov

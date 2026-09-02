@@ -1,4 +1,4 @@
-package.path = "src/lua/?.lua;" .. "src/lua/?/init.lua;" .. package.path
+package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 local assert = require("luassert")
 local adopt = require("softdep.adopt")
 

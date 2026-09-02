@@ -5,9 +5,9 @@ return {
 	reportfile = "coverage/lcov.info",
 
 	include = {
-		"^src/lua/softdep",
+		"^src/softdep",
 	},
 	exclude = {
-		"src/lua/softdep/tableshape"
+		"src/softdep/tableshape"
 	}
 }
