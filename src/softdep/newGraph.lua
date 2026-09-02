@@ -1,4 +1,3 @@
-local kahn = require("softdep.kahn")
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 
@@ -89,7 +88,7 @@ local function load(graph)
 		end
 	end
 
-	graph.order = kahn(parentSets_n)
+	graph.order = MathGraph.sort(parentSets_n)
 
 	for ntag, _ in pairs(graph.nodes) do
 		graph.parents_n[ntag] = MathSet.set2tab(parentSets_n[ntag], graph.nodes)

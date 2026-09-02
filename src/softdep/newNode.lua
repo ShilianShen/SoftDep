@@ -1,5 +1,4 @@
 local MathGraph = require("softdep.MathGraph")
-local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
 
@@ -110,7 +109,7 @@ local function newNode(data, tasks, access, api)
 		node.children_c[ttag] = MathSet.set2tab(childSets_c[ttag], node.tasks)
 	end
 
-	node.order = kahn(parentSets_c)
+	node.order = MathGraph.sort(parentSets_c)
 
 	for atag, a in pairs(Access.levels) do
 		node.data_a[atag] = a.func(node.data)
