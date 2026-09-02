@@ -38,4 +38,68 @@ function MathSet.count(set)
 	return count
 end
 
+function MathSet.equal(set1, set2)
+	check(2, types.set(set1))
+	check(2, types.set(set2))
+	local set = {}
+	for v, _ in pairs(set1) do
+		set[v] = true
+	end
+	for v, _ in pairs(set2) do
+		if not set[v] then
+			return false
+		end
+		set[v] = nil
+	end
+	for _, _ in pairs(set) do
+		return false
+	end
+	return true
+end
+
+function MathSet.isSubset(subset, set)
+	check(2, types.set(subset))
+	check(2, types.set(set))
+	local diff = {}
+	for v, _ in pairs(set) do
+		diff[v] = true
+	end
+	for v, _ in pairs(subset) do
+		if not diff[v] then
+			return false
+		end
+		diff[v] = nil
+	end
+	return true
+end
+
+function MathSet.allSubsets(set)
+	check(2, types.set(set))
+
+	local arr = MathSet.set2arr(set)
+	local n = #arr
+	local mask = 0
+	local limit = 2 ^ n
+
+	return function()
+		if mask >= limit then
+			return nil
+		end
+
+		local subset = {}
+		local value = mask
+
+		for i = 1, n do
+			if value % 2 == 1 then
+				subset[#subset + 1] = arr[i]
+			end
+			value = math.floor(value / 2)
+		end
+
+		mask = mask + 1
+
+		return MathSet.arr2set(subset)
+	end
+end
+
 return MathSet
