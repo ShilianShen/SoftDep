@@ -1,4 +1,4 @@
-local adopt = require("softdep.adopt")
+local MathGraph = require("softdep.MathGraph")
 local kahn = require("softdep.kahn")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
@@ -103,7 +103,7 @@ local function newNode(data, tasks, access, api)
 		parentSets_c[ttag] = MathSet.arr2set(t.parents_c or {})
 		node.parents_d[ttag] = deepCopy(t.parents_d or {})
 	end
-	local childSets_c = adopt(parentSets_c)
+	local childSets_c = MathGraph.revAdjList(parentSets_c)
 
 	for ttag, _ in pairs(node.tasks) do
 		node.parents_c[ttag] = MathSet.set2tab(parentSets_c[ttag], node.tasks)

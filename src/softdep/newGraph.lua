@@ -1,5 +1,5 @@
-local adopt = require("softdep.adopt")
 local kahn = require("softdep.kahn")
+local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 
 local function spread(graph)
@@ -76,7 +76,7 @@ local function load(graph)
 			end
 		end
 	end
-	local childSets_n = adopt(parentSets_n)
+	local childSets_n = MathGraph.revAdjList(parentSets_n)
 
 	for ntag, _ in pairs(graph.nodes) do
 		graph.children_d[ntag] = {}

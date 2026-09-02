@@ -1,12 +1,12 @@
 local MathSet = require("softdep.MathSet")
-local adopt = require("softdep.adopt")
+local MathGraph = require("softdep.MathGraph")
 local types = require("softdep.types")
 local check = require("softdep.check")
 
 local function kahn(parentSets)
 	check(2, types.parentSets(parentSets))
 
-	local childSets = adopt(parentSets)
+	local childSets = MathGraph.revAdjList(parentSets)
 	local indegrees = {}
 	local stack = {}
 	local order = {}
