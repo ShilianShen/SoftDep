@@ -13,3 +13,9 @@ Well, I'm still developing it, so if you want to know what I'm working on, take 
 - [03_constraints](docs/design/03_constraints.md)
 - [04_properties](docs/design/04_properties.md)
 - [05_inducing](docs/design/05_inducing.md)
+
+## Third-party software
+
+SoftDep includes code from `tableshape`, which is licensed under the MIT License.
+
+See `THIRD_PARTY_LICENSES` for details.
