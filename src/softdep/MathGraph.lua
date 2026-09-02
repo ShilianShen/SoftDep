@@ -52,7 +52,7 @@ function MathGraph.reachAdjList(adjList)
 	for v3, _ in pairs(adjList) do
 		for v1, _ in pairs(adjList) do
 			for v2, _ in pairs(adjList) do
-				reachAdjList[v1][v2] = reachAdjList[v1][v3] and reachAdjList[v3][v2]
+				reachAdjList[v1][v2] = reachAdjList[v1][v2] or (reachAdjList[v1][v3] and reachAdjList[v3][v2])
 			end
 		end
 	end
