@@ -7,7 +7,7 @@ local check = require("softdep.check")
 local Access = {}
 
 function Access.getKey(A)
-	check(2, types.accessLatticeLevels(A))
+	check(2, types.stringSet(A))
 
 	local keys = MathSet.set2arr(A)
 	table.sort(keys)
@@ -62,7 +62,10 @@ function Access.join(...)
 	end
 
 	local A = MathSet.cup(table.unpack(args))
-	return Access.getKey(A)
+	A = DM.getClosure(Access.reachAdjList, A)
+	local key = Access.getKey(A)
+	assert(Access.levels[key])
+	return key
 end
 
 function Access.meet(...)
@@ -81,7 +84,9 @@ function Access.meet(...)
 	end
 
 	local A = MathSet.cap(table.unpack(args))
-	return Access.getKey(A)
+	local key = Access.getKey(A)
+	assert(Access.levels[key])
+	return key
 end
 
 return Access
