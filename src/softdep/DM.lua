@@ -47,11 +47,7 @@ end
 local function DM(adjList)
 	check(2, types.adjList(adjList))
 
-	local reachAdjList = MathGraph.reachAdjList(adjList)
-
-	for v, _ in pairs(reachAdjList) do
-		reachAdjList[v][v] = true
-	end
+	local reachAdjList = MathGraph.reachAdjList(adjList, true)
 
 	local lattice = {}
 

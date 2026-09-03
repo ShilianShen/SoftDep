@@ -1,4 +1,5 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
+
 local assert = require("luassert")
 local MathGraph = require("softdep.MathGraph")
 
@@ -46,6 +47,25 @@ describe("MathGraph", function()
 		it("handles an empty graph", function()
 			assert.are.same({}, MathGraph.edges2AdjList({}, {}))
 		end)
+
+		it("ignores duplicate edges", function()
+			local vertices = {
+				a = true,
+				b = true,
+			}
+
+			local edges = {
+				{ "a", "b" },
+				{ "a", "b" },
+			}
+
+			assert.are.same({
+				a = {
+					b = true,
+				},
+				b = {},
+			}, MathGraph.edges2AdjList(vertices, edges))
+		end)
 	end)
 
 	describe("revAdjList", function()
@@ -85,6 +105,17 @@ describe("MathGraph", function()
 			}, MathGraph.revAdjList(adjList))
 		end)
 
+		it("preserves self edges", function()
+			local adjList = {
+				a = {
+					a = true,
+				},
+				b = {},
+			}
+
+			assert.are.same(adjList, MathGraph.revAdjList(adjList))
+		end)
+
 		it("handles an empty graph", function()
 			assert.are.same({}, MathGraph.revAdjList({}))
 		end)
@@ -117,9 +148,10 @@ describe("MathGraph", function()
 				c = {},
 			}
 
-			local reach = MathGraph.reachAdjList(adjList)
+			local reach = MathGraph.reachAdjList(adjList, false)
 
 			assert.is_true(reach.a.b)
+			assert.is_nil(reach.a.a)
 			assert.is_nil(reach.a.c)
 			assert.is_nil(reach.b.a)
 		end)
@@ -138,20 +170,23 @@ describe("MathGraph", function()
 				d = {},
 			}
 
-			local reach = MathGraph.reachAdjList(adjList)
+			local reach = MathGraph.reachAdjList(adjList, false)
 
-			assert.is_true(reach.a.b)
-			assert.is_true(reach.a.c)
-			assert.is_true(reach.a.d)
-
-			assert.is_true(reach.b.c)
-			assert.is_true(reach.b.d)
-
-			assert.is_true(reach.c.d)
-
-			assert.is_nil(reach.b.a)
-			assert.is_nil(reach.c.a)
-			assert.is_nil(reach.d.a)
+			assert.are.same({
+				a = {
+					b = true,
+					c = true,
+					d = true,
+				},
+				b = {
+					c = true,
+					d = true,
+				},
+				c = {
+					d = true,
+				},
+				d = {},
+			}, reach)
 		end)
 
 		it("does not add unrelated vertices", function()
@@ -163,15 +198,109 @@ describe("MathGraph", function()
 				c = {},
 			}
 
-			local reach = MathGraph.reachAdjList(adjList)
+			local reach = MathGraph.reachAdjList(adjList, false)
 
 			assert.is_nil(reach.a.c)
 			assert.is_nil(reach.c.a)
 			assert.is_nil(reach.c.b)
 		end)
 
+		it("does not add reflexive reachability when reflexive is false", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {},
+				c = {},
+			}
+
+			local reach = MathGraph.reachAdjList(adjList, false)
+
+			assert.is_nil(reach.a.a)
+			assert.is_nil(reach.b.b)
+			assert.is_nil(reach.c.c)
+		end)
+
+		it("adds reflexive reachability when reflexive is true", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {},
+				c = {},
+			}
+
+			local reach = MathGraph.reachAdjList(adjList, true)
+
+			assert.is_true(reach.a.a)
+			assert.is_true(reach.b.b)
+			assert.is_true(reach.c.c)
+			assert.is_true(reach.a.b)
+		end)
+
+		it("finds reflexive reachability caused by a cycle", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {
+					c = true,
+				},
+				c = {
+					a = true,
+				},
+			}
+
+			local reach = MathGraph.reachAdjList(adjList, false)
+
+			assert.are.same({
+				a = {
+					a = true,
+					b = true,
+					c = true,
+				},
+				b = {
+					a = true,
+					b = true,
+					c = true,
+				},
+				c = {
+					a = true,
+					b = true,
+					c = true,
+				},
+			}, reach)
+		end)
+
 		it("handles an empty graph", function()
-			assert.are.same({}, MathGraph.reachAdjList({}))
+			assert.are.same({}, MathGraph.reachAdjList({}, false))
+			assert.are.same({}, MathGraph.reachAdjList({}, true))
+		end)
+
+		it("does not modify the input adjacency list", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {
+					c = true,
+				},
+				c = {},
+			}
+
+			local original = {
+				a = {
+					b = true,
+				},
+				b = {
+					c = true,
+				},
+				c = {},
+			}
+
+			MathGraph.reachAdjList(adjList, true)
+
+			assert.are.same(original, adjList)
 		end)
 	end)
 
@@ -270,6 +399,28 @@ describe("MathGraph", function()
 			assert.is_not_nil(pos.c)
 		end)
 
+		it("handles disconnected DAG components", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {},
+				c = {
+					d = true,
+				},
+				d = {},
+				e = {},
+			}
+
+			local order = MathGraph.sort(adjList)
+			local pos = positions(order)
+
+			assert.are.equal(5, #order)
+			assert.is_true(pos.a < pos.b)
+			assert.is_true(pos.c < pos.d)
+			assert.is_not_nil(pos.e)
+		end)
+
 		it("rejects a cycle", function()
 			local adjList = {
 				a = {
@@ -280,6 +431,37 @@ describe("MathGraph", function()
 				},
 				c = {
 					a = true,
+				},
+			}
+
+			assert.has_error(function()
+				MathGraph.sort(adjList)
+			end)
+		end)
+
+		it("rejects a self cycle", function()
+			local adjList = {
+				a = {
+					a = true,
+				},
+			}
+
+			assert.has_error(function()
+				MathGraph.sort(adjList)
+			end)
+		end)
+
+		it("rejects a cycle in one disconnected component", function()
+			local adjList = {
+				a = {
+					b = true,
+				},
+				b = {},
+				c = {
+					d = true,
+				},
+				d = {
+					c = true,
 				},
 			}
 

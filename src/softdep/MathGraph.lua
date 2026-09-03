@@ -38,8 +38,9 @@ function MathGraph.revAdjList(adjList)
 	return revAdjList
 end
 
-function MathGraph.reachAdjList(adjList)
+function MathGraph.reachAdjList(adjList, reflexive)
 	check(2, types.adjList(adjList))
+	check(2, types.boolean(reflexive))
 
 	local reachAdjList = {}
 	for v1, _ in pairs(adjList) do
@@ -54,6 +55,12 @@ function MathGraph.reachAdjList(adjList)
 			for v2, _ in pairs(adjList) do
 				reachAdjList[v1][v2] = reachAdjList[v1][v2] or (reachAdjList[v1][v3] and reachAdjList[v3][v2])
 			end
+		end
+	end
+
+	if reflexive then
+		for v, _ in pairs(adjList) do
+			reachAdjList[v][v] = true
 		end
 	end
 
