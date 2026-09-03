@@ -26,13 +26,10 @@ function Access.load(levels, leq)
 	end
 
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
-	Access.reachAdjList = MathGraph.reachAdjList(adjList)
+	Access.reachAdjList = MathGraph.reachAdjList(adjList, true)
 	Access.revReachAdjList = MathGraph.revAdjList(Access.reachAdjList)
-	for v, _ in pairs(Access.reachAdjList) do
-		Access.reachAdjList[v][v] = true
-		Access.revReachAdjList[v][v] = true
-	end
-	Access.lattice = DM(adjList)
+
+	Access.lattice = DM.DM(adjList)
 	Access._levels = levels
 
 	Access.levels = {}

@@ -3,7 +3,9 @@ local check = require("softdep.check")
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 
-local function getUpperBounds(reachAdjList, subset)
+local DM = {}
+
+function DM.getUpperBounds(reachAdjList, subset)
 	check(2, types.adjList(reachAdjList))
 	check(2, types.set(subset))
 
@@ -20,7 +22,7 @@ local function getUpperBounds(reachAdjList, subset)
 	return upperBounds
 end
 
-local function getLowerBounds(reachAdjList, subset)
+function DM.getLowerBounds(reachAdjList, subset)
 	check(2, types.adjList(reachAdjList))
 	check(2, types.set(subset))
 
@@ -37,14 +39,14 @@ local function getLowerBounds(reachAdjList, subset)
 	return lowerBounds
 end
 
-local function getClosure(reachAdjList, subset)
+function DM.getClosure(reachAdjList, subset)
 	check(2, types.adjList(reachAdjList))
 	check(2, types.set(subset))
 
-	return getLowerBounds(reachAdjList, getUpperBounds(reachAdjList, subset))
+	return DM.getLowerBounds(reachAdjList, DM.getUpperBounds(reachAdjList, subset))
 end
 
-local function DM(adjList)
+function DM.DM(adjList)
 	check(2, types.adjList(adjList))
 
 	local reachAdjList = MathGraph.reachAdjList(adjList, true)
@@ -52,7 +54,7 @@ local function DM(adjList)
 	local lattice = {}
 
 	for subset in MathSet.allSubsets(MathSet.tab2set(adjList)) do
-		local closure = getClosure(reachAdjList, subset)
+		local closure = DM.getClosure(reachAdjList, subset)
 		if MathSet.equal(subset, closure) then
 			lattice[subset] = true
 		end
