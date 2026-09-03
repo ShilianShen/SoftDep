@@ -6,41 +6,6 @@ local check = require("softdep.check")
 
 local Access = {}
 
-function MathSet.cup(...)
-	local args = { ... }
-	for _, arg in ipairs(args) do
-		check(2, types.set(arg))
-	end
-
-	local set = {}
-	for _, arg in ipairs(args) do
-		for k, _ in pairs(arg) do
-			set[k] = true
-		end
-	end
-	return set
-end
-
-function MathSet.cap(...)
-	local args = { ... }
-	for _, arg in ipairs(args) do
-		check(2, types.set(arg))
-	end
-
-	local set = {}
-	for k, _ in pairs(table.remove(args)) do
-		set[k] = true
-	end
-	for _, arg in ipairs(args) do
-		for k, _ in pairs(set) do
-			if not arg[k] then
-				set[k] = nil
-			end
-		end
-	end
-	return set
-end
-
 function Access.getKey(A)
 	check(2, types.accessLatticeLevels(A))
 
@@ -53,6 +18,12 @@ end
 function Access.load(levels, leq)
 	check(2, types.accessPosetLevels(levels))
 	check(2, types.accessLeq(leq))
+
+	for key, _ in pairs(levels) do
+		if string.find(key, ";", 1, true) then
+			check(2, false, "shouldn't have ;")
+		end
+	end
 
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
 	Access.reachAdjList = MathGraph.reachAdjList(adjList)
@@ -73,20 +44,23 @@ function Access.load(levels, leq)
 	for a, info in pairs(levels) do
 		local A = Access.revReachAdjList[a]
 		local key = Access.getKey(A)
+		assert(Access.levels[key] ~= nil)
 		Access.levels[key].func = info.func
 	end
 end
 
 function Access.join(...)
 	local args = { ... }
+	check(2, #args > 0, "expected at least one access level")
+
 	for i = 1, #args do
 		local arg = args[i]
 		if Access.levels[arg] then
 			args[i] = Access.levels[arg].set
 		elseif Access._levels[arg] then
-			args[i] = Access.revReachAdjLis[arg]
+			args[i] = Access.revReachAdjList[arg]
 		else
-			check(2, false, "no")
+			check(2, false, "unknown access level: " .. tostring(arg))
 		end
 	end
 
@@ -96,14 +70,16 @@ end
 
 function Access.meet(...)
 	local args = { ... }
+	check(2, #args > 0, "expected at least one access level")
+
 	for i = 1, #args do
 		local arg = args[i]
 		if Access.levels[arg] then
 			args[i] = Access.levels[arg].set
 		elseif Access._levels[arg] then
-			args[i] = Access.revReachAdjLis[arg]
+			args[i] = Access.revReachAdjList[arg]
 		else
-			check(2, false, "no")
+			check(2, false, "unknown access level: " .. tostring(arg))
 		end
 	end
 
