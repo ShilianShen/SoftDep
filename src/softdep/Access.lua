@@ -3,47 +3,88 @@ local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 local types = require("softdep.types")
 local check = require("softdep.check")
+local bit = require("softdep.bit")
 
 local Access = {}
 
-function Access.getKey(A)
-	check(2, types.stringSet(A))
+function Access.load(levels, leq)
+	check(2, types.accessLevels(levels))
+	check(2, types.accessLeq(leq))
+	for _, edge in ipairs(leq) do
+		check(2, #edge == 2, "access relation must contain exactly two levels")
+		local a, b = edge[1], edge[2]
+		check(2, levels[a] ~= nil, "unknown access level in leq: " .. tostring(a))
+		check(2, levels[b] ~= nil, "unknown access level in leq: " .. tostring(b))
+	end
 
-	local keys = MathSet.set2arr(A)
-	table.sort(keys)
-	local key = table.concat(keys, ";")
-	return key
+	local set = MathSet.tab2set(levels)
+	local arr = MathSet.set2arr(set)
+	table.sort(arr)
+	check(2, #arr < 30)
+	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
+	local lattice = DM.DM(adjList)
+	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))
+
+	Access.levels = levels
+	Access.poset = {}
+	Access.closures = {}
+
+	for i, atag in ipairs(arr) do
+		local bitmask = 2 ^ (i - 1)
+		Access.poset[atag] = bitmask
+	end
+
+	local p2l = {}
+	for atag, pmask in pairs(Access.poset) do
+		local lmask = pmask
+		for latag, _ in pairs(revReachAdjList[atag]) do
+			lmask = bit.bor(lmask, Access.poset[latag])
+		end
+		p2l[pmask] = lmask
+	end
+	for atag, pmask in pairs(Access.poset) do
+		Access.poset[atag] = p2l[pmask]
+	end
+	p2l = nil
+
+	Access.lattice = {}
+	for atags, _ in pairs(lattice) do
+		local lmask = 0
+		for atag, _ in pairs(atags) do
+			lmask = bit.bor(lmask, Access.poset[atag])
+		end
+		Access.lattice[lmask] = true
+	end
 end
 
-function Access.load(levels, leq)
-	check(2, types.accessPosetLevels(levels))
-	check(2, types.accessLeq(leq))
+local function makeArg(arg)
+	if Access.lattice[arg] then
+		return arg
+	elseif Access.poset[arg] then
+		return Access.poset[arg]
+	else
+		check(2, false, "unknown access level: " .. tostring(arg))
+	end
+end
 
-	for key, _ in pairs(levels) do
-		if string.find(key, ";", 1, true) then
-			check(2, false, "shouldn't have ;")
+local function closure(mask)
+	local result
+
+	if Access.closures[mask] then
+		return Access.closures[mask]
+	end
+
+	for lmask in pairs(Access.lattice) do
+		if bit.band(mask, lmask) == mask then
+			result = result and bit.band(result, lmask) or lmask
 		end
 	end
 
-	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
-	Access.reachAdjList = MathGraph.reachAdjList(adjList, true)
-	Access.revReachAdjList = MathGraph.revAdjList(Access.reachAdjList)
+	assert(result and Access.lattice[result])
 
-	Access.lattice = DM.DM(adjList)
-	Access._levels = levels
+	Access.closures[mask] = result
 
-	Access.levels = {}
-	for A, _ in pairs(Access.lattice) do
-		local key = Access.getKey(A)
-		Access.levels[key] = { set = A }
-	end
-
-	for a, info in pairs(levels) do
-		local A = Access.revReachAdjList[a]
-		local key = Access.getKey(A)
-		assert(Access.levels[key] ~= nil)
-		Access.levels[key].func = info.func
-	end
+	return result
 end
 
 function Access.join(...)
@@ -51,21 +92,20 @@ function Access.join(...)
 	check(2, #args > 0, "expected at least one access level")
 
 	for i = 1, #args do
-		local arg = args[i]
-		if Access.levels[arg] then
-			args[i] = Access.levels[arg].set
-		elseif Access._levels[arg] then
-			args[i] = Access.revReachAdjList[arg]
-		else
-			check(2, false, "unknown access level: " .. tostring(arg))
-		end
+		args[i] = makeArg(args[i])
 	end
 
-	local A = MathSet.cup(table.unpack(args))
-	A = DM.getClosure(Access.reachAdjList, A)
-	local key = Access.getKey(A)
-	assert(Access.levels[key])
-	return key
+	local mask = table.remove(args)
+
+	for _, arg in ipairs(args) do
+		mask = bit.bor(mask, arg)
+	end
+
+	mask = closure(mask)
+
+	assert(Access.lattice[mask])
+
+	return mask
 end
 
 function Access.meet(...)
@@ -73,20 +113,18 @@ function Access.meet(...)
 	check(2, #args > 0, "expected at least one access level")
 
 	for i = 1, #args do
-		local arg = args[i]
-		if Access.levels[arg] then
-			args[i] = Access.levels[arg].set
-		elseif Access._levels[arg] then
-			args[i] = Access.revReachAdjList[arg]
-		else
-			check(2, false, "unknown access level: " .. tostring(arg))
-		end
+		args[i] = makeArg(args[i])
 	end
 
-	local A = MathSet.cap(table.unpack(args))
-	local key = Access.getKey(A)
-	assert(Access.levels[key])
-	return key
+	local mask = table.remove(args)
+
+	for _, arg in ipairs(args) do
+		mask = bit.band(mask, arg)
+	end
+
+	assert(Access.lattice[mask])
+
+	return mask
 end
 
 return Access
