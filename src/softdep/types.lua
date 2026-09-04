@@ -97,14 +97,14 @@ types.configAccess = types.shape({
 types.configTask = types.shape({
 	func = types.func:is_optional(),
 	auto = types.func:is_optional(),
-	access = types.string:is_optional(),
+	atag = types.string:is_optional(),
 	parents_c = types.array_of(types.string):is_optional(),
 	parents_d = types.map_of(types.string, types.string):is_optional(),
 })
 types.configNode = types.shape({
 	data = types.table:is_optional(),
 	tasks = types.map_of(types.string, types.configTask):is_optional(),
-	access = types.string:is_optional(),
+	atag = types.string:is_optional(),
 	apis = types
 		.map_of(
 			types.string,
