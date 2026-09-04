@@ -9,7 +9,7 @@ local Access = {
 	maxCount = 16,
 }
 
-function Access.load(levels, leq)
+function Access.newAccess(levels, leq)
 	check(2, types.accessLevels(levels))
 	check(2, types.accessLeq(leq))
 	for _, edge in ipairs(leq) do
@@ -21,6 +21,10 @@ function Access.load(levels, leq)
 		check(2, not (A.os and not B.os), "order-sensitive shouldn't less than order-insensitive")
 	end
 
+	local access = {
+		join = Access.join,
+		meet = Access.meet,
+	}
 	local set = MathSet.tab2set(levels)
 	local arr = MathSet.set2arr(set)
 	table.sort(arr)
@@ -29,88 +33,90 @@ function Access.load(levels, leq)
 	local lattice = DM.DM(adjList)
 	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))
 
-	Access.levels = levels
-	Access.poset = {}
-	Access.closures = {}
+	access.levels = levels
+	access.poset = {}
+	access.closures = {}
 
 	for i, atag in ipairs(arr) do
 		local bitmask = 2 ^ (i - 1)
-		Access.poset[atag] = bitmask
+		access.poset[atag] = bitmask
 	end
 
 	local p2l = {}
-	for atag, pmask in pairs(Access.poset) do
+	for atag, pmask in pairs(access.poset) do
 		local lmask = pmask
 		for latag, _ in pairs(revReachAdjList[atag]) do
-			lmask = bit.bor(lmask, Access.poset[latag])
+			lmask = bit.bor(lmask, access.poset[latag])
 		end
 		p2l[pmask] = lmask
 	end
-	for atag, pmask in pairs(Access.poset) do
-		Access.poset[atag] = p2l[pmask]
+	for atag, pmask in pairs(access.poset) do
+		access.poset[atag] = p2l[pmask]
 	end
 	p2l = nil
 
-	Access.lattice = {}
+	access.lattice = {}
 	for atags, _ in pairs(lattice) do
 		local lmask = 0
 		for atag, _ in pairs(atags) do
-			lmask = bit.bor(lmask, Access.poset[atag])
+			lmask = bit.bor(lmask, access.poset[atag])
 		end
-		Access.lattice[lmask] = true
+		access.lattice[lmask] = true
 	end
 
 	local top
 	local bot
 
-	for lmask in pairs(Access.lattice) do
+	for lmask in pairs(access.lattice) do
 		top = top and bit.bor(top, lmask) or lmask
 		bot = bot and bit.band(bot, lmask) or lmask
 	end
 
-	assert(top and Access.lattice[top])
-	assert(bot and Access.lattice[bot])
+	assert(top and access.lattice[top])
+	assert(bot and access.lattice[bot])
 
-	Access.top = top
-	Access.bot = bot
+	access.top = top
+	access.bot = bot
+
+	return access
 end
 
-local function makeArg(arg)
-	if Access.lattice[arg] then
+local function makeArg(access, arg)
+	if access.lattice[arg] then
 		return arg
-	elseif Access.poset[arg] then
-		return Access.poset[arg]
+	elseif access.poset[arg] then
+		return access.poset[arg]
 	else
 		check(2, false, "unknown access level: " .. tostring(arg))
 	end
 end
 
-local function closure(mask)
+local function closure(access, mask)
 	local result
 
-	if Access.closures[mask] then
-		return Access.closures[mask]
+	if access.closures[mask] then
+		return access.closures[mask]
 	end
 
-	for lmask in pairs(Access.lattice) do
+	for lmask in pairs(access.lattice) do
 		if bit.band(mask, lmask) == mask then
 			result = result and bit.band(result, lmask) or lmask
 		end
 	end
 
-	assert(result and Access.lattice[result])
+	assert(result and access.lattice[result])
 
-	Access.closures[mask] = result
+	access.closures[mask] = result
 
 	return result
 end
 
-function Access.join(...)
+function Access.join(access, ...)
 	local args = { ... }
 	check(2, #args > 0, "expected at least one access level")
 
 	for i = 1, #args do
-		args[i] = makeArg(args[i])
+		args[i] = makeArg(access, args[i])
 	end
 
 	local mask = table.remove(args)
@@ -119,19 +125,19 @@ function Access.join(...)
 		mask = bit.bor(mask, arg)
 	end
 
-	mask = closure(mask)
+	mask = closure(access, mask)
 
-	assert(Access.lattice[mask])
+	assert(access.lattice[mask])
 
 	return mask
 end
 
-function Access.meet(...)
+function Access.meet(access, ...)
 	local args = { ... }
 	check(2, #args > 0, "expected at least one access level")
 
 	for i = 1, #args do
-		args[i] = makeArg(args[i])
+		args[i] = makeArg(access, args[i])
 	end
 
 	local mask = table.remove(args)
@@ -140,7 +146,7 @@ function Access.meet(...)
 		mask = bit.band(mask, arg)
 	end
 
-	assert(Access.lattice[mask])
+	assert(access.lattice[mask])
 
 	return mask
 end
