@@ -6,7 +6,7 @@ local check = require("softdep.check")
 local bit = require("softdep.bit")
 
 local Access = {
-	maxCount = 16
+	maxCount = 16,
 }
 
 function Access.load(levels, leq)
@@ -59,6 +59,20 @@ function Access.load(levels, leq)
 		end
 		Access.lattice[lmask] = true
 	end
+
+	local top
+	local bot
+
+	for lmask in pairs(Access.lattice) do
+		top = top and bit.bor(top, lmask) or lmask
+		bot = bot and bit.band(bot, lmask) or lmask
+	end
+
+	assert(top and Access.lattice[top])
+	assert(bot and Access.lattice[bot])
+
+	Access.top = top
+	Access.bot = bot
 end
 
 local function makeArg(arg)

@@ -86,6 +86,13 @@ describe("softdep.Access", function()
 			assert.is_true(Access.lattice[Access.poset.a])
 		end)
 
+		it("sets top and bottom for a single level", function()
+			Access.load(makeLevels({ "a" }), {})
+
+			assert.are.equal(Access.poset.a, Access.top)
+			assert.are.equal(Access.poset.a, Access.bot)
+		end)
+
 		it("loads isolated access levels", function()
 			Access.load(makeLevels({ "a", "b", "c" }), {})
 
@@ -178,10 +185,8 @@ describe("softdep.Access", function()
 		end)
 
 		it("allows order-insensitive levels to be ordered", function()
-			local levels = makeLevels({ "a", "b" })
-
 			assert.has_no.errors(function()
-				Access.load(levels, {
+				Access.load(makeLevels({ "a", "b" }), {
 					{ "a", "b" },
 				})
 			end)
@@ -266,10 +271,9 @@ describe("softdep.Access", function()
 			assert.is_true(Access.lattice[Access.poset.c])
 		end)
 
-		it("preserves the order in the bit representation", function()
-			assert.are.equal(Access.poset.a, bit.band(Access.poset.a, Access.poset.b))
-
-			assert.are.equal(Access.poset.b, bit.band(Access.poset.b, Access.poset.c))
+		it("sets top and bottom", function()
+			assert.are.equal(Access.poset.c, Access.top)
+			assert.are.equal(Access.poset.a, Access.bot)
 		end)
 
 		it("computes joins", function()
@@ -294,12 +298,6 @@ describe("softdep.Access", function()
 			assert.are.equal(Access.poset.c, Access.join(b, "c"))
 		end)
 
-		it("accepts mixed names and lattice masks", function()
-			assert.are.equal(Access.poset.c, Access.join(Access.poset.a, "b", Access.poset.c))
-
-			assert.are.equal(Access.poset.a, Access.meet(Access.poset.c, "b", Access.poset.a))
-		end)
-
 		it("is idempotent for single arguments", function()
 			assert.are.equal(Access.poset.a, Access.join("a"))
 			assert.are.equal(Access.poset.b, Access.join("b"))
@@ -317,6 +315,11 @@ describe("softdep.Access", function()
 				{ "a", "c" },
 				{ "b", "c" },
 			})
+		end)
+
+		it("sets top and bottom", function()
+			assert.are.equal(Access.poset.c, Access.top)
+			assert.are.equal(0, Access.bot)
 		end)
 
 		it("closes the union of incomparable elements", function()
@@ -340,10 +343,7 @@ describe("softdep.Access", function()
 		end)
 
 		it("computes the meet of incomparable elements", function()
-			local bottom = Access.meet("a", "b")
-
-			assert.is_true(Access.lattice[bottom])
-			assert.are.equal(0, bottom)
+			assert.are.equal(0, Access.meet("a", "b"))
 		end)
 
 		it("absorbs lower elements into the upper element", function()
@@ -364,13 +364,15 @@ describe("softdep.Access", function()
 		end)
 
 		it("creates a new top element", function()
-			local top = Access.join("b", "c")
+			assert.is_true(Access.lattice[Access.top])
 
-			assert.is_true(Access.lattice[top])
+			assert.is_false(Access.top == Access.poset.a)
+			assert.is_false(Access.top == Access.poset.b)
+			assert.is_false(Access.top == Access.poset.c)
+		end)
 
-			assert.is_false(top == Access.poset.a)
-			assert.is_false(top == Access.poset.b)
-			assert.is_false(top == Access.poset.c)
+		it("sets bottom", function()
+			assert.are.equal(Access.poset.a, Access.bot)
 		end)
 
 		it("computes the common lower bound", function()
@@ -409,6 +411,11 @@ describe("softdep.Access", function()
 			assert.is_false(fromJoin == Access.poset.d)
 		end)
 
+		it("sets top and bottom", function()
+			assert.are.equal(Access.join("c", "d"), Access.top)
+			assert.are.equal(Access.meet("a", "b"), Access.bot)
+		end)
+
 		it("satisfies basic lattice laws", function()
 			assertBasicLatticeLaws()
 		end)
@@ -423,16 +430,14 @@ describe("softdep.Access", function()
 			Access.load(makeLevels({ "a", "b" }), {})
 		end)
 
-		it("creates bottom and top completion elements", function()
-			local bottom = Access.meet("a", "b")
-			local top = Access.join("a", "b")
+		it("creates completion top and bottom", function()
+			assert.are.equal(Access.join("a", "b"), Access.top)
+			assert.are.equal(Access.meet("a", "b"), Access.bot)
 
-			assert.are.equal(0, bottom)
-			assert.is_true(Access.lattice[bottom])
-			assert.is_true(Access.lattice[top])
+			assert.is_true(Access.lattice[Access.top])
+			assert.is_true(Access.lattice[Access.bot])
 
-			assert.is_false(top == Access.poset.a)
-			assert.is_false(top == Access.poset.b)
+			assert.are.equal(0, Access.bot)
 		end)
 	end)
 
