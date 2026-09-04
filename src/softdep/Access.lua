@@ -5,7 +5,9 @@ local types = require("softdep.types")
 local check = require("softdep.check")
 local bit = require("softdep.bit")
 
-local Access = {}
+local Access = {
+	maxCount = 16
+}
 
 function Access.load(levels, leq)
 	check(2, types.accessLevels(levels))
@@ -15,12 +17,14 @@ function Access.load(levels, leq)
 		local a, b = edge[1], edge[2]
 		check(2, levels[a] ~= nil, "unknown access level in leq: " .. tostring(a))
 		check(2, levels[b] ~= nil, "unknown access level in leq: " .. tostring(b))
+		local A, B = levels[a], levels[b]
+		check(2, not (A.os and not B.os), "order-sensitive shouldn't less than order-insensitive")
 	end
 
 	local set = MathSet.tab2set(levels)
 	local arr = MathSet.set2arr(set)
 	table.sort(arr)
-	check(2, #arr < 30)
+	check(2, #arr < Access.maxCount)
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
 	local lattice = DM.DM(adjList)
 	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))

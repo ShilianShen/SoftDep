@@ -1,6 +1,8 @@
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 local Access = require("softdep.Access")
+local check = require("softdep.check")
+local types = require("softdep.types")
 
 local function pass(...) end
 
@@ -58,8 +60,15 @@ local function run(node, parents_n)
 end
 
 local function newNode(data, tasks, access, api)
+	data = data or {}
+	tasks = tasks or {}
+	access = access or "none"
+	api = api or {}
+
+	check(2, types.newNode({ data = data, tasks = tasks, access = access, api = api }))
+
 	local node = {
-		data = data or {},
+		data = data,
 		tasks = {},
 		access = access or "none",
 		data_a = {},

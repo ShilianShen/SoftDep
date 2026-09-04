@@ -1,4 +1,5 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
+
 local assert = require("luassert")
 local Access = require("softdep.Access")
 local bit = require("softdep.bit")
@@ -9,6 +10,7 @@ local function makeLevels(names)
 	for _, name in ipairs(names) do
 		levels[name] = {
 			func = function() end,
+			os = false,
 		}
 	end
 
@@ -70,11 +72,38 @@ end
 
 describe("softdep.Access", function()
 	describe("load", function()
-		it("loads a single access level", function()
-			Access.load(makeLevels({ "a" }), {})
+		it("has the expected default maximum count", function()
+			assert.are.equal(16, Access.maxCount)
+		end)
 
+		it("loads a single access level", function()
+			local levels = makeLevels({ "a" })
+
+			Access.load(levels, {})
+
+			assert.are.equal(levels, Access.levels)
 			assert.is_not_nil(Access.poset.a)
 			assert.is_true(Access.lattice[Access.poset.a])
+		end)
+
+		it("loads isolated access levels", function()
+			Access.load(makeLevels({ "a", "b", "c" }), {})
+
+			assert.is_not_nil(Access.poset.a)
+			assert.is_not_nil(Access.poset.b)
+			assert.is_not_nil(Access.poset.c)
+
+			assert.is_true(Access.lattice[Access.poset.a])
+			assert.is_true(Access.lattice[Access.poset.b])
+			assert.is_true(Access.lattice[Access.poset.c])
+		end)
+
+		it("assigns tags deterministically by sorted name", function()
+			Access.load(makeLevels({ "c", "a", "b" }), {})
+
+			assert.are.equal(1, Access.poset.a)
+			assert.are.equal(2, Access.poset.b)
+			assert.are.equal(4, Access.poset.c)
 		end)
 
 		it("rejects an edge with fewer than two elements", function()
@@ -109,6 +138,55 @@ describe("softdep.Access", function()
 			end)
 		end)
 
+		it("rejects order-sensitive below order-insensitive", function()
+			local levels = makeLevels({ "sensitive", "insensitive" })
+
+			levels.sensitive.os = true
+			levels.insensitive.os = false
+
+			assert.has_error(function()
+				Access.load(levels, {
+					{ "sensitive", "insensitive" },
+				})
+			end)
+		end)
+
+		it("allows order-insensitive below order-sensitive", function()
+			local levels = makeLevels({ "insensitive", "sensitive" })
+
+			levels.insensitive.os = false
+			levels.sensitive.os = true
+
+			assert.has_no.errors(function()
+				Access.load(levels, {
+					{ "insensitive", "sensitive" },
+				})
+			end)
+		end)
+
+		it("allows order-sensitive levels to be ordered", function()
+			local levels = makeLevels({ "a", "b" })
+
+			levels.a.os = true
+			levels.b.os = true
+
+			assert.has_no.errors(function()
+				Access.load(levels, {
+					{ "a", "b" },
+				})
+			end)
+		end)
+
+		it("allows order-insensitive levels to be ordered", function()
+			local levels = makeLevels({ "a", "b" })
+
+			assert.has_no.errors(function()
+				Access.load(levels, {
+					{ "a", "b" },
+				})
+			end)
+		end)
+
 		it("replaces previously loaded state", function()
 			Access.load(makeLevels({ "a", "b" }), {
 				{ "a", "b" },
@@ -124,16 +202,53 @@ describe("softdep.Access", function()
 			assert.is_not_nil(Access.poset.x)
 		end)
 
-		it("rejects too many access levels", function()
-			local names = {}
+		it("resets closure cache", function()
+			Access.load(makeLevels({ "a", "b", "c" }), {
+				{ "a", "c" },
+				{ "b", "c" },
+			})
 
-			for i = 1, 30 do
-				names[i] = tostring(i)
-			end
+			Access.join("a", "b")
 
-			assert.has_error(function()
-				Access.load(makeLevels(names), {})
+			assert.is_not_nil(next(Access.closures))
+
+			Access.load(makeLevels({ "x" }), {})
+
+			assert.is_nil(next(Access.closures))
+		end)
+
+		it("rejects access levels at maxCount", function()
+			local oldMaxCount = Access.maxCount
+			Access.maxCount = 3
+
+			local ok, err = pcall(function()
+				assert.has_error(function()
+					Access.load(makeLevels({ "a", "b", "c" }), {})
+				end)
 			end)
+
+			Access.maxCount = oldMaxCount
+
+			if not ok then
+				error(err)
+			end
+		end)
+
+		it("accepts access levels below maxCount", function()
+			local oldMaxCount = Access.maxCount
+			Access.maxCount = 3
+
+			local ok, err = pcall(function()
+				assert.has_no.errors(function()
+					Access.load(makeLevels({ "a", "b" }), {})
+				end)
+			end)
+
+			Access.maxCount = oldMaxCount
+
+			if not ok then
+				error(err)
+			end
 		end)
 	end)
 
@@ -149,6 +264,12 @@ describe("softdep.Access", function()
 			assert.is_true(Access.lattice[Access.poset.a])
 			assert.is_true(Access.lattice[Access.poset.b])
 			assert.is_true(Access.lattice[Access.poset.c])
+		end)
+
+		it("preserves the order in the bit representation", function()
+			assert.are.equal(Access.poset.a, bit.band(Access.poset.a, Access.poset.b))
+
+			assert.are.equal(Access.poset.b, bit.band(Access.poset.b, Access.poset.c))
 		end)
 
 		it("computes joins", function()
@@ -171,6 +292,12 @@ describe("softdep.Access", function()
 			assert.are.equal(Access.poset.b, b)
 			assert.are.equal(Access.poset.a, Access.meet(b, "a"))
 			assert.are.equal(Access.poset.c, Access.join(b, "c"))
+		end)
+
+		it("accepts mixed names and lattice masks", function()
+			assert.are.equal(Access.poset.c, Access.join(Access.poset.a, "b", Access.poset.c))
+
+			assert.are.equal(Access.poset.a, Access.meet(Access.poset.c, "b", Access.poset.a))
 		end)
 
 		it("is idempotent for single arguments", function()
@@ -197,6 +324,19 @@ describe("softdep.Access", function()
 
 			assert.is_nil(Access.lattice[raw])
 			assert.are.equal(Access.poset.c, Access.join("a", "b"))
+		end)
+
+		it("caches closures", function()
+			local raw = bit.bor(Access.poset.a, Access.poset.b)
+
+			Access.closures = {}
+
+			assert.is_nil(Access.closures[raw])
+
+			local result = Access.join("a", "b")
+
+			assert.are.equal(result, Access.closures[raw])
+			assert.are.equal(result, Access.join("a", "b"))
 		end)
 
 		it("computes the meet of incomparable elements", function()
@@ -278,6 +418,24 @@ describe("softdep.Access", function()
 		end)
 	end)
 
+	describe("disconnected poset", function()
+		setup(function()
+			Access.load(makeLevels({ "a", "b" }), {})
+		end)
+
+		it("creates bottom and top completion elements", function()
+			local bottom = Access.meet("a", "b")
+			local top = Access.join("a", "b")
+
+			assert.are.equal(0, bottom)
+			assert.is_true(Access.lattice[bottom])
+			assert.is_true(Access.lattice[top])
+
+			assert.is_false(top == Access.poset.a)
+			assert.is_false(top == Access.poset.b)
+		end)
+	end)
+
 	describe("argument validation", function()
 		setup(function()
 			Access.load(makeLevels({ "a", "b" }), {
@@ -316,6 +474,25 @@ describe("softdep.Access", function()
 
 			assert.has_error(function()
 				Access.meet(123456789)
+			end)
+		end)
+
+		it("rejects raw masks outside the lattice", function()
+			Access.load(makeLevels({ "a", "b", "c" }), {
+				{ "a", "c" },
+				{ "b", "c" },
+			})
+
+			local raw = bit.bor(Access.poset.a, Access.poset.b)
+
+			assert.is_nil(Access.lattice[raw])
+
+			assert.has_error(function()
+				Access.join(raw)
+			end)
+
+			assert.has_error(function()
+				Access.meet(raw)
 			end)
 		end)
 	end)

@@ -11,8 +11,23 @@ types.accessLevels = types.map_of(
 	types.string,
 	types.shape({
 		func = types.func,
+		os = types.boolean,
 	})
 )
 types.accessLeq = types.array_of(types.array_of(types.string))
+
+types.newTaskArgs = types.shape({
+	func = types.func,
+	auto = types.func,
+	access = types.string,
+})
+
+types.task = types.shape({
+	func = types.func,
+	auto = types.func,
+	dirty = types.boolean,
+	count = types.integer,
+	access = types.string,
+})
 
 return types
