@@ -5,7 +5,6 @@ local Task = {}
 
 function Task.newTask(args)
 	check(2, types.newTaskArgs(args))
-	check(2, Access.levels[args.access], "no")
 
 	local task = {
 		func = args.func,

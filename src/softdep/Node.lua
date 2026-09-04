@@ -4,10 +4,8 @@ local types = require("softdep.types")
 local MathGraph = require("softdep.MathGraph")
 local Node = {}
 
-function Node.new(args)
+function Node.newNode(args)
 	check(2, types.newNodeArgs(args))
-	check(2, Access.levels[args.access], "no2")
-	check(2, not Access.levels[args.access].os, "no222")
 
 	for _, api in pairs(args.apis) do
 		check(2, args.tasks[api.ttag], "no24243")

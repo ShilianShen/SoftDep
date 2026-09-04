@@ -25,6 +25,7 @@ local function latticeMasks(access)
 	end
 
 	table.sort(masks)
+
 	return masks
 end
 
@@ -70,6 +71,31 @@ local function assertAssociativity(access)
 	end
 end
 
+local function makeK22()
+	return Access.newAccess(
+		makeLevels({
+			"bot",
+			"a",
+			"b",
+			"c",
+			"d",
+			"top",
+		}),
+		{
+			{ "bot", "a" },
+			{ "bot", "b" },
+
+			{ "a", "c" },
+			{ "a", "d" },
+			{ "b", "c" },
+			{ "b", "d" },
+
+			{ "c", "top" },
+			{ "d", "top" },
+		}
+	)
+end
+
 describe("softdep.Access", function()
 	describe("newAccess", function()
 		it("has the expected default maximum count", function()
@@ -92,31 +118,22 @@ describe("softdep.Access", function()
 			assert.are.equal(Access.meet, access.meet)
 		end)
 
-		it("sets top and bottom for a single level", function()
+		it("sets top and bottom for a single access level", function()
 			local access = Access.newAccess(makeLevels({ "a" }), {})
 
-			assert.are.equal(access.poset.a, access.top)
-			assert.are.equal(access.poset.a, access.bot)
+			assert.are.equal("a", access.top)
+			assert.are.equal("a", access.bot)
 		end)
 
-		it("creates isolated access levels", function()
-			local access = Access.newAccess(makeLevels({ "a", "b", "c" }), {})
-
-			assert.is_not_nil(access.poset.a)
-			assert.is_not_nil(access.poset.b)
-			assert.is_not_nil(access.poset.c)
-
-			assert.is_true(access.lattice[access.poset.a])
-			assert.is_true(access.lattice[access.poset.b])
-			assert.is_true(access.lattice[access.poset.c])
-		end)
-
-		it("assigns tags deterministically by sorted name", function()
-			local access = Access.newAccess(makeLevels({ "c", "a", "b" }), {})
+		it("assigns masks deterministically by sorted name", function()
+			local access = Access.newAccess(makeLevels({ "c", "a", "b" }), {
+				{ "a", "b" },
+				{ "b", "c" },
+			})
 
 			assert.are.equal(1, access.poset.a)
-			assert.are.equal(2, access.poset.b)
-			assert.are.equal(4, access.poset.c)
+			assert.are.equal(3, access.poset.b)
+			assert.are.equal(7, access.poset.c)
 		end)
 
 		it("rejects an edge with fewer than two elements", function()
@@ -167,6 +184,7 @@ describe("softdep.Access", function()
 		it("allows order-insensitive below order-sensitive", function()
 			local levels = makeLevels({ "insensitive", "sensitive" })
 
+			levels.insensitive.os = false
 			levels.sensitive.os = true
 
 			assert.has_no.errors(function()
@@ -198,14 +216,16 @@ describe("softdep.Access", function()
 		end)
 
 		it("starts with an empty closure cache", function()
-			local access = Access.newAccess(makeLevels({ "a", "b" }), {})
+			local access = Access.newAccess(makeLevels({ "a", "b" }), {
+				{ "a", "b" },
+			})
 
 			assert.is_nil(next(access.closures))
 		end)
 
 		it("creates independent instances", function()
 			local first = Access.newAccess(makeLevels({ "a", "b", "c" }), {
-				{ "a", "c" },
+				{ "a", "b" },
 				{ "b", "c" },
 			})
 
@@ -223,6 +243,36 @@ describe("softdep.Access", function()
 
 			assert.is_not_nil(second.poset.x)
 			assert.is_nil(second.poset.a)
+
+			assert.are.equal("c", first.top)
+			assert.are.equal("a", first.bot)
+
+			assert.are.equal("y", second.top)
+			assert.are.equal("x", second.bot)
+		end)
+
+		it("rejects a poset without an explicit bottom", function()
+			assert.has_error(function()
+				Access.newAccess(makeLevels({ "a", "b", "top" }), {
+					{ "a", "top" },
+					{ "b", "top" },
+				})
+			end, "bot should be explicitly declared")
+		end)
+
+		it("rejects a poset without an explicit top", function()
+			assert.has_error(function()
+				Access.newAccess(makeLevels({ "bot", "a", "b" }), {
+					{ "bot", "a" },
+					{ "bot", "b" },
+				})
+			end, "top should be explicitly declared")
+		end)
+
+		it("rejects a poset without explicit top or bottom", function()
+			assert.has_error(function()
+				Access.newAccess(makeLevels({ "a", "b" }), {})
+			end)
 		end)
 
 		it("rejects access levels at maxCount", function()
@@ -231,7 +281,10 @@ describe("softdep.Access", function()
 
 			local ok, err = pcall(function()
 				assert.has_error(function()
-					Access.newAccess(makeLevels({ "a", "b", "c" }), {})
+					Access.newAccess(makeLevels({ "a", "b", "c" }), {
+						{ "a", "b" },
+						{ "b", "c" },
+					})
 				end)
 			end)
 
@@ -248,7 +301,9 @@ describe("softdep.Access", function()
 
 			local ok, err = pcall(function()
 				assert.has_no.errors(function()
-					Access.newAccess(makeLevels({ "a", "b" }), {})
+					Access.newAccess(makeLevels({ "a", "b" }), {
+						{ "a", "b" },
+					})
 				end)
 			end)
 
@@ -277,8 +332,14 @@ describe("softdep.Access", function()
 		end)
 
 		it("sets top and bottom", function()
-			assert.are.equal(access.poset.c, access.top)
-			assert.are.equal(access.poset.a, access.bot)
+			assert.are.equal("c", access.top)
+			assert.are.equal("a", access.bot)
+		end)
+
+		it("preserves the order in the bit representation", function()
+			assert.are.equal(access.poset.a, bit.band(access.poset.a, access.poset.b))
+
+			assert.are.equal(access.poset.b, bit.band(access.poset.b, access.poset.c))
 		end)
 
 		it("computes joins", function()
@@ -321,85 +382,66 @@ describe("softdep.Access", function()
 	end)
 
 	describe("V-shaped poset", function()
-		local access
-
-		setup(function()
-			access = Access.newAccess(makeLevels({ "a", "b", "c" }), {
-				{ "a", "c" },
-				{ "b", "c" },
-			})
-		end)
-
-		it("sets top and bottom", function()
-			assert.are.equal(access.poset.c, access.top)
-			assert.are.equal(0, access.bot)
-		end)
-
-		it("closes the union of incomparable elements", function()
-			local raw = bit.bor(access.poset.a, access.poset.b)
-
-			assert.is_nil(access.lattice[raw])
-			assert.are.equal(access.poset.c, access:join("a", "b"))
-		end)
-
-		it("caches closures", function()
-			local raw = bit.bor(access.poset.a, access.poset.b)
-
-			access.closures = {}
-
-			assert.is_nil(access.closures[raw])
-
-			local result = access:join("a", "b")
-
-			assert.are.equal(result, access.closures[raw])
-			assert.are.equal(result, access:join("a", "b"))
-		end)
-
-		it("computes the meet of incomparable elements", function()
-			assert.are.equal(0, access:meet("a", "b"))
-		end)
-
-		it("absorbs lower elements into the upper element", function()
-			assert.are.equal(access.poset.c, access:join("a", "c"))
-			assert.are.equal(access.poset.c, access:join("b", "c"))
-
-			assert.are.equal(access.poset.a, access:meet("a", "c"))
-			assert.are.equal(access.poset.b, access:meet("b", "c"))
+		it("rejects an implicit bottom", function()
+			assert.has_error(function()
+				Access.newAccess(makeLevels({ "a", "b", "c" }), {
+					{ "a", "c" },
+					{ "b", "c" },
+				})
+			end, "bot should be explicitly declared")
 		end)
 	end)
 
 	describe("inverted V-shaped poset", function()
+		it("rejects an implicit top", function()
+			assert.has_error(function()
+				Access.newAccess(makeLevels({ "a", "b", "c" }), {
+					{ "a", "b" },
+					{ "a", "c" },
+				})
+			end, "top should be explicitly declared")
+		end)
+	end)
+
+	describe("diamond poset", function()
 		local access
 
 		setup(function()
-			access = Access.newAccess(makeLevels({ "a", "b", "c" }), {
-				{ "a", "b" },
-				{ "a", "c" },
-			})
+			access = Access.newAccess(
+				makeLevels({
+					"bot",
+					"a",
+					"b",
+					"top",
+				}),
+				{
+					{ "bot", "a" },
+					{ "bot", "b" },
+					{ "a", "top" },
+					{ "b", "top" },
+				}
+			)
 		end)
 
-		it("creates a new top element", function()
-			assert.is_true(access.lattice[access.top])
-
-			assert.is_false(access.top == access.poset.a)
-			assert.is_false(access.top == access.poset.b)
-			assert.is_false(access.top == access.poset.c)
+		it("sets explicitly declared top and bottom", function()
+			assert.are.equal("top", access.top)
+			assert.are.equal("bot", access.bot)
 		end)
 
-		it("sets bottom", function()
-			assert.are.equal(access.poset.a, access.bot)
+		it("computes the join of incomparable elements", function()
+			assert.are.equal(access.poset.top, access:join("a", "b"))
 		end)
 
-		it("computes the common lower bound", function()
-			assert.are.equal(access.poset.a, access:meet("b", "c"))
+		it("computes the meet of incomparable elements", function()
+			assert.are.equal(access.poset.bot, access:meet("a", "b"))
 		end)
 
 		it("keeps the original order", function()
-			assert.are.equal(access.poset.b, access:join("a", "b"))
-			assert.are.equal(access.poset.c, access:join("a", "c"))
+			assert.are.equal(access.poset.a, access:join("bot", "a"))
+			assert.are.equal(access.poset.b, access:join("bot", "b"))
 
-			assert.are.equal(access.poset.a, access:meet("a", "b"))
-			assert.are.equal(access.poset.a, access:meet("a", "c"))
+			assert.are.equal(access.poset.a, access:meet("a", "top"))
+			assert.are.equal(access.poset.b, access:meet("b", "top"))
 		end)
 	end)
 
@@ -407,30 +449,41 @@ describe("softdep.Access", function()
 		local access
 
 		setup(function()
-			access = Access.newAccess(makeLevels({ "a", "b", "c", "d" }), {
-				{ "a", "c" },
-				{ "a", "d" },
-				{ "b", "c" },
-				{ "b", "d" },
-			})
+			access = makeK22()
 		end)
 
-		it("creates the expected completion element", function()
+		it("sets explicitly declared top and bottom", function()
+			assert.are.equal("top", access.top)
+			assert.are.equal("bot", access.bot)
+		end)
+
+		it("creates the expected middle completion element", function()
 			local fromJoin = access:join("a", "b")
 			local fromMeet = access:meet("c", "d")
 
 			assert.are.equal(fromJoin, fromMeet)
 			assert.is_true(access.lattice[fromJoin])
 
+			assert.is_false(fromJoin == access.poset.bot)
 			assert.is_false(fromJoin == access.poset.a)
 			assert.is_false(fromJoin == access.poset.b)
 			assert.is_false(fromJoin == access.poset.c)
 			assert.is_false(fromJoin == access.poset.d)
+			assert.is_false(fromJoin == access.poset.top)
 		end)
 
-		it("sets top and bottom", function()
-			assert.are.equal(access:join("c", "d"), access.top)
-			assert.are.equal(access:meet("a", "b"), access.bot)
+		it("closes the union of upper incomparable elements", function()
+			local raw = bit.bor(access.poset.c, access.poset.d)
+
+			assert.is_nil(access.lattice[raw])
+			assert.are.equal(access.poset.top, access:join("c", "d"))
+		end)
+
+		it("keeps top and bottom outside the middle completion element", function()
+			local middle = access:join("a", "b")
+
+			assert.are.equal(access.poset.top, access:join(middle, "top"))
+			assert.are.equal(access.poset.bot, access:meet(middle, "bot"))
 		end)
 
 		it("satisfies basic lattice laws", function()
@@ -442,21 +495,19 @@ describe("softdep.Access", function()
 		end)
 	end)
 
-	describe("disconnected poset", function()
-		local access
+	describe("closure cache", function()
+		it("caches a computed closure", function()
+			local access = makeK22()
+			local raw = bit.bor(access.poset.c, access.poset.d)
 
-		setup(function()
-			access = Access.newAccess(makeLevels({ "a", "b" }), {})
-		end)
+			assert.is_nil(access.lattice[raw])
+			assert.is_nil(access.closures[raw])
 
-		it("creates completion top and bottom", function()
-			assert.are.equal(access:join("a", "b"), access.top)
-			assert.are.equal(access:meet("a", "b"), access.bot)
+			local result = access:join("c", "d")
 
-			assert.is_true(access.lattice[access.top])
-			assert.is_true(access.lattice[access.bot])
-
-			assert.are.equal(0, access.bot)
+			assert.are.equal(access.poset.top, result)
+			assert.are.equal(result, access.closures[raw])
+			assert.are.equal(result, access:join("c", "d"))
 		end)
 	end)
 
@@ -503,22 +554,18 @@ describe("softdep.Access", function()
 			end)
 		end)
 
-		it("rejects raw masks outside the lattice", function()
-			local v = Access.newAccess(makeLevels({ "a", "b", "c" }), {
-				{ "a", "c" },
-				{ "b", "c" },
-			})
+		it("rejects a raw mask outside the lattice", function()
+			local completion = makeK22()
+			local raw = bit.bor(completion.poset.c, completion.poset.d)
 
-			local raw = bit.bor(v.poset.a, v.poset.b)
-
-			assert.is_nil(v.lattice[raw])
+			assert.is_nil(completion.lattice[raw])
 
 			assert.has_error(function()
-				v:join(raw)
+				completion:join(raw)
 			end)
 
 			assert.has_error(function()
-				v:meet(raw)
+				completion:meet(raw)
 			end)
 		end)
 	end)

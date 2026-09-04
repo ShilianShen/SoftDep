@@ -75,8 +75,17 @@ function Access.newAccess(levels, leq)
 	assert(top and access.lattice[top])
 	assert(bot and access.lattice[bot])
 
-	access.top = top
-	access.bot = bot
+	for atag, mask in pairs(access.poset) do
+		if top == mask then
+			access.top = atag
+		end
+		if bot == mask then
+			access.bot = atag
+		end
+	end
+
+	check(2, access.top ~= nil, "top should be explicitly declared")
+	check(2, access.bot ~= nil, "bot should be explicitly declared")
 
 	return access
 end

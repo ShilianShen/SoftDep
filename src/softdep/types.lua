@@ -75,4 +75,93 @@ types.newGraphArgs = types.shape({
 	parents_n = types.stringAdjList,
 })
 
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+types.configAccess = types.shape({
+	levels = types.map_of(
+		types.string,
+		types.shape({
+			func = types.func,
+			os = types.boolean,
+		})
+	),
+	leq = types.array_of(types.string),
+})
+types.configTask = types.shape({
+	func = types.func:is_optional(),
+	auto = types.func:is_optional(),
+	access = types.string:is_optional(),
+	parents_c = types.array_of(types.string):is_optional(),
+	parents_d = types.map_of(types.string, types.string):is_optional(),
+})
+types.configNode = types.shape({
+	data = types.table:is_optional(),
+	tasks = types.map_of(types.string, types.configTask):is_optional(),
+	access = types.string:is_optional(),
+	apis = types
+		.map_of(
+			types.string,
+			types.shape({
+				func = types.func,
+				ttag = types.string,
+			})
+		)
+		:is_optional(),
+})
+types.configGraph = types.shape({
+	access = types.configAccess,
+	nodes = types.map_of(types.string, types.configNode):is_optional(),
+})
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+types.systemAccess = types.any
+types.systemTask = types.shape({
+	func = types.func,
+	auto = types.func,
+	access = types.string,
+	dirty = types.boolean,
+	count = types.integer,
+})
+types.systemNode = types.shape({
+	data = types.table,
+	tasks = types.map_of(types.string, types.systemTask),
+	access = types.string,
+	apis = types.map_of(
+		types.string,
+		types.shape({
+			func = types.func,
+			ttag = types.string,
+		})
+	),
+	data_a = types.any,
+	parents_c = types.array_of(types.string),
+	order = types.any,
+	children_c = types.any,
+	dirty = types.boolean,
+})
+types.systemGraph = types.shape({
+	nodes = types.map_of(types.string, types.configNode),
+	parents_d = types.map_of(types.string, types.string),
+	children_d = types.any,
+	parents_n = types.any,
+	children_n = types.any,
+	order = types.any,
+	ready = types.boolean,
+})
+
 return types
