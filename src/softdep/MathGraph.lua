@@ -98,4 +98,35 @@ function MathGraph.sort(adjList)
 	return order
 end
 
+function MathGraph.isDAG(adjList)
+	check(2, types.adjList(adjList))
+
+	local revAdjList = MathGraph.revAdjList(adjList)
+	local indegrees = {}
+	local stack = {}
+
+	for vtag, _ in pairs(revAdjList) do
+		indegrees[vtag] = MathSet.count(revAdjList[vtag])
+		if indegrees[vtag] == 0 then
+			table.insert(stack, vtag)
+		end
+	end
+
+	for _, _ in pairs(adjList) do
+		local vtag = table.remove(stack)
+		if vtag == nil then
+			return false
+		end
+
+		for ctag, _ in pairs(adjList[vtag]) do
+			indegrees[ctag] = indegrees[ctag] - 1
+			if indegrees[ctag] == 0 then
+				table.insert(stack, ctag)
+			end
+		end
+	end
+
+	return true
+end
+
 return MathGraph

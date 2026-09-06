@@ -127,6 +127,10 @@ local function contentCheck(graph)
 		check(2, A ~= B)
 		check(2, (not A.os) or B.os)
 	end
+	do
+		local adjList = MathGraph.edges2AdjList(atagSet, graph.access.leq)
+		check(2, MathGraph.isDAG(adjList))
+	end
 
 	local ntagSet = MathSet.tab2set(graph.nodes)
 
@@ -173,11 +177,13 @@ local function make(graph)
 		node.dirty = true
 		node.count = 0
 		node.children_c = MathGraph.revAdjList(node.parents_c)
+		check(2, MathGraph.isDAG(node.children_c))
 		node.order = MathGraph.sort(node.children_c)
 		node.data_a = {}
 
 		for atag, level in pairs(graph.access.levels) do
 			node.data_a[atag] = level.func(node.data)
+			check(2, type(node.data_a[atag]) == "table")
 		end
 
 		for _, task in pairs(node.tasks) do
@@ -198,6 +204,7 @@ local function make(graph)
 		end
 	end
 	graph.children_n = MathGraph.revAdjList(graph.parents_n)
+	check(2, MathGraph.isDAG(graph.children_n))
 	graph.order = MathGraph.sort(graph.children_n)
 
 	graph.children_d = {}
