@@ -11,6 +11,15 @@ function MathSet.arr2set(arr)
 	return set
 end
 
+function MathSet.tab2arr(tab)
+	check(2, types.table(tab))
+	local arr = {}
+	for k, _ in pairs(tab) do
+		table.insert(arr, k)
+	end
+	return arr
+end
+
 function MathSet.set2arr(set)
 	check(2, types.set(set))
 	local arr = {}

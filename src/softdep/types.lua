@@ -1,5 +1,9 @@
 local types = require("softdep.tableshape").types
 
+function types.opt_map_of(...)
+	return types.map_of(...):is_optional()
+end
+
 types.set = types.map_of(types.any, types.literal(true))
 types.adjList = types.map_of(types.any, types.set)
 
