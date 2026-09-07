@@ -20,10 +20,9 @@ local function spreadGraph(graph)
 				for cttag, _ in pairs(node.children_c[ttag]) do
 					node.tasks[cttag].dirty = true
 				end
-				-- if graph.access.join(node.atag, task.atag) ~= graph.access.poset[node.atag] then
-				-- 	node.dirty = true
-				-- end
-				node.dirty = true
+				if graph.access:join(node.atag, task.atag) ~= graph.access.poset[node.atag] then
+					node.dirty = true
+				end
 			end
 		end
 
@@ -55,10 +54,14 @@ local function updateGraph(graph)
 
 				task.func(node.data_a[task.atag], parents_d)
 				task.dirty = false
+				task.count = task.count + 1
 			end
 		end
 
-		node.dirty = false
+		if node.dirty then
+			node.dirty = false
+			node.count = node.count + 1
+		end
 	end
 end
 
