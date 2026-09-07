@@ -28,7 +28,7 @@ function Access.newAccess(levels, leq)
 	local set = MathSet.tab2set(levels)
 	local arr = MathSet.set2arr(set)
 	table.sort(arr)
-	check(2, #arr < Access.maxCount)
+	check(2, #arr < Access.maxCount, "access level count must be less than " .. Access.maxCount .. "; got " .. #arr)
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
 	local lattice = DM.DM(adjList)
 	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))
@@ -72,8 +72,8 @@ function Access.newAccess(levels, leq)
 		bot = bot and bit.band(bot, lmask) or lmask
 	end
 
-	assert(top and access.lattice[top])
-	assert(bot and access.lattice[bot])
+	assert(top and access.lattice[top], "computed top must belong to the access lattice")
+	assert(bot and access.lattice[bot], "computed bottom must belong to the access lattice")
 
 	for atag, mask in pairs(access.poset) do
 		if top == mask then
@@ -113,7 +113,7 @@ local function closure(access, mask)
 		end
 	end
 
-	assert(result and access.lattice[result])
+	assert(result and access.lattice[result], "closure must belong to the access lattice for mask: " .. tostring(mask))
 
 	access.closures[mask] = result
 
@@ -136,7 +136,7 @@ function Access.join(access, ...)
 
 	mask = closure(access, mask)
 
-	assert(access.lattice[mask])
+	assert(access.lattice[mask], "join result must belong to the access lattice: " .. tostring(mask))
 
 	return mask
 end
@@ -155,7 +155,7 @@ function Access.meet(access, ...)
 		mask = bit.band(mask, arg)
 	end
 
-	assert(access.lattice[mask])
+	assert(access.lattice[mask], "meet result must belong to the access lattice: " .. tostring(mask))
 
 	return mask
 end
