@@ -3,6 +3,139 @@ local assert = require("luassert")
 local MathSet = require("softdep.MathSet")
 
 describe("MathSet", function()
+	describe("tab2arr", function()
+		it("returns every key regardless of its value", function()
+			local arr = MathSet.tab2arr({ a = false, b = 0, c = "value" })
+			table.sort(arr)
+			assert.same({ "a", "b", "c" }, arr)
+		end)
+
+		it("handles an empty table", function()
+			assert.same({}, MathSet.tab2arr({}))
+		end)
+
+		it("preserves mixed key types and returns an independent array", function()
+			local key = {}
+			local input = { [key] = "table", [false] = "boolean", [7] = "number" }
+			local arr = MathSet.tab2arr(input)
+			local seen = {}
+			assert.equal(3, #arr)
+			for _, value in ipairs(arr) do
+				assert.is_nil(seen[value])
+				seen[value] = true
+			end
+			assert.is_true(seen[key])
+			assert.is_true(seen[false])
+			assert.is_true(seen[7])
+			arr[1] = "changed"
+			assert.same({ [key] = "table", [false] = "boolean", [7] = "number" }, input)
+		end)
+	end)
+
+	describe("validation errors", function()
+		local cases = {
+			{
+				"arr2set",
+				function()
+					MathSet.arr2set(false)
+				end,
+			},
+			{
+				"tab2arr",
+				function()
+					MathSet.tab2arr(false)
+				end,
+			},
+			{
+				"tab2set",
+				function()
+					MathSet.tab2set(false)
+				end,
+			},
+			{
+				"set2arr",
+				function()
+					MathSet.set2arr({ a = false })
+				end,
+			},
+			{
+				"set2tab",
+				function()
+					MathSet.set2tab({ a = false }, {})
+				end,
+			},
+			{
+				"count",
+				function()
+					MathSet.count({ a = false })
+				end,
+			},
+			{
+				"equal first argument",
+				function()
+					MathSet.equal({ a = false }, {})
+				end,
+			},
+			{
+				"equal second argument",
+				function()
+					MathSet.equal({}, { a = false })
+				end,
+			},
+			{
+				"isSubset first argument",
+				function()
+					MathSet.isSubset({ a = false }, {})
+				end,
+			},
+			{
+				"isSubset second argument",
+				function()
+					MathSet.isSubset({}, { a = false })
+				end,
+			},
+			{
+				"allSubsets",
+				function()
+					MathSet.allSubsets({ a = false })
+				end,
+			},
+			{
+				"cup first argument",
+				function()
+					MathSet.cup({ a = false }, {})
+				end,
+			},
+			{
+				"cup later argument",
+				function()
+					MathSet.cup({}, {}, { a = false })
+				end,
+			},
+			{
+				"cap first argument",
+				function()
+					MathSet.cap({ a = false }, {})
+				end,
+			},
+			{
+				"cap later argument",
+				function()
+					MathSet.cap({}, {}, { a = false })
+				end,
+			},
+		}
+
+		for _, case in ipairs(cases) do
+			it("reports a type validation message for " .. case[1], function()
+				local ok, err = pcall(case[2])
+				assert.is_false(ok)
+				assert.is_string(err)
+				assert.matches("expect", err, 1, true)
+			end)
+		end
+	end)
+
 	describe("arr2set", function()
 		it("converts an array to a set", function()
 			assert.same({
@@ -57,6 +190,17 @@ describe("MathSet", function()
 	end)
 
 	describe("set2tab", function()
+		it("preserves false values and nested value references", function()
+			local nested = {}
+			local data = { a = false, b = nested, c = 3 }
+			local result = MathSet.set2tab({ a = true, b = true }, data)
+			assert.is_false(result.a)
+			assert.equal(nested, result.b)
+			assert.is_nil(result.c)
+			result.a = true
+			assert.is_false(data.a)
+		end)
+
 		it("selects values whose keys are in the set", function()
 			local data = {
 				a = 10,
@@ -261,6 +405,20 @@ describe("MathSet", function()
 	end)
 
 	describe("allSubsets", function()
+		it("keeps iterators and yielded subsets independent", function()
+			local input = { a = true }
+			local first = MathSet.allSubsets(input)
+			local second = MathSet.allSubsets(input)
+			local empty = first()
+			empty.extra = true
+			assert.same({ a = true }, first())
+			assert.is_nil(first())
+			assert.same({}, second())
+			assert.same({ a = true }, second())
+			assert.is_nil(second())
+			assert.same({ a = true }, input)
+		end)
+
 		local function collect(iterator)
 			local result = {}
 
@@ -437,6 +595,19 @@ describe("MathSet", function()
 	end)
 
 	describe("cap", function()
+		it("returns an empty intersection with an empty operand in any position", function()
+			assert.same({}, MathSet.cap({}, { a = true }, { a = true }))
+			assert.same({}, MathSet.cap({ a = true }, {}, { a = true }))
+			assert.same({}, MathSet.cap({ a = true }, { a = true }, {}))
+		end)
+
+		it("returns an independent set for a single operand", function()
+			local input = { a = true }
+			local result = MathSet.cap(input)
+			result.a = nil
+			assert.same({ a = true }, input)
+		end)
+
 		it("returns the intersection of two sets", function()
 			assert.same(
 				{
