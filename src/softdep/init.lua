@@ -38,36 +38,62 @@ local function spreadGraph(graph)
 	end
 end
 
-local function updateGraph(graph)
-	for _, ntag in ipairs(graph.order) do
-		local node = graph.nodes[ntag]
-
-		for _, ttag in ipairs(node.order) do
-			local task = node.tasks[ttag]
-
-			if task.dirty then
-				local parents_d = {}
-				for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
-					local pnode = graph.nodes[pntag]
-					parents_d[pdtag] = pnode.data_a[pnode.atag]
-				end
-
-				task.func(node.data_a[task.atag], parents_d)
-				task.dirty = false
-				task.count = task.count + 1
+local function newModule(graph, ntagArr)
+	local module = {
+		ntagSet = MathSet.arr2set(ntagArr),
+		parents_n = {},
+	}
+	for ntag, _ in pairs(module.ntagSet) do
+		for pntag, _ in pairs(graph.parents_n[ntag]) do
+			if not module.ntagSet[pntag] then
+				module.parents_n[pntag] = true
 			end
 		end
+	end
+	return module
+end
 
-		if node.dirty then
-			node.dirty = false
-			node.count = node.count + 1
+local function updateGraph(graph, module)
+	if module ~= nil then
+		for pntag, _ in pairs(module.parents_n) do
+			local pnode = graph.nodes[pntag]
+			if pnode.dirty then
+				return
+			end
+		end
+	end
+
+	for _, ntag in ipairs(graph.order) do
+		if module == nil or module.ntagSet[ntag] then
+			local node = graph.nodes[ntag]
+
+			for _, ttag in ipairs(node.order) do
+				local task = node.tasks[ttag]
+
+				if task.dirty then
+					local parents_d = {}
+					for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
+						local pnode = graph.nodes[pntag]
+						parents_d[pdtag] = pnode.data_a[pnode.atag]
+					end
+
+					task.func(node.data_a[task.atag], parents_d)
+					task.dirty = false
+					task.count = task.count + 1
+				end
+			end
+
+			if node.dirty then
+				node.dirty = false
+				node.count = node.count + 1
+			end
 		end
 	end
 end
 
-local function runGraph(graph)
+local function runGraph(graph, module)
 	spreadGraph(graph)
-	updateGraph(graph)
+	updateGraph(graph, module)
 end
 
 local nodeMetatable = {
@@ -87,6 +113,7 @@ function softdep.newGraph(config)
 	graph.spread = spreadGraph
 	graph.update = updateGraph
 	graph.run = runGraph
+	graph.newModule = newModule
 
 	for _, node in pairs(graph.nodes) do
 		for _, api in pairs(node.apis) do
