@@ -136,6 +136,8 @@ local function contentCheck(graph)
 
 	for _, node in pairs(graph.nodes) do
 		check(2, atagSet[node.atag])
+		check(2, not graph.access.levels[node.atag].os, "node access level must be order-insensitive: " .. node.atag)
+
 		local ttagSet = MathSet.tab2set(node.tasks)
 		for _, task in pairs(node.tasks) do
 			check(2, atagSet[task.atag])

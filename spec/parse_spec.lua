@@ -80,7 +80,9 @@ describe("softdep.parse", function()
 			local function callback()
 				error("must not execute while parsing")
 			end
-			config.nodes.main.atag = "write"
+			config.access.levels.explicit = { func = identity, os = false }
+			config.access.leq = { { "read", "explicit" }, { "explicit", "write" } }
+			config.nodes.main.atag = "explicit"
 			config.nodes.main.tasks.run = { atag = "read", func = callback, auto = callback }
 			config.nodes.main.apis = {
 				full = { func = callback, ttag = "run" },
@@ -88,7 +90,7 @@ describe("softdep.parse", function()
 				taskOnly = { ttag = "run" },
 			}
 			local node = parse(config).nodes.main
-			assert.are.equal("write", node.atag)
+			assert.are.equal("explicit", node.atag)
 			assert.are.equal("read", node.tasks.run.atag)
 			assert.are.equal(callback, node.tasks.run.func)
 			assert.are.equal(callback, node.tasks.run.auto)
@@ -302,6 +304,20 @@ describe("softdep.parse", function()
 	end)
 
 	describe("validation", function()
+		for _, source in ipairs({ "explicit", "default" }) do
+			it("rejects an order-sensitive " .. source .. " node tag", function()
+				local config = makeConfig()
+				if source == "explicit" then
+					config.nodes.main.atag = "write"
+				else
+					config.default.nodeAtag = "write"
+				end
+				assert.has_error(function()
+					parse(config)
+				end, "node access level must be order-insensitive: write")
+			end)
+		end
+
 		local cases = {
 			{
 				"missing access",
