@@ -32,6 +32,7 @@ function Access.newAccess(levels, leq)
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
 	local lattice = DM.DM(adjList)
 	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))
+	access.reachAdjList = MathGraph.reachAdjList(adjList, true)
 
 	access.levels = levels
 	access.poset = {}

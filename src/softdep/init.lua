@@ -20,7 +20,7 @@ local function spreadGraph(graph)
 				for cttag, _ in pairs(node.children_c[ttag]) do
 					node.tasks[cttag].dirty = true
 				end
-				if graph.access:join(node.atag, task.atag) ~= graph.access.poset[node.atag] then
+				if task.higher then
 					node.dirty = true
 				end
 			end
@@ -116,6 +116,9 @@ function softdep.newGraph(config)
 	graph.newModule = newModule
 
 	for _, node in pairs(graph.nodes) do
+		for _, task in pairs(node.tasks) do
+			task.higher = node.atag ~= task.atag and graph.access.reachAdjList[node.atag][task.atag]
+		end
 		for _, api in pairs(node.apis) do
 			api._node = node
 			setmetatable(api, nodeMetatable)
