@@ -96,14 +96,6 @@ describe("softdep.parse", function()
 			assert.are.equal(callback, node.tasks.run.auto)
 			assert.are.same(config.nodes.main.apis, node.apis)
 		end)
-
-		it("constructs a usable access lattice", function()
-			local access = parse(makeConfig()).access
-			assert.are.equal("read", access.bot)
-			assert.are.equal("write", access.top)
-			assert.are.equal(access.poset.write, access:join("read", "write"))
-			assert.are.equal(access.poset.read, access:meet("read", "write"))
-		end)
 	end)
 
 	describe("data views and input isolation", function()

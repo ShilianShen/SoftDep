@@ -3,7 +3,6 @@ local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 local types = require("softdep.types")
 local check = require("softdep.check")
-local bit = require("softdep.bit")
 
 local Access = {
 	maxCount = 16,
@@ -12,75 +11,38 @@ local Access = {
 function Access.newAccess(levels, leq)
 	check(2, types.accessLevels(levels))
 	check(2, types.accessLeq(leq))
+
 	for _, edge in ipairs(leq) do
 		check(2, #edge == 2, "access relation must contain exactly two levels")
+
 		local a, b = edge[1], edge[2]
 		check(2, levels[a] ~= nil, "unknown access level in leq: " .. tostring(a))
 		check(2, levels[b] ~= nil, "unknown access level in leq: " .. tostring(b))
+
 		local A, B = levels[a], levels[b]
 		check(2, not (A.os and not B.os), "order-sensitive shouldn't less than order-insensitive")
 	end
 
 	local access = {
-		join = Access.join,
-		meet = Access.meet,
+		leq = Access.leq,
+		geq = Access.geq,
 	}
-	local set = MathSet.tab2set(levels)
-	local arr = MathSet.set2arr(set)
-	table.sort(arr)
-	check(2, #arr < Access.maxCount, "access level count must be less than " .. Access.maxCount .. "; got " .. #arr)
+
 	local adjList = MathGraph.edges2AdjList(MathSet.tab2set(levels), leq)
-	local lattice = DM.DM(adjList)
-	local revReachAdjList = MathGraph.revAdjList(MathGraph.reachAdjList(adjList, true))
+	check(2, MathGraph.isDAG(adjList), "access relation must be acyclic")
+
 	access.reachAdjList = MathGraph.reachAdjList(adjList, true)
-
 	access.levels = levels
-	access.poset = {}
-	access.closures = {}
 
-	for i, atag in ipairs(arr) do
-		local bitmask = 2 ^ (i - 1)
-		access.poset[atag] = bitmask
-	end
-
-	local p2l = {}
-	for atag, pmask in pairs(access.poset) do
-		local lmask = pmask
-		for latag, _ in pairs(revReachAdjList[atag]) do
-			lmask = bit.bor(lmask, access.poset[latag])
-		end
-		p2l[pmask] = lmask
-	end
-	for atag, pmask in pairs(access.poset) do
-		access.poset[atag] = p2l[pmask]
-	end
-	p2l = nil
-
-	access.lattice = {}
-	for atags, _ in pairs(lattice) do
-		local lmask = 0
-		for atag, _ in pairs(atags) do
-			lmask = bit.bor(lmask, access.poset[atag])
-		end
-		access.lattice[lmask] = true
-	end
-
-	local top
-	local bot
-
-	for lmask in pairs(access.lattice) do
-		top = top and bit.bor(top, lmask) or lmask
-		bot = bot and bit.band(bot, lmask) or lmask
-	end
-
-	assert(top and access.lattice[top], "computed top must belong to the access lattice")
-	assert(bot and access.lattice[bot], "computed bottom must belong to the access lattice")
-
-	for atag, mask in pairs(access.poset) do
-		if top == mask then
+	local n = MathSet.count(MathSet.tab2set(access.levels))
+	for atag, _ in pairs(access.levels) do
+		local m = MathSet.count(access.reachAdjList[atag])
+		if m == 1 then
+			check(2, access.top == nil, "access relation has multiple top candidates")
 			access.top = atag
 		end
-		if bot == mask then
+		if m == n then
+			check(2, access.bot == nil, "access relation has multiple bot candidates")
 			access.bot = atag
 		end
 	end
@@ -91,74 +53,12 @@ function Access.newAccess(levels, leq)
 	return access
 end
 
-local function makeArg(access, arg)
-	if access.lattice[arg] then
-		return arg
-	elseif access.poset[arg] then
-		return access.poset[arg]
-	else
-		check(2, false, "unknown access level: " .. tostring(arg))
-	end
+function Access.leq(access, atag1, atag2)
+	return access.reachAdjList[atag1][atag2]
 end
 
-local function closure(access, mask)
-	local result
-
-	if access.closures[mask] then
-		return access.closures[mask]
-	end
-
-	for lmask in pairs(access.lattice) do
-		if bit.band(mask, lmask) == mask then
-			result = result and bit.band(result, lmask) or lmask
-		end
-	end
-
-	assert(result and access.lattice[result], "closure must belong to the access lattice for mask: " .. tostring(mask))
-
-	access.closures[mask] = result
-
-	return result
-end
-
-function Access.join(access, ...)
-	local args = { ... }
-	check(2, #args > 0, "expected at least one access level")
-
-	for i = 1, #args do
-		args[i] = makeArg(access, args[i])
-	end
-
-	local mask = table.remove(args)
-
-	for _, arg in ipairs(args) do
-		mask = bit.bor(mask, arg)
-	end
-
-	mask = closure(access, mask)
-
-	assert(access.lattice[mask], "join result must belong to the access lattice: " .. tostring(mask))
-
-	return mask
-end
-
-function Access.meet(access, ...)
-	local args = { ... }
-	check(2, #args > 0, "expected at least one access level")
-
-	for i = 1, #args do
-		args[i] = makeArg(access, args[i])
-	end
-
-	local mask = table.remove(args)
-
-	for _, arg in ipairs(args) do
-		mask = bit.band(mask, arg)
-	end
-
-	assert(access.lattice[mask], "meet result must belong to the access lattice: " .. tostring(mask))
-
-	return mask
+function Access.geq(access, atag1, atag2)
+	return access.reachAdjList[atag2][atag1]
 end
 
 return Access
