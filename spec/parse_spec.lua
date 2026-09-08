@@ -14,7 +14,7 @@ local function makeConfig()
 				read = { func = identity, os = false },
 				write = { func = identity, os = true },
 			},
-			leq = { { "read", "write" } },
+			lt = { { "read", "write" } },
 		},
 		default = { nodeAtag = "read", taskAtag = "write" },
 		nodes = { main = { tasks = { run = {} } } },
@@ -81,7 +81,7 @@ describe("softdep.parse", function()
 				error("must not execute while parsing")
 			end
 			config.access.levels.explicit = { func = identity, os = false }
-			config.access.leq = { { "read", "explicit" }, { "explicit", "write" } }
+			config.access.lt = { { "read", "explicit" }, { "explicit", "write" } }
 			config.nodes.main.atag = "explicit"
 			config.nodes.main.tasks.run = { atag = "read", func = callback, auto = callback }
 			config.nodes.main.apis = {
@@ -199,26 +199,20 @@ describe("softdep.parse", function()
 				isolated = {},
 			}
 			local node = parse(config).nodes.main
-			assert.are.same(
-				{
-					start = {},
-					left = { start = true },
-					right = { start = true },
-					finish = { left = true, right = true },
-					isolated = {},
-				},
-				node.parents_c
-			)
-			assert.are.same(
-				{
-					start = { left = true, right = true },
-					left = { finish = true },
-					right = { finish = true },
-					finish = {},
-					isolated = {},
-				},
-				node.children_c
-			)
+			assert.are.same({
+				start = {},
+				left = { start = true },
+				right = { start = true },
+				finish = { left = true, right = true },
+				isolated = {},
+			}, node.parents_c)
+			assert.are.same({
+				start = { left = true, right = true },
+				left = { finish = true },
+				right = { finish = true },
+				finish = {},
+				isolated = {},
+			}, node.children_c)
 			assertOrder(node.order, { "start", "left", "right", "finish", "isolated" }, {
 				{ "start", "left" },
 				{ "start", "right" },
@@ -246,46 +240,34 @@ describe("softdep.parse", function()
 				finish = { tasks = { merge = { parents_d = { x = "left", y = "right" } } } },
 			}
 			local graph = parse(config)
-			assert.are.same(
-				{
-					source = {},
-					isolated = {},
-					left = { a = { x = "source", y = "source" }, b = { z = "source" } },
-					right = { a = { input = "source" } },
-					finish = { merge = { x = "left", y = "right" } },
-				},
-				graph.parents_d
-			)
-			assert.are.same(
-				{
-					source = {},
-					isolated = {},
-					left = { source = true },
-					right = { source = true },
-					finish = { left = true, right = true },
-				},
-				graph.parents_n
-			)
-			assert.are.same(
-				{
-					source = { left = true, right = true },
-					isolated = {},
-					left = { finish = true },
-					right = { finish = true },
-					finish = {},
-				},
-				graph.children_n
-			)
-			assert.are.same(
-				{
-					source = { left = { a = true, b = true }, right = { a = true } },
-					isolated = {},
-					left = { finish = { merge = true } },
-					right = { finish = { merge = true } },
-					finish = {},
-				},
-				graph.children_d
-			)
+			assert.are.same({
+				source = {},
+				isolated = {},
+				left = { a = { x = "source", y = "source" }, b = { z = "source" } },
+				right = { a = { input = "source" } },
+				finish = { merge = { x = "left", y = "right" } },
+			}, graph.parents_d)
+			assert.are.same({
+				source = {},
+				isolated = {},
+				left = { source = true },
+				right = { source = true },
+				finish = { left = true, right = true },
+			}, graph.parents_n)
+			assert.are.same({
+				source = { left = true, right = true },
+				isolated = {},
+				left = { finish = true },
+				right = { finish = true },
+				finish = {},
+			}, graph.children_n)
+			assert.are.same({
+				source = { left = { a = true, b = true }, right = { a = true } },
+				isolated = {},
+				left = { finish = { merge = true } },
+				right = { finish = { merge = true } },
+				finish = {},
+			}, graph.children_d)
 			assertOrder(graph.order, { "source", "isolated", "left", "right", "finish" }, {
 				{ "source", "left" },
 				{ "source", "right" },
@@ -368,38 +350,38 @@ describe("softdep.parse", function()
 			{
 				"short access edge",
 				function(c)
-					c.access.leq = { { "read" } }
+					c.access.lt = { { "read" } }
 				end,
 			},
 			{
 				"long access edge",
 				function(c)
-					c.access.leq = { { "read", "write", "read" } }
+					c.access.lt = { { "read", "write", "read" } }
 				end,
 			},
 			{
 				"unknown left access level",
 				function(c)
-					c.access.leq = { { "missing", "write" } }
+					c.access.lt = { { "missing", "write" } }
 				end,
 			},
 			{
 				"unknown right access level",
 				function(c)
-					c.access.leq = { { "read", "missing" } }
+					c.access.lt = { { "read", "missing" } }
 				end,
 			},
 			{
 				"reflexive access edge",
 				function(c)
-					c.access.leq = { { "read", "read" } }
+					c.access.lt = { { "read", "read" } }
 				end,
 			},
 			{
 				"access cycle",
 				function(c)
 					c.access.levels.write.os = false
-					c.access.leq = { { "read", "write" }, { "write", "read" } }
+					c.access.lt = { { "read", "write" }, { "write", "read" } }
 				end,
 			},
 			{

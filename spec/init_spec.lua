@@ -13,7 +13,7 @@ local function config(nodes)
 				read = { func = identity, os = false },
 				write = { func = identity, os = true },
 			},
-			leq = { { "read", "write" } },
+			lt = { { "read", "write" } },
 		},
 		default = { nodeAtag = "read", taskAtag = "write" },
 		nodes = nodes or {},
