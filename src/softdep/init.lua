@@ -116,7 +116,7 @@ function softdep.newGraph(config)
 
 	for _, node in pairs(graph.nodes) do
 		for _, task in pairs(node.tasks) do
-			task.higher = node.atag ~= task.atag and graph.access.reachAdjList[node.atag][task.atag]
+			task.higher = graph.access:lt(node.atag, task.atag)
 		end
 		for _, api in pairs(node.apis) do
 			api._node = node

@@ -9,7 +9,7 @@ local function pass(...) end
 local firstTypeCheck = types.shape({
 	access = types.shape({
 		levels = types.map_of(types.string, types.shape({ func = types.func, os = types.boolean })),
-		leq = types.array_of(types.array_of(types.string, { length = types.literal(2) })),
+		lt = types.array_of(types.array_of(types.string, { length = types.literal(2) })),
 	}),
 	nodes = types.opt_map_of(
 		types.string,
@@ -117,11 +117,11 @@ end
 
 local function contentCheck(graph)
 	local atagSet = MathSet.tab2set(graph.access.levels)
-	for _, edge in pairs(graph.access.leq) do
+	for _, edge in pairs(graph.access.lt) do
 		local a, b = edge[1], edge[2]
 		check(2, a ~= b, "access relation must not be reflexive: " .. a)
-		check(2, atagSet[a], "unknown access level in leq: " .. a)
-		check(2, atagSet[b], "unknown access level in leq: " .. b)
+		check(2, atagSet[a], "unknown access level in lt: " .. a)
+		check(2, atagSet[b], "unknown access level in lt: " .. b)
 
 		local A, B = graph.access.levels[a], graph.access.levels[b]
 		check(2, A ~= B, "access relation endpoints must have distinct definitions: " .. a .. " <= " .. b)
@@ -132,7 +132,7 @@ local function contentCheck(graph)
 		)
 	end
 	do
-		local adjList = MathGraph.edges2AdjList(atagSet, graph.access.leq)
+		local adjList = MathGraph.edges2AdjList(atagSet, graph.access.lt)
 		check(2, MathGraph.isDAG(adjList), "access relations must form a DAG")
 	end
 
@@ -177,7 +177,7 @@ local function recombinate(graph)
 end
 
 local function make(graph)
-	graph.access = newAccess(graph.access.levels, graph.access.leq)
+	graph.access = newAccess(graph.access.levels, graph.access.lt)
 	for ntag, node in pairs(graph.nodes) do
 		node.data = {}
 		node.dirty = true
