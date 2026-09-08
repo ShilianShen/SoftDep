@@ -1,4 +1,3 @@
-local DM = require("softdep.DM")
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
 local types = require("softdep.types")
