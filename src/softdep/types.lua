@@ -21,6 +21,6 @@ types.accessLevels = types.map_of(
 		os = types.boolean,
 	})
 )
-types.accessLeq = types.array_of(types.array_of(types.string))
+types.accessLt = types.array_of(types.array_of(types.string))
 
 return types

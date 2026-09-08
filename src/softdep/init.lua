@@ -1,4 +1,3 @@
-local Access = require("softdep.Access")
 local types = require("softdep.types")
 local check = require("softdep.check")
 local MathSet = require("softdep.MathSet")

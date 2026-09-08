@@ -1,7 +1,7 @@
 local types = require("softdep.types")
 local MathSet = require("softdep.MathSet")
 local check = require("softdep.check")
-local Access = require("softdep.Access")
+local newAccess = require("softdep.newAccess")
 local MathGraph = require("softdep.MathGraph")
 
 local function pass(...) end
@@ -177,7 +177,7 @@ local function recombinate(graph)
 end
 
 local function make(graph)
-	graph.access = Access.newAccess(graph.access.levels, graph.access.leq)
+	graph.access = newAccess(graph.access.levels, graph.access.leq)
 	for ntag, node in pairs(graph.nodes) do
 		node.data = {}
 		node.dirty = true
