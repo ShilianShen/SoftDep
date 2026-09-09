@@ -11,33 +11,34 @@ describe("MathSet", function()
 				function()
 					MathSet.arr2set(false)
 				end,
+				"MathSet.arr2set: expected arr to be an array with consecutive integer keys starting at 1",
 			},
 			{
 				"tab2set",
 				function()
 					MathSet.tab2set(false)
 				end,
+				"MathSet.tab2set: expected tab to be a table",
 			},
 			{
 				"set2tab",
 				function()
 					MathSet.set2tab({ a = false }, {})
 				end,
+				"MathSet.set2tab: expected set to be a table with all values equal to true",
 			},
 			{
 				"count",
 				function()
 					MathSet.count({ a = false })
 				end,
+				"MathSet.count: expected set to be a table with all values equal to true",
 			},
 		}
 
 		for _, case in ipairs(cases) do
 			it("reports a type validation message for " .. case[1], function()
-				local ok, err = pcall(case[2])
-				assert.is_false(ok)
-				assert.is_string(err)
-				assert.matches("expect", err, 1, true)
+				assert.has_error(case[2], case[3])
 			end)
 		end
 	end)
@@ -142,16 +143,24 @@ describe("MathSet", function()
 		it("rejects keys missing from data", function()
 			assert.has_error(function()
 				MathSet.set2tab({ a = true, missing = true }, { a = 10 })
-			end)
+			end, "MathSet.set2tab: missing key in data: missing")
+		end)
+
+		it("reports missing numeric, boolean and table keys", function()
+			for _, key in ipairs({ 42, false, {} }) do
+				assert.has_error(function()
+					MathSet.set2tab({ [key] = true }, {})
+				end, "MathSet.set2tab: missing key in data: " .. tostring(key))
+			end
 		end)
 
 		it("rejects non-table data even for an empty set", function()
 			assert.has_error(function()
 				MathSet.set2tab({}, false)
-			end)
+			end, "MathSet.set2tab: expected data to be a table")
 			assert.has_error(function()
 				MathSet.set2tab({})
-			end)
+			end, "MathSet.set2tab: expected data to be a table")
 		end)
 
 		it("selects numeric, boolean and table keys", function()
