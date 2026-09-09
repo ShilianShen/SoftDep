@@ -5,29 +5,43 @@ local check = require("softdep.check")
 
 local methods = {}
 
+local function checkAtags(access, atag1, atag2)
+	check(3, access.levels[atag1] ~= nil, "unknown access level: " .. tostring(atag1))
+	check(3, access.levels[atag2] ~= nil, "unknown access level: " .. tostring(atag2))
+end
+
 function methods.leq(access, atag1, atag2)
+	checkAtags(access, atag1, atag2)
 	return access.reachAdjList[atag1][atag2]
 end
 
 function methods.geq(access, atag1, atag2)
+	checkAtags(access, atag1, atag2)
 	return access.reachAdjList[atag2][atag1]
 end
 
-function methods.eq(_, atag1, atag2)
+function methods.eq(access, atag1, atag2)
+	checkAtags(access, atag1, atag2)
 	return atag1 == atag2
 end
 
 function methods.lt(access, atag1, atag2)
+	checkAtags(access, atag1, atag2)
 	return atag1 ~= atag2 and access.reachAdjList[atag1][atag2]
 end
 
 function methods.gt(access, atag1, atag2)
+	checkAtags(access, atag1, atag2)
 	return atag1 ~= atag2 and access.reachAdjList[atag2][atag1]
 end
 
 local function newAccess(levels, lt)
-	check(2, types.accessLevels(levels))
-	check(2, types.accessLt(lt))
+	check(
+		2,
+		types.accessLevels(levels),
+		"newAccess: expected levels to map strings to tables with a function field func and a boolean field os"
+	)
+	check(2, types.accessLt(lt), "newAccess: expected lt to be an array of arrays of strings")
 
 	for _, edge in ipairs(lt) do
 		check(2, #edge == 2, "access relation must contain exactly two levels")
