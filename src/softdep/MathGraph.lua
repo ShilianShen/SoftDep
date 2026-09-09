@@ -42,7 +42,11 @@ function MathGraph.isAdjList(adjList)
 end
 
 function MathGraph.isDAG(adjList)
-	check(2, MathGraph.isAdjList(adjList))
+	check(
+		2,
+		MathGraph.isAdjList(adjList),
+		"MathGraph.isDAG: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
+	)
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
@@ -73,7 +77,11 @@ function MathGraph.isDAG(adjList)
 end
 
 function MathGraph.edges2AdjList(vertices, edges)
-	check(2, MathGraph.isEdges(vertices, edges))
+	check(
+		2,
+		MathGraph.isEdges(vertices, edges),
+		"MathGraph.edges2AdjList: expected vertices to be a set with all values equal to true and edges to be an array of vertex pairs whose endpoints belong to vertices"
+	)
 
 	local adjList = {}
 
@@ -89,7 +97,11 @@ function MathGraph.edges2AdjList(vertices, edges)
 end
 
 function MathGraph.revAdjList(adjList)
-	check(2, MathGraph.isAdjList(adjList))
+	check(
+		2,
+		MathGraph.isAdjList(adjList),
+		"MathGraph.revAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
+	)
 
 	local revAdjList = {}
 
@@ -107,8 +119,12 @@ function MathGraph.revAdjList(adjList)
 end
 
 function MathGraph.reachAdjList(adjList, reflexive)
-	check(2, MathGraph.isAdjList(adjList))
-	check(2, types.boolean(reflexive))
+	check(
+		2,
+		MathGraph.isAdjList(adjList),
+		"MathGraph.reachAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
+	)
+	check(2, types.boolean(reflexive), "MathGraph.reachAdjList: expected reflexive to be a boolean")
 
 	local reachAdjList = {}
 	for v1, _ in pairs(adjList) do
@@ -139,7 +155,11 @@ end
 -- Do not sort zero-indegree vertices: callers must not rely on
 -- ordering constraints that are not represented by the DAG.
 function MathGraph.sort(adjList)
-	check(2, MathGraph.isAdjList(adjList))
+	check(
+		2,
+		MathGraph.isAdjList(adjList),
+		"MathGraph.sort: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
+	)
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
@@ -154,9 +174,9 @@ function MathGraph.sort(adjList)
 	end
 
 	for _, _ in pairs(adjList) do
+		check(2, #stack > 0, "MathGraph.sort: expected a DAG; adjList contains a cycle")
 		local i = math.random(#stack)
 		local vtag = table.remove(stack, i)
-		check(2, vtag ~= nil, "not a DAG")
 
 		for ctag, _ in pairs(adjList[vtag]) do
 			indegrees[ctag] = indegrees[ctag] - 1

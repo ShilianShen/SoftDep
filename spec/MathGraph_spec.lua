@@ -88,18 +88,26 @@ describe("MathGraph", function()
 	describe("validation", function()
 		for _, case in ipairs(invalidEdges) do
 			it("edges2AdjList rejects " .. case[1], function()
-				assert.has_error(function()
-					MathGraph.edges2AdjList(case[2], case[3])
-				end)
+				assert.has_error(
+					function()
+						MathGraph.edges2AdjList(case[2], case[3])
+					end,
+					"MathGraph.edges2AdjList: expected vertices to be a set with all values equal to true and edges to be an array of vertex pairs whose endpoints belong to vertices"
+				)
 			end)
 		end
 
 		for _, name in ipairs({ "isDAG", "revAdjList", "reachAdjList", "sort" }) do
 			for _, case in ipairs(invalidAdjLists) do
 				it(name .. " rejects " .. case[1], function()
-					assert.has_error(function()
-						MathGraph[name](case[2], false)
-					end)
+					assert.has_error(
+						function()
+							MathGraph[name](case[2], false)
+						end,
+						"MathGraph."
+							.. name
+							.. ": expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
+					)
 				end)
 			end
 		end
@@ -107,11 +115,11 @@ describe("MathGraph", function()
 		it("reachAdjList requires an explicit boolean reflexive argument", function()
 			assert.has_error(function()
 				MathGraph.reachAdjList({})
-			end)
+			end, "MathGraph.reachAdjList: expected reflexive to be a boolean")
 			for _, value in ipairs({ 0, "false", {} }) do
 				assert.has_error(function()
 					MathGraph.reachAdjList({}, value)
-				end)
+				end, "MathGraph.reachAdjList: expected reflexive to be a boolean")
 			end
 		end)
 	end)
@@ -603,7 +611,7 @@ describe("MathGraph", function()
 
 			assert.has_error(function()
 				MathGraph.sort(adjList)
-			end)
+			end, "MathGraph.sort: expected a DAG; adjList contains a cycle")
 		end)
 
 		it("rejects a self cycle", function()
@@ -615,7 +623,7 @@ describe("MathGraph", function()
 
 			assert.has_error(function()
 				MathGraph.sort(adjList)
-			end)
+			end, "MathGraph.sort: expected a DAG; adjList contains a cycle")
 		end)
 
 		it("rejects a cycle in one disconnected component", function()
@@ -634,7 +642,7 @@ describe("MathGraph", function()
 
 			assert.has_error(function()
 				MathGraph.sort(adjList)
-			end)
+			end, "MathGraph.sort: expected a DAG; adjList contains a cycle")
 		end)
 
 		it("handles an empty graph", function()
