@@ -23,4 +23,7 @@ types.accessLevels = types.map_of(
 )
 types.accessLt = types.array_of(types.array_of(types.string))
 
+types.edges = types.array_of(types.array_of(types.any, { length = types.literal(2) }))
+types.stringEdges = types.array_of(types.array_of(types.string, { length = types.literal(2) }))
+
 return types
