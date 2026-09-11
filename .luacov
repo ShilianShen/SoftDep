@@ -1,6 +1,4 @@
 return {
-	-- reporter = "html",
-	-- reportfile = "coverage/luacov.report.html",
 	statsfile = "coverage/luacov.stats.out",
 	reportfile = "coverage/lcov.info",
 
@@ -8,6 +6,6 @@ return {
 		"^src/softdep",
 	},
 	exclude = {
-		"src/softdep/tableshape"
-	}
+		"src/softdep/tableshape",
+	},
 }
