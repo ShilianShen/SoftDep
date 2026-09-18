@@ -189,36 +189,28 @@ describe("softdep.parse", function()
 	end)
 
 	describe("dependency construction", function()
-		it("builds both task edge directions and sorts a branching DAG", function()
+		it("builds both task edge directions and sorts a DAG with a unique task order", function()
 			local config = makeConfig()
 			config.nodes.main.tasks = {
 				start = {},
 				left = { parents_c = { "start", "start" } },
-				right = { parents_c = { "start" } },
+				right = { parents_c = { "start", "left" } },
 				finish = { parents_c = { "left", "right" } },
-				isolated = {},
 			}
 			local node = parse(config).nodes.main
 			assert.are.same({
 				start = {},
 				left = { start = true },
-				right = { start = true },
+				right = { start = true, left = true },
 				finish = { left = true, right = true },
-				isolated = {},
 			}, node.parents_c)
 			assert.are.same({
 				start = { left = true, right = true },
-				left = { finish = true },
+				left = { right = true, finish = true },
 				right = { finish = true },
 				finish = {},
-				isolated = {},
 			}, node.children_c)
-			assertOrder(node.order, { "start", "left", "right", "finish", "isolated" }, {
-				{ "start", "left" },
-				{ "start", "right" },
-				{ "left", "finish" },
-				{ "right", "finish" },
-			})
+			assert.are.same({ "start", "left", "right", "finish" }, node.order)
 			for _, task in pairs(node.tasks) do
 				assert.is_nil(task.parents_c)
 				assert.is_nil(task.parents_d)
@@ -233,7 +225,7 @@ describe("softdep.parse", function()
 				left = {
 					tasks = {
 						a = { parents_d = { x = "source", y = "source" } },
-						b = { parents_d = { z = "source" } },
+						b = { parents_c = { "a" }, parents_d = { z = "source" } },
 					},
 				},
 				right = { tasks = { a = { parents_d = { input = "source" } } } },
@@ -278,6 +270,27 @@ describe("softdep.parse", function()
 	end)
 
 	describe("validation", function()
+		for _, case in ipairs({
+			{ "independent tasks", { a = {}, b = {} } },
+			{
+				"branching tasks",
+				{
+					start = {},
+					left = { parents_c = { "start" } },
+					right = { parents_c = { "start" } },
+					finish = { parents_c = { "left", "right" } },
+				},
+			},
+		}) do
+			it("rejects non-unique task order for " .. case[1], function()
+				local config = makeConfig()
+				config.nodes.main.tasks = case[2]
+				assert.has_error(function()
+					parse(config)
+				end, "MathGraph.isDAG: expected a unique topological order when uniqueness is enabled")
+			end)
+		end
+
 		for _, source in ipairs({ "explicit", "default" }) do
 			it("rejects an order-sensitive " .. source .. " node tag", function()
 				local config = makeConfig()

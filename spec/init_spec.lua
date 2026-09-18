@@ -32,7 +32,7 @@ end
 describe("softdep", function()
 	describe("update counts", function()
 		it("counts completed dirty updates, not spread calls or clean runs", function()
-			local graph = softdep.newGraph(config({ main = { tasks = { first = {}, second = {} } } }))
+			local graph = softdep.newGraph(config({ main = { tasks = { first = {}, second = { parents_c = { "first" } } } } }))
 			local node = graph.nodes.main
 			assert.equal(0, node.count)
 			assert.equal(0, node.tasks.first.count)
@@ -50,11 +50,11 @@ describe("softdep", function()
 			assert.equal(1, node.count)
 			assert.equal(1, node.tasks.first.count)
 			assert.equal(1, node.tasks.second.count)
-			node.tasks.first.dirty = true
+			node.tasks.second.dirty = true
 			graph:run()
 			assert.equal(2, node.count)
-			assert.equal(2, node.tasks.first.count)
-			assert.equal(1, node.tasks.second.count)
+			assert.equal(1, node.tasks.first.count)
+			assert.equal(2, node.tasks.second.count)
 		end)
 
 		it("counts read task execution without counting a clean node again", function()
@@ -178,9 +178,9 @@ describe("softdep", function()
 		local graph = softdep.newGraph(config({
 			source = {
 				tasks = {
-					read = { atag = "read", func = count },
+					read = { atag = "read", parents_c = { "prepare" }, func = count },
 					write = { parents_c = { "read" }, func = count },
-					isolated = { func = count },
+					prepare = { func = count },
 				},
 			},
 			middle = { tasks = { run = { parents_d = { input = "source" }, func = count } } },
@@ -192,7 +192,7 @@ describe("softdep", function()
 		graph:spread()
 		assert.equal(0, calls)
 		assert.is_true(graph.nodes.source.tasks.write.dirty)
-		assert.is_false(graph.nodes.source.tasks.isolated.dirty)
+		assert.is_false(graph.nodes.source.tasks.prepare.dirty)
 		assert.is_true(graph.nodes.middle.tasks.run.dirty)
 		assert.is_true(graph.nodes.sink.tasks.run.dirty)
 		graph:update()
