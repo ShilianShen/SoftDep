@@ -30,6 +30,7 @@ local firstTypeCheck = types.shape({
 				types.shape({
 					func = types.func:is_optional(),
 					ttag = types.string:is_optional(),
+					atag = types.string:is_optional(),
 				})
 			),
 		})
@@ -37,6 +38,7 @@ local firstTypeCheck = types.shape({
 	default = types.shape({
 		nodeAtag = types.string,
 		taskAtag = types.string,
+		apiAtag = types.string,
 	}),
 })
 
@@ -62,6 +64,7 @@ local finalTypeCheck = types.shape({
 				types.shape({
 					func = types.func:is_optional(),
 					ttag = types.string:is_optional(),
+					atag = types.string,
 				})
 			),
 
@@ -111,6 +114,9 @@ local function complete(graph)
 			task.parents_c = task.parents_c or {}
 			task.parents_d = task.parents_d or {}
 		end
+		for _, api in pairs(node.apis) do
+			api.atag = api.atag or graph.default.apiAtag
+		end
 	end
 	graph.default = nil
 end
@@ -153,6 +159,7 @@ local function contentCheck(graph)
 			end
 		end
 		for apiTag, api in pairs(node.apis) do
+			check(2, atagSet[api.atag], "unknown access level for API " .. ntag .. "." .. apiTag .. ": " .. api.atag)
 			if api.ttag then
 				check(2, ttagSet[api.ttag], "unknown task for API " .. ntag .. "." .. apiTag .. ": " .. api.ttag)
 			end

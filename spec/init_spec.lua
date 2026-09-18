@@ -15,7 +15,7 @@ local function config(nodes)
 			},
 			lt = { { "read", "write" } },
 		},
-		default = { nodeAtag = "read", taskAtag = "write" },
+		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
 		nodes = nodes or {},
 	}
 end

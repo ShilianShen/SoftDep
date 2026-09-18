@@ -98,8 +98,10 @@ end
 local nodeMetatable = {
 	__call = function(api, ...)
 		if api.func then
-			api.func(api._node.data, ...)
-			api._node.dirty = true
+			api.func(api._node.data_a[api.atag], ...)
+			if api.higher then
+				api._node.dirty = true
+			end
 		end
 		if api.ttag then
 			api._node.tasks[api.ttag].dirty = true
@@ -121,6 +123,7 @@ function softdep.newGraph(config)
 		end
 		for _, api in pairs(node.apis) do
 			api._node = node
+			api.higher = graph.access:lt(node.atag, api.atag)
 			setmetatable(api, nodeMetatable)
 		end
 	end

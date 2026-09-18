@@ -16,7 +16,7 @@ local function makeConfig()
 			},
 			lt = { { "read", "write" } },
 		},
-		default = { nodeAtag = "read", taskAtag = "write" },
+		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
 		nodes = { main = { tasks = { run = {} } } },
 	}
 end
@@ -94,7 +94,11 @@ describe("softdep.parse", function()
 			assert.are.equal("read", node.tasks.run.atag)
 			assert.are.equal(callback, node.tasks.run.func)
 			assert.are.equal(callback, node.tasks.run.auto)
-			assert.are.same(config.nodes.main.apis, node.apis)
+			assert.are.same({
+				full = { func = callback, ttag = "run", atag = "write" },
+				funcOnly = { func = callback, atag = "write" },
+				taskOnly = { ttag = "run", atag = "write" },
+			}, node.apis)
 		end)
 	end)
 
@@ -133,7 +137,7 @@ describe("softdep.parse", function()
 			assert.are.same({ parents_c = { "run" }, parents_d = { input = "source" } }, config.nodes.main.tasks.next)
 			assert.are.same({}, config.nodes.main.tasks.run)
 			assert.is_nil(config.nodes.main.data)
-			assert.are.same({ nodeAtag = "read", taskAtag = "write" }, config.default)
+			assert.are.same({ nodeAtag = "read", taskAtag = "write", apiAtag = "write" }, config.default)
 			assert.is_false(config.access.levels.read.os)
 			assert.are.same({}, second.nodes.main.data)
 			assert.are.equal("source", second.parents_d.main.next.input)

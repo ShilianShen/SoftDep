@@ -42,6 +42,7 @@ local graph = softdep.newGraph({
 	default = {
 		nodeAtag = "read",
 		taskAtag = "write",
+		apiAtag = "write",
 	},
 
 	nodes = {
