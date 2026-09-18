@@ -183,8 +183,8 @@ local function make(graph)
 		node.dirty = true
 		node.count = 0
 		node.children_c = MathGraph.revAdjList(node.parents_c)
-		check(2, MathGraph.isDAG(node.children_c), "control dependencies must form a DAG in node: " .. ntag)
-		node.order = MathGraph.sort(node.children_c)
+		check(2, MathGraph.isDAG(node.children_c, true), "control dependencies must form a DAG in node: " .. ntag)
+		node.order = MathGraph.sort(node.children_c, true)
 		node.data_a = {}
 
 		for atag, level in pairs(graph.access.levels) do
@@ -219,8 +219,8 @@ local function make(graph)
 		end
 	end
 	graph.children_n = MathGraph.revAdjList(graph.parents_n)
-	check(2, MathGraph.isDAG(graph.children_n), "node data dependencies must form a DAG")
-	graph.order = MathGraph.sort(graph.children_n)
+	check(2, MathGraph.isDAG(graph.children_n, false), "node data dependencies must form a DAG")
+	graph.order = MathGraph.sort(graph.children_n, false)
 
 	graph.children_d = {}
 	for ntag, _ in pairs(graph.children_n) do

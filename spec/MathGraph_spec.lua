@@ -140,8 +140,53 @@ describe("MathGraph", function()
 		for _, case in ipairs(cases) do
 			it("classifies a " .. case[1], function()
 				assert.are.equal(case[3], MathGraph.isDAG(case[2]))
+				assert.are.equal(case[3], MathGraph.isDAG(case[2], false))
 			end)
 		end
+	end)
+
+	describe("uniqueness", function()
+		local uniqueCases = {
+			{ "empty graph", {}, {} },
+			{ "single vertex", { a = {} }, { "a" } },
+			{ "chain", { a = { b = true }, b = { c = true }, c = {} }, { "a", "b", "c" } },
+			{ "transitive edge", { a = { b = true, c = true }, b = { c = true }, c = {} }, { "a", "b", "c" } },
+		}
+		local nonUniqueCases = {
+			{ "isolated vertices", { a = {}, b = {} }, 2 },
+			{ "diamond", { a = { b = true, c = true }, b = { d = true }, c = { d = true }, d = {} }, 4 },
+			{ "disconnected chains", { a = { b = true }, b = {}, c = { d = true }, d = {} }, 4 },
+		}
+
+		for _, case in ipairs(uniqueCases) do
+			it("accepts a " .. case[1] .. " when enabled", function()
+				assert.is_true(MathGraph.isDAG(case[2], true))
+				assert.are.same(case[3], MathGraph.sort(case[2], true))
+			end)
+		end
+
+		for _, case in ipairs(nonUniqueCases) do
+			for _, name in ipairs({ "isDAG", "sort" }) do
+				it(name .. " rejects " .. case[1] .. " when enabled", function()
+					assert.has_error(function()
+						MathGraph[name](case[2], true)
+					end, "MathGraph." .. name .. ": expected a unique topological order when uniqueness is enabled")
+				end)
+			end
+
+			it("accepts " .. case[1] .. " when disabled", function()
+				assert.is_true(MathGraph.isDAG(case[2], false))
+				assert.are.equal(case[3], #MathGraph.sort(case[2], false))
+			end)
+		end
+
+		it("does not modify the input when enabled", function()
+			local adjList = { a = { b = true }, b = { c = true }, c = {} }
+			MathGraph.isDAG(adjList, true)
+			assert.are.same({ a = { b = true }, b = { c = true }, c = {} }, adjList)
+			MathGraph.sort(adjList, true)
+			assert.are.same({ a = { b = true }, b = { c = true }, c = {} }, adjList)
+		end)
 	end)
 
 	it("supports numeric, boolean and table vertices throughout graph operations", function()
@@ -161,7 +206,7 @@ describe("MathGraph", function()
 	for _, name in ipairs({ "isDAG", "revAdjList", "reachAdjList", "sort" }) do
 		it(name .. " does not modify the input adjacency list", function()
 			local adjList = { a = { b = true }, b = { c = true }, c = {}, d = {} }
-			MathGraph[name](adjList, true)
+			MathGraph[name](adjList, name == "reachAdjList")
 			assert.are.same({ a = { b = true }, b = { c = true }, c = {}, d = {} }, adjList)
 		end)
 	end

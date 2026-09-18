@@ -41,7 +41,7 @@ function MathGraph.isAdjList(adjList)
 	return true
 end
 
-function MathGraph.isDAG(adjList)
+function MathGraph.isDAG(adjList, uniqueness)
 	check(
 		2,
 		MathGraph.isAdjList(adjList),
@@ -60,6 +60,11 @@ function MathGraph.isDAG(adjList)
 	end
 
 	for _, _ in pairs(adjList) do
+		check(
+			2,
+			not uniqueness or #stack == 1,
+			"MathGraph.isDAG: expected a unique topological order when uniqueness is enabled"
+		)
 		local vtag = table.remove(stack)
 		if vtag == nil then
 			return false
@@ -154,7 +159,7 @@ end
 -- The topological order is intentionally unspecified.
 -- Do not sort zero-indegree vertices: callers must not rely on
 -- ordering constraints that are not represented by the DAG.
-function MathGraph.sort(adjList)
+function MathGraph.sort(adjList, uniqueness)
 	check(
 		2,
 		MathGraph.isAdjList(adjList),
@@ -175,6 +180,11 @@ function MathGraph.sort(adjList)
 
 	for _, _ in pairs(adjList) do
 		check(2, #stack > 0, "MathGraph.sort: expected a DAG; adjList contains a cycle")
+		check(
+			2,
+			not uniqueness or #stack == 1,
+			"MathGraph.sort: expected a unique topological order when uniqueness is enabled"
+		)
 		local i = math.random(#stack)
 		local vtag = table.remove(stack, i)
 
