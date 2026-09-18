@@ -313,7 +313,9 @@ describe("softdep", function()
 		assert.equal(3, observed.count)
 		assert.equal("a", observed.first)
 		assert.equal("c", observed.last)
+		assert.is_true(first.nodes.main.dirty)
 		assert.is_true(first.nodes.main.tasks.run.dirty)
+		assert.is_false(second.nodes.main.dirty)
 		assert.is_false(second.nodes.main.tasks.run.dirty)
 		assert.is_nil(second.nodes.main.data.changed)
 		assert.is_nil(c.nodes.main.apis.change._node)
@@ -339,11 +341,50 @@ describe("softdep", function()
 		graph:run()
 		graph.nodes.main.apis.funcOnly()
 		assert.equal(1, calls)
+		assert.is_true(graph.nodes.main.dirty)
+		assert.is_false(graph.nodes.main.tasks.run.dirty)
+		graph:run()
+		assert.equal(2, graph.nodes.main.count)
+		assert.equal(1, graph.nodes.main.tasks.run.count)
 		assertClean(graph)
 		graph.nodes.main.apis.empty()
 		assertClean(graph)
 		graph.nodes.main.apis.taskOnly()
+		assert.is_false(graph.nodes.main.dirty)
 		assert.is_true(graph.nodes.main.tasks.run.dirty)
+	end)
+
+	it("propagates function-only API changes to data dependents", function()
+		local seen
+		local graph = softdep.newGraph(config({
+			source = {
+				apis = { change = { func = function(data, value)
+					data.value = value
+				end } },
+			},
+			sink = { tasks = { consume = {
+				parents_d = { input = "source" },
+				func = function(_, parents)
+					seen = parents.input.value
+				end,
+			} } },
+		}))
+		graph:run()
+		graph.nodes.source.apis.change(42)
+		assert.is_true(graph.nodes.source.dirty)
+		assert.equal(1, graph.nodes.source.count)
+		assert.is_false(graph.nodes.sink.tasks.consume.dirty)
+		graph:spread()
+		assert.is_true(graph.nodes.sink.tasks.consume.dirty)
+		assert.is_nil(seen)
+		graph:update()
+		assert.equal(42, seen)
+		assert.equal(2, graph.nodes.source.count)
+		assert.equal(2, graph.nodes.sink.tasks.consume.count)
+		assertClean(graph)
+		graph:run()
+		assert.equal(2, graph.nodes.source.count)
+		assert.equal(2, graph.nodes.sink.tasks.consume.count)
 	end)
 
 	it("keeps a failed task dirty and retries it without rerunning completed predecessors", function()
