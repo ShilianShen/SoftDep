@@ -53,15 +53,7 @@ describe("softdep.parse", function()
 			local config = makeConfig()
 			config.nodes.main = {}
 			local node = parse(config).nodes.main
-			for _, field in ipairs({
-				"tasks",
-				"apis",
-				"data",
-				"parents_c",
-				"children_c",
-				"orderForeward",
-				"orderBackward",
-			}) do
+			for _, field in ipairs({ "tasks", "apis", "data", "parents_c", "children_c", "order" }) do
 				assert.are.same({}, node[field])
 			end
 			assert.are.equal("read", node.atag)
@@ -203,15 +195,14 @@ describe("softdep.parse", function()
 	end)
 
 	describe("dependency construction", function()
-		it("partitions dependent tasks into forward and backward orders", function()
+		it("allows a back task to depend on a non-back task", function()
 			local config = makeConfig()
 			config.nodes.main.tasks = {
 				first = { back = false },
 				second = { parents_c = { "first" }, back = true },
 			}
 			local node = parse(config).nodes.main
-			assert.are.same({ "first" }, node.orderForeward)
-			assert.are.same({ "second" }, node.orderBackward)
+			assert.are.same({ "first", "second" }, node.order)
 			assert.is_false(node.tasks.first.back)
 			assert.is_true(node.tasks.second.back)
 		end)
@@ -237,8 +228,7 @@ describe("softdep.parse", function()
 				right = { finish = true },
 				finish = {},
 			}, node.children_c)
-			assert.are.same({ "start", "left", "right", "finish" }, node.orderForeward)
-			assert.are.same({}, node.orderBackward)
+			assert.are.same({ "start", "left", "right", "finish" }, node.order)
 			for _, task in pairs(node.tasks) do
 				assert.is_nil(task.parents_c)
 				assert.is_nil(task.parents_d)
