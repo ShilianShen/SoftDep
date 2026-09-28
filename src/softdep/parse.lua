@@ -162,7 +162,7 @@ local function contentCheck(graph)
 				check(
 					2,
 					not ptask.back or task.back,
-					"non-back task must not depend on back task: " .. ntag .. "." .. ttag .. " <- " .. pttag
+					"back task must not depend on non-back task: " .. ntag .. "." .. ttag .. " <- " .. pttag
 				)
 			end
 			for _, pntag in pairs(task.parents_d) do
