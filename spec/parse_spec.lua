@@ -309,7 +309,7 @@ describe("softdep.parse", function()
 			}
 			assert.has_error(function()
 				parse(config)
-			end, "back task must not depend on non-back task: main.second <- first")
+			end, "non-back task must not depend on back task: main.second <- first")
 		end)
 
 		for _, case in ipairs({

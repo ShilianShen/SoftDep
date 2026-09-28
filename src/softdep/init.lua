@@ -19,7 +19,7 @@ local function spreadGraph(graph)
 				for cttag, _ in pairs(node.children_c[ttag]) do
 					node.tasks[cttag].dirty = true
 				end
-				if task.higher then
+				if task.higher and not task.back then
 					node.dirty = true
 				end
 			end
@@ -66,7 +66,35 @@ local function updateGraph(graph, module)
 		if module == nil or module.ntagSet[ntag] then
 			local node = graph.nodes[ntag]
 
-			for _, ttag in ipairs(node.order) do
+			for _, ttag in ipairs(node.orderForeward) do
+				local task = node.tasks[ttag]
+
+				if task.dirty then
+					local parents_d = {}
+					for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
+						local pnode = graph.nodes[pntag]
+						parents_d[pdtag] = pnode.data_a[pnode.atag]
+					end
+
+					task.func(node.data_a[task.atag], parents_d)
+					task.dirty = false
+					task.count = task.count + 1
+				end
+			end
+
+			if node.dirty then
+				node.dirty = false
+				node.count = node.count + 1
+			end
+		end
+	end
+
+	for i = #graph.order, 1, -1 do
+		local ntag = graph.order[i]
+		if module == nil or module.ntagSet[ntag] then
+			local node = graph.nodes[ntag]
+
+			for _, ttag in ipairs(node.orderBackward) do
 				local task = node.tasks[ttag]
 
 				if task.dirty then
