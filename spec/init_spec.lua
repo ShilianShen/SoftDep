@@ -7,6 +7,13 @@ local function identity(data)
 end
 
 local function config(nodes)
+	for _, node in pairs(nodes or {}) do
+		for _, task in pairs(node.tasks or {}) do
+			if task.back == nil then
+				task.back = false
+			end
+		end
+	end
 	return {
 		access = {
 			levels = {

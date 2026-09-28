@@ -23,6 +23,7 @@ local firstTypeCheck = types.shape({
 					atag = types.string:is_optional(),
 					parents_c = types.array_of(types.string):is_optional(),
 					parents_d = types.map_of(types.string, types.string):is_optional(),
+					back = types.boolean,
 				})
 			),
 			apis = types.opt_map_of(
@@ -57,6 +58,7 @@ local finalTypeCheck = types.shape({
 
 					dirty = types.boolean,
 					count = types.integer,
+					back = types.boolean,
 				})
 			),
 			apis = types.map_of(
@@ -113,6 +115,7 @@ local function complete(graph)
 			task.atag = task.atag or graph.default.taskAtag
 			task.parents_c = task.parents_c or {}
 			task.parents_d = task.parents_d or {}
+			task.back = task.back
 		end
 		for _, api in pairs(node.apis) do
 			api.atag = api.atag or graph.default.apiAtag
