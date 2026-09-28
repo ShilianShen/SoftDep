@@ -53,6 +53,7 @@ local function newModule(graph, ntagArr)
 end
 
 local function updateGraph(graph, module)
+	spreadGraph(graph)
 	if module ~= nil then
 		for pntag, _ in pairs(module.parents_n) do
 			local pnode = graph.nodes[pntag]
@@ -118,11 +119,6 @@ local function updateGraph(graph, module)
 	end
 end
 
-local function runGraph(graph, module)
-	spreadGraph(graph)
-	updateGraph(graph, module)
-end
-
 local nodeMetatable = {
 	__call = function(api, ...)
 		if api.func then
@@ -142,7 +138,6 @@ function softdep.newGraph(config)
 
 	graph.spread = spreadGraph
 	graph.update = updateGraph
-	graph.run = runGraph
 	graph.newModule = newModule
 
 	for _, node in pairs(graph.nodes) do
