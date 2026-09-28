@@ -118,6 +118,44 @@ describe("softdep", function()
 		assertClean(graph)
 	end)
 
+	it("leaves backward tasks for the backward phase during a forward run", function()
+		local forwardCalls, backwardCalls, autoCalls = 0, 0, 0
+		local graph = softdep.newGraph(config({
+			main = {
+				tasks = {
+					forward = {
+						func = function()
+							forwardCalls = forwardCalls + 1
+						end,
+					},
+					backward = {
+						back = true,
+						parents_c = { "forward" },
+						auto = function()
+							autoCalls = autoCalls + 1
+							return true
+						end,
+						func = function()
+							backwardCalls = backwardCalls + 1
+						end,
+					},
+				},
+			},
+		}))
+
+		graph:run()
+		assert.equal(1, forwardCalls)
+		assert.equal(0, backwardCalls)
+		assert.equal(0, autoCalls)
+		assert.is_true(graph.nodes.main.tasks.backward.dirty)
+
+		graph.nodes.main.tasks.backward.dirty = false
+		graph:run()
+		assert.equal(0, backwardCalls)
+		assert.equal(0, autoCalls)
+		assert.is_false(graph.nodes.main.tasks.backward.dirty)
+	end)
+
 	it("executes tasks in dependency order and skips clean tasks on the next run", function()
 		local calls = {}
 		local graph = softdep.newGraph(config({

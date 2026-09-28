@@ -76,7 +76,8 @@ local finalTypeCheck = types.shape({
 			dirty = types.boolean,
 			count = types.integer,
 			children_c = types.stringAdjList,
-			order = types.array_of(types.string),
+			orderForeward = types.array_of(types.string),
+			orderBackward = types.array_of(types.string),
 			data_a = types.map_of(types.string, types.table),
 		})
 	),
@@ -157,7 +158,11 @@ local function contentCheck(graph)
 			for _, pttag in pairs(task.parents_c) do
 				check(2, ttagSet[pttag], "unknown control parent for task " .. ntag .. "." .. ttag .. ": " .. pttag)
 				local ptask = node.tasks[pttag]
-                check(2, not ptask.back or task.back, "back task must not depend on non-back task: " .. ntag .. "." .. ttag .. " <- " .. pttag)
+				check(
+					2,
+					not ptask.back or task.back,
+					"back task must not depend on non-back task: " .. ntag .. "." .. ttag .. " <- " .. pttag
+				)
 			end
 			for _, pntag in pairs(task.parents_d) do
 				check(2, ntagSet[pntag], "unknown data parent for task " .. ntag .. "." .. ttag .. ": " .. pntag)
@@ -196,8 +201,19 @@ local function make(graph)
 		node.count = 0
 		node.children_c = MathGraph.revAdjList(node.parents_c)
 		check(2, MathGraph.isDAG(node.children_c, true), "control dependencies must form a DAG in node: " .. ntag)
-		node.order = MathGraph.sort(node.children_c, true)
+		node.orderForeward = {}
+		node.orderBackward = {}
 		node.data_a = {}
+
+		local order = MathGraph.sort(node.children_c, true)
+		for _, ttag in ipairs(order) do
+			local task = node.tasks[ttag]
+			if not task.back then
+				node.orderForeward[#node.orderForeward + 1] = ttag
+			else
+				node.orderBackward[#node.orderBackward + 1] = ttag
+			end
+		end
 
 		for atag, level in pairs(graph.access.levels) do
 			node.data_a[atag] = level.func(node.data)

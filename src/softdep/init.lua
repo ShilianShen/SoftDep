@@ -8,7 +8,7 @@ local function spreadGraph(graph)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 
-		for _, ttag in ipairs(node.order) do
+		for _, ttag in ipairs(node.orderForeward) do
 			local task = node.tasks[ttag]
 
 			if not task.dirty and task.auto(node.data) then
@@ -66,7 +66,7 @@ local function updateGraph(graph, module)
 		if module == nil or module.ntagSet[ntag] then
 			local node = graph.nodes[ntag]
 
-			for _, ttag in ipairs(node.order) do
+			for _, ttag in ipairs(node.orderForeward) do
 				local task = node.tasks[ttag]
 
 				if task.dirty then
