@@ -76,7 +76,6 @@ local finalTypeCheck = types.shape({
 			dirty = types.boolean,
 			count = types.integer,
 			children_c = types.stringAdjList,
-			order = types.array_of(types.string),
 			orderForeward = types.array_of(types.string),
 			orderBackward = types.array_of(types.string),
 			data_a = types.map_of(types.string, types.table),
@@ -206,8 +205,8 @@ local function make(graph)
 		node.orderBackward = {}
 		node.data_a = {}
 
-		node.order = MathGraph.sort(node.children_c, true)
-		for _, ttag in ipairs(node.order) do
+		local order = MathGraph.sort(node.children_c, true)
+		for _, ttag in ipairs(order) do
 			local task = node.tasks[ttag]
 			if not task.back then
 				node.orderForeward[#node.orderForeward + 1] = ttag

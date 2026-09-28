@@ -59,7 +59,6 @@ describe("softdep.parse", function()
 				"data",
 				"parents_c",
 				"children_c",
-				"order",
 				"orderForeward",
 				"orderBackward",
 			}) do
@@ -211,7 +210,6 @@ describe("softdep.parse", function()
 				second = { parents_c = { "first" }, back = true },
 			}
 			local node = parse(config).nodes.main
-			assert.are.same({ "first", "second" }, node.order)
 			assert.are.same({ "first" }, node.orderForeward)
 			assert.are.same({ "second" }, node.orderBackward)
 			assert.is_false(node.tasks.first.back)
@@ -239,8 +237,7 @@ describe("softdep.parse", function()
 				right = { finish = true },
 				finish = {},
 			}, node.children_c)
-			assert.are.same({ "start", "left", "right", "finish" }, node.order)
-			assert.are.same(node.order, node.orderForeward)
+			assert.are.same({ "start", "left", "right", "finish" }, node.orderForeward)
 			assert.are.same({}, node.orderBackward)
 			for _, task in pairs(node.tasks) do
 				assert.is_nil(task.parents_c)
