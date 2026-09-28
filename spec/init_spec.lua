@@ -118,7 +118,7 @@ describe("softdep", function()
 		assertClean(graph)
 	end)
 
-	it("leaves backward tasks for the backward phase during a forward run", function()
+	it("executes backward tasks in the complete task order", function()
 		local forwardCalls, backwardCalls, autoCalls = 0, 0, 0
 		local graph = softdep.newGraph(config({
 			main = {
@@ -145,14 +145,13 @@ describe("softdep", function()
 
 		graph:run()
 		assert.equal(1, forwardCalls)
-		assert.equal(0, backwardCalls)
+		assert.equal(1, backwardCalls)
 		assert.equal(0, autoCalls)
-		assert.is_true(graph.nodes.main.tasks.backward.dirty)
+		assert.is_false(graph.nodes.main.tasks.backward.dirty)
 
-		graph.nodes.main.tasks.backward.dirty = false
 		graph:run()
-		assert.equal(0, backwardCalls)
-		assert.equal(0, autoCalls)
+		assert.equal(2, backwardCalls)
+		assert.equal(1, autoCalls)
 		assert.is_false(graph.nodes.main.tasks.backward.dirty)
 	end)
 
