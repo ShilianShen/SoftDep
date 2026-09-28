@@ -156,6 +156,8 @@ local function contentCheck(graph)
 			check(2, atagSet[task.atag], "unknown access level for task " .. ntag .. "." .. ttag .. ": " .. task.atag)
 			for _, pttag in pairs(task.parents_c) do
 				check(2, ttagSet[pttag], "unknown control parent for task " .. ntag .. "." .. ttag .. ": " .. pttag)
+				local ptask = node.tasks[pttag]
+                check(2, not ptask.back or task.back, "back task must not depend on non-back task: " .. ntag .. "." .. ttag .. " <- " .. pttag)
 			end
 			for _, pntag in pairs(task.parents_d) do
 				check(2, ntagSet[pntag], "unknown data parent for task " .. ntag .. "." .. ttag .. ": " .. pntag)

@@ -195,6 +195,18 @@ describe("softdep.parse", function()
 	end)
 
 	describe("dependency construction", function()
+		it("allows a back task to depend on a non-back task", function()
+			local config = makeConfig()
+			config.nodes.main.tasks = {
+				first = { back = false },
+				second = { parents_c = { "first" }, back = true },
+			}
+			local node = parse(config).nodes.main
+			assert.are.same({ "first", "second" }, node.order)
+			assert.is_false(node.tasks.first.back)
+			assert.is_true(node.tasks.second.back)
+		end)
+
 		it("builds both task edge directions and sorts a DAG with a unique task order", function()
 			local config = makeConfig()
 			config.nodes.main.tasks = {
@@ -276,6 +288,17 @@ describe("softdep.parse", function()
 	end)
 
 	describe("validation", function()
+		it("rejects a non-back task that depends on a back task", function()
+			local config = makeConfig()
+			config.nodes.main.tasks = {
+				first = { back = true },
+				second = { parents_c = { "first" }, back = false },
+			}
+			assert.has_error(function()
+				parse(config)
+			end, "back task must not depend on non-back task: main.second <- first")
+		end)
+
 		for _, case in ipairs({
 			{ "independent tasks", { a = { back = false }, b = { back = false } } },
 			{
