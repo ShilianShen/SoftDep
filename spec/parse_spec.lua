@@ -17,7 +17,7 @@ local function makeConfig()
 			lt = { { "read", "write" } },
 		},
 		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
-		nodes = { main = { tasks = { run = { back = false } } } },
+		nodes = { main = { tasks = { run = {} } } },
 	}
 end
 
@@ -67,7 +67,6 @@ describe("softdep.parse", function()
 			assert.are.equal("write", task.atag)
 			assert.is_true(task.dirty)
 			assert.are.equal(0, task.count)
-			assert.is_false(task.back)
 			assert.is_function(task.func)
 			assert.is_function(task.auto)
 			assert.is_nil(task.func())
@@ -84,7 +83,7 @@ describe("softdep.parse", function()
 			config.access.levels.explicit = { func = identity, os = false }
 			config.access.lt = { { "read", "explicit" }, { "explicit", "write" } }
 			config.nodes.main.atag = "explicit"
-			config.nodes.main.tasks.run = { atag = "read", func = callback, auto = callback, back = true }
+			config.nodes.main.tasks.run = { atag = "read", func = callback, auto = callback }
 			config.nodes.main.apis = {
 				full = { func = callback, ttag = "run" },
 				funcOnly = { func = callback },
@@ -95,7 +94,6 @@ describe("softdep.parse", function()
 			assert.are.equal("read", node.tasks.run.atag)
 			assert.are.equal(callback, node.tasks.run.func)
 			assert.are.equal(callback, node.tasks.run.auto)
-			assert.is_true(node.tasks.run.back)
 			assert.are.same({
 				full = { func = callback, ttag = "run", atag = "write" },
 				funcOnly = { func = callback, atag = "write" },
@@ -128,7 +126,7 @@ describe("softdep.parse", function()
 
 		it("does not mutate the input and creates independent parse results", function()
 			local config = makeConfig()
-			config.nodes.main.tasks.next = { parents_c = { "run" }, parents_d = { input = "source" }, back = true }
+			config.nodes.main.tasks.next = { parents_c = { "run" }, parents_d = { input = "source" } }
 			config.nodes.source = {}
 			local first = parse(config)
 			local second = parse(config)
@@ -136,8 +134,8 @@ describe("softdep.parse", function()
 			first.parents_d.main.next.input = "changed"
 			first.nodes.main.parents_c.next.run = nil
 			first.access.levels.read.os = true
-			assert.are.same({ parents_c = { "run" }, parents_d = { input = "source" }, back = true }, config.nodes.main.tasks.next)
-			assert.are.same({ back = false }, config.nodes.main.tasks.run)
+			assert.are.same({ parents_c = { "run" }, parents_d = { input = "source" } }, config.nodes.main.tasks.next)
+			assert.are.same({}, config.nodes.main.tasks.run)
 			assert.is_nil(config.nodes.main.data)
 			assert.are.same({ nodeAtag = "read", taskAtag = "write", apiAtag = "write" }, config.default)
 			assert.is_false(config.access.levels.read.os)
@@ -198,10 +196,10 @@ describe("softdep.parse", function()
 		it("builds both task edge directions and sorts a DAG with a unique task order", function()
 			local config = makeConfig()
 			config.nodes.main.tasks = {
-				start = { back = false },
-				left = { parents_c = { "start", "start" }, back = false },
-				right = { parents_c = { "start", "left" }, back = false },
-				finish = { parents_c = { "left", "right" }, back = false },
+				start = {},
+				left = { parents_c = { "start", "start" } },
+				right = { parents_c = { "start", "left" } },
+				finish = { parents_c = { "left", "right" } },
 			}
 			local node = parse(config).nodes.main
 			assert.are.same({
@@ -230,12 +228,12 @@ describe("softdep.parse", function()
 				isolated = {},
 				left = {
 					tasks = {
-						a = { parents_d = { x = "source", y = "source" }, back = false },
-						b = { parents_c = { "a" }, parents_d = { z = "source" }, back = false },
+						a = { parents_d = { x = "source", y = "source" } },
+						b = { parents_c = { "a" }, parents_d = { z = "source" } },
 					},
 				},
-				right = { tasks = { a = { parents_d = { input = "source" }, back = false } } },
-				finish = { tasks = { merge = { parents_d = { x = "left", y = "right" }, back = false } } },
+				right = { tasks = { a = { parents_d = { input = "source" } } } },
+				finish = { tasks = { merge = { parents_d = { x = "left", y = "right" } } } },
 			}
 			local graph = parse(config)
 			assert.are.same({
@@ -277,14 +275,14 @@ describe("softdep.parse", function()
 
 	describe("validation", function()
 		for _, case in ipairs({
-			{ "independent tasks", { a = { back = false }, b = { back = false } } },
+			{ "independent tasks", { a = {}, b = {} } },
 			{
 				"branching tasks",
 				{
-					start = { back = false },
-					left = { parents_c = { "start" }, back = false },
-					right = { parents_c = { "start" }, back = false },
-					finish = { parents_c = { "left", "right" }, back = false },
+					start = {},
+					left = { parents_c = { "start" } },
+					right = { parents_c = { "start" } },
+					finish = { parents_c = { "left", "right" } },
 				},
 			},
 		}) do
@@ -340,18 +338,6 @@ describe("softdep.parse", function()
 				"invalid auto callback",
 				function(c)
 					c.nodes.main.tasks.run.auto = true
-				end,
-			},
-			{
-				"missing back flag",
-				function(c)
-					c.nodes.main.tasks.run.back = nil
-				end,
-			},
-			{
-				"invalid back flag",
-				function(c)
-					c.nodes.main.tasks.run.back = "false"
 				end,
 			},
 			{
@@ -467,7 +453,7 @@ describe("softdep.parse", function()
 			{
 				"control parent in another node",
 				function(c)
-					c.nodes.other = { tasks = { remote = { back = false } } }
+					c.nodes.other = { tasks = { remote = {} } }
 					c.nodes.main.tasks.run.parents_c = { "remote" }
 				end,
 			},
@@ -480,11 +466,7 @@ describe("softdep.parse", function()
 			{
 				"task cycle with an isolated task",
 				function(c)
-					c.nodes.main.tasks = {
-						a = { parents_c = { "b" }, back = false },
-						b = { parents_c = { "a" }, back = false },
-						isolated = { back = false },
-					}
+					c.nodes.main.tasks = { a = { parents_c = { "b" } }, b = { parents_c = { "a" } }, isolated = {} }
 				end,
 			},
 			{
@@ -497,7 +479,7 @@ describe("softdep.parse", function()
 				"node cycle with an isolated node",
 				function(c)
 					c.nodes.main.tasks.run.parents_d = { input = "other" }
-					c.nodes.other = { tasks = { run = { parents_d = { input = "main" }, back = false } } }
+					c.nodes.other = { tasks = { run = { parents_d = { input = "main" } } } }
 					c.nodes.isolated = {}
 				end,
 			},
