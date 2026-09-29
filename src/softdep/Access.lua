@@ -3,8 +3,6 @@ local MathSet = require("softdep.MathSet")
 local types = require("softdep.types")
 local check = require("softdep.check")
 
-local methods = {}
-
 local Access = {}
 
 local function checkAtags(access, atag1, atag2)
@@ -12,29 +10,29 @@ local function checkAtags(access, atag1, atag2)
 	check(3, access.levels[atag2] ~= nil, "unknown access level: " .. tostring(atag2))
 end
 
-function methods.leq(access, atag1, atag2)
-	checkAtags(access, atag1, atag2)
-	return access.reachAdjList[atag1][atag2]
+function Access:leq(atag1, atag2)
+	checkAtags(self, atag1, atag2)
+	return self.reachAdjList[atag1][atag2]
 end
 
-function methods.geq(access, atag1, atag2)
-	checkAtags(access, atag1, atag2)
-	return access.reachAdjList[atag2][atag1]
+function Access:geq(atag1, atag2)
+	checkAtags(self, atag1, atag2)
+	return self.reachAdjList[atag2][atag1]
 end
 
-function methods.eq(access, atag1, atag2)
-	checkAtags(access, atag1, atag2)
+function Access:eq(atag1, atag2)
+	checkAtags(self, atag1, atag2)
 	return atag1 == atag2
 end
 
-function methods.lt(access, atag1, atag2)
-	checkAtags(access, atag1, atag2)
-	return atag1 ~= atag2 and access.reachAdjList[atag1][atag2]
+function Access:lt(atag1, atag2)
+	checkAtags(self, atag1, atag2)
+	return atag1 ~= atag2 and self.reachAdjList[atag1][atag2]
 end
 
-function methods.gt(access, atag1, atag2)
-	checkAtags(access, atag1, atag2)
-	return atag1 ~= atag2 and access.reachAdjList[atag2][atag1]
+function Access:gt(atag1, atag2)
+	checkAtags(self, atag1, atag2)
+	return atag1 ~= atag2 and self.reachAdjList[atag2][atag1]
 end
 
 function Access.newAccess(levels, lt)
@@ -81,9 +79,8 @@ function Access.newAccess(levels, lt)
 	check(2, access.top ~= nil, "top should be explicitly declared")
 	check(2, access.bot ~= nil, "bot should be explicitly declared")
 
-	for k, v in pairs(methods) do
-		assert(access[k] == nil)
-		access[k] = v
+	for _, method in ipairs({ "leq", "geq", "eq", "lt", "gt" }) do
+		access[method] = Access[method]
 	end
 
 	return access
