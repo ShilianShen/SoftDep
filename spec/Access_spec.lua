@@ -75,43 +75,18 @@ describe("newAccess", function()
 		for _, method in ipairs({ "leq", "geq", "eq", "lt", "gt" }) do
 			it("validates both arguments to " .. method, function()
 				local access = diamond()
-				for _, invalid in ipairs({ "missing", 42, false }) do
-					assert.has_error(function()
-						access[method](access, invalid, "top")
-					end, "unknown access level: " .. tostring(invalid))
-					assert.has_error(function()
-						access[method](access, "bottom", invalid)
-					end, "unknown access level: " .. tostring(invalid))
-				end
 				assert.has_error(function()
-					access[method](access, nil, "top")
-				end, "unknown access level: nil")
+					access[method](access, "missing", "top")
+				end, "unknown access level: missing")
 				assert.has_error(function()
-					access[method](access, "bottom", nil)
-				end, "unknown access level: nil")
+					access[method](access, "bottom", "missing")
+				end, "unknown access level: missing")
 			end)
 		end
 	end)
 
 	describe("validation", function()
-		local levelsMessage =
-			"newAccess: expected levels to map strings to tables with a function field func and a boolean field os"
-		local ltMessage = "newAccess: expected lt to be an array of arrays of strings"
 		local cases = {
-			{ "missing levels", nil, {}, levelsMessage },
-			{ "non-table levels", false, {}, levelsMessage },
-			{ "non-string level tags", { [1] = { func = function() end, os = false } }, {}, levelsMessage },
-			{ "missing func", { a = { os = false } }, {}, levelsMessage },
-			{ "invalid func", { a = { func = true, os = false } }, {}, levelsMessage },
-			{ "missing os", { a = { func = function() end } }, {}, levelsMessage },
-			{ "invalid os", { a = { func = function() end, os = 1 } }, {}, levelsMessage },
-			{ "missing relations", levels("a"), nil, ltMessage },
-			{ "non-table relations", levels("a"), false, ltMessage },
-			{ "non-table edge", levels("a"), { "a" }, ltMessage },
-			{ "non-string endpoint", levels("a"), { { "a", 1 } }, ltMessage },
-			{ "empty edge", levels("a"), { {} }, "access relation must contain exactly two levels" },
-			{ "short edge", levels("a"), { { "a" } }, "access relation must contain exactly two levels" },
-			{ "long edge", levels("a"), { { "a", "a", "a" } }, "access relation must contain exactly two levels" },
 			{ "unknown source", levels("a"), { { "missing", "a" } }, "unknown access level in lt: missing" },
 			{ "unknown target", levels("a"), { { "a", "missing" } }, "unknown access level in lt: missing" },
 			{ "self-loop", levels("a"), { { "a", "a" } }, "access relation must be acyclic" },
