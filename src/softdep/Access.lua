@@ -1,6 +1,5 @@
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
-local types = require("softdep.types")
 local check = require("softdep.check")
 
 ---@class softdep.AccessLevel
@@ -63,13 +62,6 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.Access
 function Access.newAccess(levels, edges)
-	check(
-		2,
-		types.accessLevels(levels),
-		"newAccess: expected levels to map strings to tables with a function field func and a boolean field os"
-	)
-	check(2, types.accessLt(edges), "newAccess: expected lt to be an array of arrays of strings")
-
 	for _, edge in ipairs(edges) do
 		check(2, #edge == 2, "access relation must contain exactly two levels")
 
