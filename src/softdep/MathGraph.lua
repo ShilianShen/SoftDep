@@ -2,11 +2,13 @@ local check = require("softdep.check")
 local MathGraph = {}
 local MathSet = require("softdep.MathSet")
 
----@alias softdep.Edges [string, string][]
-
+---@alias softdep.Vertex string
+---@alias softdep.Vertices softdep.Set
+---@alias softdep.Edge [string, string]
+---@alias softdep.Edges softdep.Edge[]
 ---@alias softdep.AdjList table<string, softdep.Set>
 
----@param vertices softdep.Set
+---@param vertices softdep.Vertices
 ---@param edges softdep.Edges
 ---@return boolean
 function MathGraph.isEdges(vertices, edges)
@@ -162,9 +164,9 @@ function MathGraph.reachAdjList(adjList, reflexive)
 	return reachAdjList
 end
 
--- The topological order is intentionally unspecified.
--- Do not sort zero-indegree vertices: callers must not rely on
--- ordering constraints that are not represented by the DAG.
+--- The topological order is intentionally unspecified.
+--- Do not sort zero-indegree vertices: callers must not rely on
+--- ordering constraints that are not represented by the DAG.
 ---@param adjList softdep.AdjList
 ---@param uniqueness boolean|nil
 ---@return string[]
