@@ -1,4 +1,3 @@
-local check = require("softdep.check")
 local MathGraph = {}
 local MathSet = require("softdep.MathSet")
 
@@ -43,11 +42,12 @@ end
 ---@param uniqueness boolean|nil
 ---@return boolean
 function MathGraph.isDAG(adjList, uniqueness)
-	check(
-		2,
-		MathGraph.isAdjList(adjList),
-		"MathGraph.isDAG: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
-	)
+	if not MathGraph.isAdjList(adjList) then
+		error(
+			"MathGraph.isDAG: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
+			2
+		)
+	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
@@ -61,11 +61,10 @@ function MathGraph.isDAG(adjList, uniqueness)
 	end
 
 	for _, _ in pairs(adjList) do
-		check(
-			2,
-			not uniqueness or #stack == 1,
-			"MathGraph.isDAG: expected a unique topological order when uniqueness is enabled"
-		)
+		if not (not uniqueness or #stack == 1) then
+			error("MathGraph.isDAG: expected a unique topological order when uniqueness is enabled", 2)
+		end
+
 		local vtag = table.remove(stack)
 		if vtag == nil then
 			return false
@@ -86,11 +85,12 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.AdjList
 function MathGraph.edges2AdjList(vertices, edges)
-	check(
-		2,
-		MathGraph.isEdges(vertices, edges),
-		"MathGraph.edges2AdjList: expected vertices to be a set with all values equal to true and edges to be an array of vertex pairs whose endpoints belong to vertices"
-	)
+	if not MathGraph.isEdges(vertices, edges) then
+		error(
+			"MathGraph.edges2AdjList: expected vertices to be a set with all values equal to true and edges to be an array of vertex pairs whose endpoints belong to vertices",
+			2
+		)
+	end
 
 	local adjList = {}
 
@@ -108,11 +108,12 @@ end
 ---@param adjList softdep.AdjList
 ---@return softdep.AdjList
 function MathGraph.revAdjList(adjList)
-	check(
-		2,
-		MathGraph.isAdjList(adjList),
-		"MathGraph.revAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
-	)
+	if not MathGraph.isAdjList(adjList) then
+		error(
+			"MathGraph.revAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
+			2
+		)
+	end
 
 	local revAdjList = {}
 
@@ -133,11 +134,12 @@ end
 ---@param reflexive boolean
 ---@return softdep.AdjList
 function MathGraph.reachAdjList(adjList, reflexive)
-	check(
-		2,
-		MathGraph.isAdjList(adjList),
-		"MathGraph.reachAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
-	)
+	if not MathGraph.isAdjList(adjList) then
+		error(
+			"MathGraph.reachAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
+			2
+		)
+	end
 
 	local reachAdjList = {}
 	for v1, _ in pairs(adjList) do
@@ -171,11 +173,12 @@ end
 ---@param uniqueness boolean|nil
 ---@return string[]
 function MathGraph.sort(adjList, uniqueness)
-	check(
-		2,
-		MathGraph.isAdjList(adjList),
-		"MathGraph.sort: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
-	)
+	if not MathGraph.isAdjList(adjList) then
+		error(
+			"MathGraph.sort: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
+			2
+		)
+	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
@@ -190,12 +193,13 @@ function MathGraph.sort(adjList, uniqueness)
 	end
 
 	for _, _ in pairs(adjList) do
-		check(2, #stack > 0, "MathGraph.sort: expected a DAG; adjList contains a cycle")
-		check(
-			2,
-			not uniqueness or #stack == 1,
-			"MathGraph.sort: expected a unique topological order when uniqueness is enabled"
-		)
+        if not (#stack > 0) then
+            error("MathGraph.sort: expected a DAG; adjList contains a cycle", 2)
+        end
+        if not (not uniqueness or #stack == 1) then
+            error("MathGraph.sort: expected a unique topological order when uniqueness is enabled", 2)
+        end
+
 		local i = math.random(#stack)
 		local vtag = table.remove(stack, i)
 
