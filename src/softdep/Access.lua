@@ -1,6 +1,5 @@
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
-local check = require("softdep.check")
 
 ---@class softdep.AccessLevel
 ---@field func function
@@ -103,17 +102,25 @@ function Access.newAccess(levels, edges)
 	for atag, _ in pairs(atagSet) do
 		local m = MathSet.count(access.reachAdjList[atag])
 		if m == 1 then
-			check(2, access.top == nil, "access relation has multiple top candidates")
+			if access.top ~= nil then
+				error("access relation has multiple top candidates", 2)
+			end
 			access.top = atag
 		end
 		if m == n then
-			check(2, access.bot == nil, "access relation has multiple bot candidates")
+			if access.bot ~= nil then
+				error("access relation has multiple bot candidates", 2)
+			end
 			access.bot = atag
 		end
 	end
 
-	check(2, access.top ~= nil, "top should be explicitly declared")
-	check(2, access.bot ~= nil, "bot should be explicitly declared")
+	if access.top == nil then
+		error("top should be explicitly declared", 2)
+	end
+	if access.bot == nil then
+		error("bot should be explicitly declared", 2)
+	end
 
 	for k, v in pairs(Access) do
 		access[k] = v
