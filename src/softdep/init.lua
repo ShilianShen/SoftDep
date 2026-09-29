@@ -1,5 +1,3 @@
-local types = require("softdep.types")
-local check = require("softdep.check")
 local MathSet = require("softdep.MathSet")
 local build = require("softdep.build")
 local softdep = {}
