@@ -3,6 +3,15 @@ local MathSet = require("softdep.MathSet")
 local types = require("softdep.types")
 local check = require("softdep.check")
 
+---@class softdep.AccessLevel
+---@field func function
+---@field os boolean
+
+---@class softdep.Access
+---@field levels table<string, softdep.AccessLevel>
+---@field reachAdjList softdep.AdjList
+---@field top string
+---@field bot string
 local Access = {}
 
 local function checkAtags(access, atag1, atag2)
@@ -10,31 +19,49 @@ local function checkAtags(access, atag1, atag2)
 	check(3, access.levels[atag2] ~= nil, "unknown access level: " .. tostring(atag2))
 end
 
+---@param atag1 string
+---@param atag2 string
+---@return boolean
 function Access:leq(atag1, atag2)
 	checkAtags(self, atag1, atag2)
 	return self.reachAdjList[atag1][atag2]
 end
 
+---@param atag1 string
+---@param atag2 string
+---@return boolean
 function Access:geq(atag1, atag2)
 	checkAtags(self, atag1, atag2)
 	return self.reachAdjList[atag2][atag1]
 end
 
+---@param atag1 string
+---@param atag2 string
+---@return boolean
 function Access:eq(atag1, atag2)
 	checkAtags(self, atag1, atag2)
 	return atag1 == atag2
 end
 
+---@param atag1 string
+---@param atag2 string
+---@return boolean
 function Access:lt(atag1, atag2)
 	checkAtags(self, atag1, atag2)
 	return atag1 ~= atag2 and self.reachAdjList[atag1][atag2]
 end
 
+---@param atag1 string
+---@param atag2 string
+---@return boolean
 function Access:gt(atag1, atag2)
 	checkAtags(self, atag1, atag2)
 	return atag1 ~= atag2 and self.reachAdjList[atag2][atag1]
 end
 
+---@param levels table<string, softdep.AccessLevel>
+---@param lt softdep.Edges
+---@return softdep.Access
 function Access.newAccess(levels, lt)
 	check(
 		2,
