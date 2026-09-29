@@ -5,28 +5,11 @@ local MathGraph = require("softdep.MathGraph")
 
 describe("MathGraph", function()
 	local invalidEdges = {
-		{ "missing vertices", nil, {} },
-		{ "non-table vertices", false, {} },
-		{ "non-set vertices", { a = false }, {} },
-		{ "non-string vertex", { [1] = true }, {} },
-		{ "missing edges", {} },
-		{ "non-table edges", {}, false },
-		{ "non-table edge", { a = true }, { false } },
-		{ "short edge", { a = true }, { { "a" } } },
-		{ "long edge", { a = true }, { { "a", "a", "a" } } },
-		{ "non-string edge endpoint", { a = true }, { { 1, "a" } } },
 		{ "unknown source", { a = true }, { { "missing", "a" } } },
 		{ "unknown target", { a = true }, { { "a", "missing" } } },
 	}
 
 	local invalidAdjLists = {
-		{ "missing adjacency list" },
-		{ "non-table adjacency list", false },
-		{ "non-table neighbors", { a = false } },
-		{ "non-set neighbors", { a = { a = false } } },
-		{ "non-boolean membership", { a = { a = 1 } } },
-		{ "non-string vertex", { [1] = {} } },
-		{ "non-string neighbor", { a = { [1] = true } } },
 		{ "unknown neighbor", { a = { missing = true } } },
 	}
 
@@ -97,17 +80,6 @@ describe("MathGraph", function()
 				end)
 			end
 		end
-
-		it("reachAdjList requires an explicit boolean reflexive argument", function()
-			assert.has_error(function()
-				MathGraph.reachAdjList({})
-			end, "MathGraph.reachAdjList: expected reflexive to be a boolean")
-			for _, value in ipairs({ 0, "false", {} }) do
-				assert.has_error(function()
-					MathGraph.reachAdjList({}, value)
-				end, "MathGraph.reachAdjList: expected reflexive to be a boolean")
-			end
-		end)
 	end)
 
 	describe("isDAG", function()

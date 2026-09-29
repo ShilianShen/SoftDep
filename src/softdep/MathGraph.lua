@@ -1,4 +1,3 @@
-local types = require("softdep.types")
 local check = require("softdep.check")
 local MathGraph = {}
 local MathSet = require("softdep.MathSet")
@@ -11,14 +10,6 @@ local MathSet = require("softdep.MathSet")
 ---@param edges softdep.Edges
 ---@return boolean
 function MathGraph.isEdges(vertices, edges)
-	if not types.set(vertices) then
-		return false
-	end
-
-	if not types.edges(edges) then
-		return false
-	end
-
 	for _, edge in ipairs(edges) do
 		local a, b = edge[1], edge[2]
 		if vertices[a] == nil then
@@ -35,10 +26,6 @@ end
 ---@param adjList softdep.AdjList
 ---@return boolean
 function MathGraph.isAdjList(adjList)
-	if not types.adjList(adjList) then
-		return false
-	end
-
 	for v1, _ in pairs(adjList) do
 		for v2, _ in pairs(adjList[v1]) do
 			if adjList[v2] == nil then
@@ -149,7 +136,6 @@ function MathGraph.reachAdjList(adjList, reflexive)
 		MathGraph.isAdjList(adjList),
 		"MathGraph.reachAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices"
 	)
-	check(2, types.boolean(reflexive), "MathGraph.reachAdjList: expected reflexive to be a boolean")
 
 	local reachAdjList = {}
 	for v1, _ in pairs(adjList) do
