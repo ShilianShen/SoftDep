@@ -101,7 +101,7 @@ local function deepCopyAsTree(graph)
 	return result
 end
 
-local function complete(graph)
+local function applyDefaults(graph)
 	graph.nodes = graph.nodes or {}
 	for _, node in pairs(graph.nodes) do
 		node.atag = node.atag or graph.default.nodeAtag
@@ -121,7 +121,7 @@ local function complete(graph)
 	graph.default = nil
 end
 
-local function contentCheck(graph)
+local function validate(graph)
 	local atagSet = MathSet.tab2set(graph.access.levels)
 	for _, edge in pairs(graph.access.lt) do
 		local a, b = edge[1], edge[2]
@@ -167,7 +167,7 @@ local function contentCheck(graph)
 	end
 end
 
-local function recombinate(graph)
+local function restructure(graph)
 	graph.parents_d = {}
 	for ntag, node in pairs(graph.nodes) do
 		node.parents_c = {}
@@ -183,7 +183,7 @@ local function recombinate(graph)
 	end
 end
 
-local function make(graph)
+local function materialize(graph)
 	graph.access = Access.newAccess(graph.access.levels, graph.access.lt)
 	for ntag, node in pairs(graph.nodes) do
 		node.data = {}
@@ -249,10 +249,10 @@ local function parse(graph)
 	check(2, firstTypeCheck(graph))
 	do
 		graph = deepCopyAsTree(graph)
-		complete(graph)
-		contentCheck(graph)
-		recombinate(graph)
-		make(graph)
+		applyDefaults(graph)
+		validate(graph)
+		restructure(graph)
+		materialize(graph)
 	end
 	check(2, finalTypeCheck(graph))
 	return graph
