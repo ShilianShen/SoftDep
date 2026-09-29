@@ -245,7 +245,7 @@ local function materialize(graph)
 	end
 end
 
-local function parse(graph)
+local function build(graph)
 	check(2, firstTypeCheck(graph))
 	do
 		graph = deepCopyAsTree(graph)
@@ -258,4 +258,4 @@ local function parse(graph)
 	return graph
 end
 
-return parse
+return build

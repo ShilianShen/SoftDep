@@ -1,7 +1,7 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 
 local assert = require("luassert")
-local parse = require("softdep.parse")
+local build = require("softdep.build")
 
 local function identity(data)
 	return data
@@ -37,12 +37,12 @@ local function assertOrder(order, vertices, edges)
 	end
 end
 
-describe("softdep.parse", function()
+describe("softdep.build", function()
 	describe("defaults and initialization", function()
 		it("accepts omitted nodes and creates an empty graph", function()
 			local config = makeConfig()
 			config.nodes = nil
-			local graph = parse(config)
+			local graph = build(config)
 			for _, field in ipairs({ "nodes", "parents_d", "parents_n", "children_n", "children_d", "order" }) do
 				assert.are.same({}, graph[field])
 			end
@@ -52,7 +52,7 @@ describe("softdep.parse", function()
 		it("initializes an empty node", function()
 			local config = makeConfig()
 			config.nodes.main = {}
-			local node = parse(config).nodes.main
+			local node = build(config).nodes.main
 			for _, field in ipairs({ "tasks", "apis", "data", "parents_c", "children_c", "order" }) do
 				assert.are.same({}, node[field])
 			end
@@ -62,7 +62,7 @@ describe("softdep.parse", function()
 		end)
 
 		it("completes tasks with defaults and callable no-ops", function()
-			local graph = parse(makeConfig())
+			local graph = build(makeConfig())
 			local task = graph.nodes.main.tasks.run
 			assert.are.equal("write", task.atag)
 			assert.is_true(task.dirty)
@@ -89,7 +89,7 @@ describe("softdep.parse", function()
 				funcOnly = { func = callback },
 				taskOnly = { ttag = "run" },
 			}
-			local node = parse(config).nodes.main
+			local node = build(config).nodes.main
 			assert.are.equal("explicit", node.atag)
 			assert.are.equal("read", node.tasks.run.atag)
 			assert.are.equal(callback, node.tasks.run.func)
@@ -113,7 +113,7 @@ describe("softdep.parse", function()
 					return { source = data }
 				end
 			end
-			local graph = parse(config)
+			local graph = build(config)
 			for tag, inputs in pairs(calls) do
 				assert.are.equal(2, #inputs)
 				assert.is_false(inputs[1] == inputs[2])
@@ -124,12 +124,12 @@ describe("softdep.parse", function()
 			end
 		end)
 
-		it("does not mutate the input and creates independent parse results", function()
+		it("does not mutate the input and creates independent build results", function()
 			local config = makeConfig()
 			config.nodes.main.tasks.next = { parents_c = { "run" }, parents_d = { input = "source" } }
 			config.nodes.source = {}
-			local first = parse(config)
-			local second = parse(config)
+			local first = build(config)
+			local second = build(config)
 			first.nodes.main.data.value = 1
 			first.parents_d.main.next.input = "changed"
 			first.nodes.main.parents_c.next.run = nil
@@ -152,7 +152,7 @@ describe("softdep.parse", function()
 					return value
 				end
 				assert.has_error(function()
-					parse(config)
+					build(config)
 				end)
 			end)
 		end
@@ -161,7 +161,7 @@ describe("softdep.parse", function()
 			local config = makeConfig()
 			config.access.levels.read.func = function() end
 			assert.has_error(function()
-				parse(config)
+				build(config)
 			end)
 		end)
 
@@ -176,7 +176,7 @@ describe("softdep.parse", function()
 				end
 			end
 			assert.has_error(function()
-				parse(config)
+				build(config)
 			end)
 			assert.are.equal(2, calls)
 		end)
@@ -187,7 +187,7 @@ describe("softdep.parse", function()
 				error("view failed", 0)
 			end
 			assert.has_error(function()
-				parse(config)
+				build(config)
 			end, "view failed")
 		end)
 	end)
@@ -201,7 +201,7 @@ describe("softdep.parse", function()
 				right = { parents_c = { "start", "left" } },
 				finish = { parents_c = { "left", "right" } },
 			}
-			local node = parse(config).nodes.main
+			local node = build(config).nodes.main
 			assert.are.same({
 				start = {},
 				left = { start = true },
@@ -235,7 +235,7 @@ describe("softdep.parse", function()
 				right = { tasks = { a = { parents_d = { input = "source" } } } },
 				finish = { tasks = { merge = { parents_d = { x = "left", y = "right" } } } },
 			}
-			local graph = parse(config)
+			local graph = build(config)
 			assert.are.same({
 				source = {},
 				isolated = {},
@@ -290,7 +290,7 @@ describe("softdep.parse", function()
 				local config = makeConfig()
 				config.nodes.main.tasks = case[2]
 				assert.has_error(function()
-					parse(config)
+					build(config)
 				end, "MathGraph.isDAG: expected a unique topological order when uniqueness is enabled")
 			end)
 		end
@@ -304,7 +304,7 @@ describe("softdep.parse", function()
 					config.default.nodeAtag = "write"
 				end
 				assert.has_error(function()
-					parse(config)
+					build(config)
 				end, "node access level must be order-insensitive: write")
 			end)
 		end
@@ -490,17 +490,17 @@ describe("softdep.parse", function()
 				local config = makeConfig()
 				case[2](config)
 				assert.has_error(function()
-					parse(config)
+					build(config)
 				end)
 			end)
 		end
 
 		it("rejects a non-table configuration", function()
 			assert.has_error(function()
-				parse(nil)
+				build(nil)
 			end)
 			assert.has_error(function()
-				parse(false)
+				build(false)
 			end)
 		end)
 	end)

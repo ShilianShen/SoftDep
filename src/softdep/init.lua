@@ -1,7 +1,7 @@
 local types = require("softdep.types")
 local check = require("softdep.check")
 local MathSet = require("softdep.MathSet")
-local parse = require("softdep.parse")
+local build = require("softdep.build")
 local softdep = {}
 
 local function spreadGraph(graph)
@@ -106,7 +106,7 @@ local nodeMetatable = {
 }
 
 function softdep.newGraph(config)
-	local graph = parse(config)
+	local graph = build(config)
 
 	graph.spread = spreadGraph
 	graph.update = updateGraph
