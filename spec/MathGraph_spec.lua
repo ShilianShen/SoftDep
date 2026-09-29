@@ -8,11 +8,13 @@ describe("MathGraph", function()
 		{ "missing vertices", nil, {} },
 		{ "non-table vertices", false, {} },
 		{ "non-set vertices", { a = false }, {} },
+		{ "non-string vertex", { [1] = true }, {} },
 		{ "missing edges", {} },
 		{ "non-table edges", {}, false },
 		{ "non-table edge", { a = true }, { false } },
 		{ "short edge", { a = true }, { { "a" } } },
 		{ "long edge", { a = true }, { { "a", "a", "a" } } },
+		{ "non-string edge endpoint", { a = true }, { { 1, "a" } } },
 		{ "unknown source", { a = true }, { { "missing", "a" } } },
 		{ "unknown target", { a = true }, { { "a", "missing" } } },
 	}
@@ -23,6 +25,8 @@ describe("MathGraph", function()
 		{ "non-table neighbors", { a = false } },
 		{ "non-set neighbors", { a = { a = false } } },
 		{ "non-boolean membership", { a = { a = 1 } } },
+		{ "non-string vertex", { [1] = {} } },
+		{ "non-string neighbor", { a = { [1] = true } } },
 		{ "unknown neighbor", { a = { missing = true } } },
 	}
 
@@ -39,13 +43,6 @@ describe("MathGraph", function()
 				{ "b", "a" },
 				{ "a", "a" },
 			}))
-		end)
-
-		it("preserves distinct vertex types and table identity", function()
-			local key, other = {}, {}
-			local vertices = { [1] = true, ["1"] = true, [false] = true, [key] = true }
-			assert.is_true(MathGraph.isEdges(vertices, { { 1, "1" }, { "1", false }, { false, key } }))
-			assert.is_false(MathGraph.isEdges(vertices, { { key, other } }))
 		end)
 
 		for _, case in ipairs(invalidEdges) do
@@ -65,17 +62,6 @@ describe("MathGraph", function()
 			assert.is_true(MathGraph.isAdjList({ a = { b = true }, b = {} }))
 			assert.is_true(MathGraph.isAdjList({ a = { b = true }, b = { a = true } }))
 			assert.is_true(MathGraph.isAdjList({ a = { a = true } }))
-		end)
-
-		it("preserves distinct vertex types and table identity", function()
-			local key, other = {}, {}
-			assert.is_true(MathGraph.isAdjList({
-				[1] = { ["1"] = true },
-				["1"] = { [false] = true },
-				[false] = { [key] = true },
-				[key] = {},
-			}))
-			assert.is_false(MathGraph.isAdjList({ [key] = { [other] = true } }))
 		end)
 
 		for _, case in ipairs(invalidAdjLists) do
@@ -187,20 +173,6 @@ describe("MathGraph", function()
 			MathGraph.sort(adjList, true)
 			assert.are.same({ a = { b = true }, b = { c = true }, c = {} }, adjList)
 		end)
-	end)
-
-	it("supports numeric, boolean and table vertices throughout graph operations", function()
-		local key = {}
-		local vertices = { [1] = true, ["1"] = true, [false] = true, [key] = true }
-		local adjList = MathGraph.edges2AdjList(vertices, { { 1, "1" }, { "1", false }, { false, key } })
-		assert.are.same(
-			{ [1] = { ["1"] = true }, ["1"] = { [false] = true }, [false] = { [key] = true }, [key] = {} },
-			adjList
-		)
-		assert.is_true(MathGraph.isDAG(adjList))
-		assert.are.same({ 1, "1", false, key }, MathGraph.sort(adjList))
-		assert.is_true(MathGraph.revAdjList(adjList)[key][false])
-		assert.is_true(MathGraph.reachAdjList(adjList, false)[1][key])
 	end)
 
 	for _, name in ipairs({ "isDAG", "revAdjList", "reachAdjList", "sort" }) do

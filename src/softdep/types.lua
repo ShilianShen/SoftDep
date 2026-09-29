@@ -4,8 +4,8 @@ function types.opt_map_of(...)
 	return types.map_of(...):is_optional()
 end
 
-types.set = types.map_of(types.any, types.literal(true))
-types.adjList = types.map_of(types.any, types.set)
+types.set = types.map_of(types.string, types.literal(true))
+types.adjList = types.map_of(types.string, types.set)
 
 types.stringSet = types.map_of(types.string, types.literal(true))
 types.stringArray = types.array_of(types.string)
@@ -23,7 +23,7 @@ types.accessLevels = types.map_of(
 )
 types.accessLt = types.array_of(types.array_of(types.string))
 
-types.edges = types.array_of(types.array_of(types.any, { length = types.literal(2) }))
+types.edges = types.array_of(types.array_of(types.string, { length = types.literal(2) }))
 types.stringEdges = types.array_of(types.array_of(types.string, { length = types.literal(2) }))
 
 return types
