@@ -14,6 +14,7 @@ local function restructure(graph)
 		graph.parents_d[ntag] = node.parents_d
 		node.parents_d = nil
 	end
+    return graph
 end
 
 return restructure

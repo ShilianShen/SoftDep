@@ -5,7 +5,6 @@ local validate = require("softdep.build.2_validate")
 local restructure = require("softdep.build.3_restructure")
 local materialize = require("softdep.build.4_materialize")
 
-
 local firstTypeCheck = types.shape({
 	access = types.shape({
 		levels = types.map_of(types.string, types.shape({ func = types.func, os = types.boolean })),
@@ -105,10 +104,10 @@ local function build(graph)
 	check(2, firstTypeCheck(graph))
 	do
 		graph = deepCopyAsTree(graph)
-		applyDefaults(graph)
-		validate(graph)
-		restructure(graph)
-		materialize(graph)
+		graph = applyDefaults(graph)
+		graph = validate(graph)
+		graph = restructure(graph)
+		graph = materialize(graph)
 	end
 	check(2, finalTypeCheck(graph))
 	return graph

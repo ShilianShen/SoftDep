@@ -62,6 +62,7 @@ local function materialize(graph)
 			end
 		end
 	end
+    return graph
 end
 
 return materialize

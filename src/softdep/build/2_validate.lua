@@ -46,6 +46,7 @@ local function validate(graph)
 			end
 		end
 	end
+    return graph
 end
 
 return validate
