@@ -5,6 +5,8 @@ local check = require("softdep.check")
 
 local methods = {}
 
+local Access = {}
+
 local function checkAtags(access, atag1, atag2)
 	check(3, access.levels[atag1] ~= nil, "unknown access level: " .. tostring(atag1))
 	check(3, access.levels[atag2] ~= nil, "unknown access level: " .. tostring(atag2))
@@ -35,7 +37,7 @@ function methods.gt(access, atag1, atag2)
 	return atag1 ~= atag2 and access.reachAdjList[atag2][atag1]
 end
 
-local function newAccess(levels, lt)
+function Access.newAccess(levels, lt)
 	check(
 		2,
 		types.accessLevels(levels),
@@ -87,4 +89,4 @@ local function newAccess(levels, lt)
 	return access
 end
 
-return newAccess
+return Access

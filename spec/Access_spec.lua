@@ -1,7 +1,7 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 
 local assert = require("luassert")
-local newAccess = require("softdep.Access")
+local Access = require("softdep.Access")
 
 local function levels(...)
 	local result = {}
@@ -12,7 +12,7 @@ local function levels(...)
 end
 
 local function diamond()
-	return newAccess(levels("bottom", "left", "right", "top"), {
+	return Access.newAccess(levels("bottom", "left", "right", "top"), {
 		{ "bottom", "left" },
 		{ "bottom", "right" },
 		{ "left", "top" },
@@ -34,7 +34,7 @@ describe("newAccess", function()
 	end)
 
 	it("allows one level to be both bounds", function()
-		local access = newAccess(levels("only"), {})
+		local access = Access.newAccess(levels("only"), {})
 		assert.are.equal("only", access.top)
 		assert.are.equal("only", access.bot)
 		assert.is_true(access:leq("only", "only"))
@@ -45,7 +45,7 @@ describe("newAccess", function()
 		local definitions = levels("a", "b")
 		local originalA, originalB = definitions.a, definitions.b
 		local relations = { { "a", "b" } }
-		local access = newAccess(definitions, relations)
+		local access = Access.newAccess(definitions, relations)
 		assert.are.equal(originalA, access.levels.a)
 		assert.are.equal(originalB, access.levels.b)
 		assert.are.same({ a = originalA, b = originalB }, definitions)
@@ -139,7 +139,7 @@ describe("newAccess", function()
 		for _, case in ipairs(cases) do
 			it("rejects " .. case[1], function()
 				assert.has_error(function()
-					newAccess(case[2], case[3])
+					Access.newAccess(case[2], case[3])
 				end, case[4])
 			end)
 		end
@@ -150,7 +150,7 @@ describe("newAccess", function()
 			it("allows os=" .. tostring(flags[1]) .. " below os=" .. tostring(flags[2]), function()
 				local definitions = levels("a", "b")
 				definitions.a.os, definitions.b.os = flags[1], flags[2]
-				assert.is_true(newAccess(definitions, { { "a", "b" } }):lt("a", "b"))
+				assert.is_true(Access.newAccess(definitions, { { "a", "b" } }):lt("a", "b"))
 			end)
 		end
 
@@ -158,7 +158,7 @@ describe("newAccess", function()
 			local definitions = levels("a", "b")
 			definitions.a.os = true
 			assert.has_error(function()
-				newAccess(definitions, { { "a", "b" } })
+				Access.newAccess(definitions, { { "a", "b" } })
 			end, "order-sensitive shouldn't less than order-insensitive")
 		end)
 	end)
