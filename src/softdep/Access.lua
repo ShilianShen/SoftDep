@@ -13,6 +13,9 @@ local check = require("softdep.check")
 ---@field bot string
 local Access = {}
 
+---@param access softdep.Access
+---@param atag1 string
+---@param atag2 string
 local function checkAtags(access, atag1, atag2)
 	check(3, access.levels[atag1] ~= nil, "unknown access level: " .. tostring(atag1))
 	check(3, access.levels[atag2] ~= nil, "unknown access level: " .. tostring(atag2))
