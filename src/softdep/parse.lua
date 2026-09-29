@@ -1,7 +1,7 @@
 local types = require("softdep.types")
 local MathSet = require("softdep.MathSet")
 local check = require("softdep.check")
-local newAccess = require("softdep.newAccess")
+local newAccess = require("softdep.Access")
 local MathGraph = require("softdep.MathGraph")
 
 local function pass(...) end

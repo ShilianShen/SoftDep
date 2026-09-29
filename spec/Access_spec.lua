@@ -1,7 +1,7 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 
 local assert = require("luassert")
-local newAccess = require("softdep.newAccess")
+local newAccess = require("softdep.Access")
 
 local function levels(...)
 	local result = {}
