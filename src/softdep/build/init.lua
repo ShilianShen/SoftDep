@@ -1,10 +1,10 @@
 local types = require("softdep.types")
-local MathSet = require("softdep.MathSet")
 local check = require("softdep.check")
-local Access = require("softdep.Access")
-local MathGraph = require("softdep.MathGraph")
+local applyDefaults = require("softdep.build.1_applyDefaults")
+local validate = require("softdep.build.2_validate")
+local restructure = require("softdep.build.3_restructure")
+local materialize = require("softdep.build.4_materialize")
 
-local function pass(...) end
 
 local firstTypeCheck = types.shape({
 	access = types.shape({
@@ -99,150 +99,6 @@ local function deepCopyAsTree(graph)
 	end
 
 	return result
-end
-
-local function applyDefaults(graph)
-	graph.nodes = graph.nodes or {}
-	for _, node in pairs(graph.nodes) do
-		node.atag = node.atag or graph.default.nodeAtag
-		node.tasks = node.tasks or {}
-		node.apis = node.apis or {}
-		for _, task in pairs(node.tasks) do
-			task.func = task.func or pass
-			task.auto = task.auto or pass
-			task.atag = task.atag or graph.default.taskAtag
-			task.parents_c = task.parents_c or {}
-			task.parents_d = task.parents_d or {}
-		end
-		for _, api in pairs(node.apis) do
-			api.atag = api.atag or graph.default.apiAtag
-		end
-	end
-	graph.default = nil
-end
-
-local function validate(graph)
-	local atagSet = MathSet.tab2set(graph.access.levels)
-	for _, edge in pairs(graph.access.lt) do
-		local a, b = edge[1], edge[2]
-		check(2, a ~= b, "access relation must not be reflexive: " .. a)
-		check(2, atagSet[a], "unknown access level in lt: " .. a)
-		check(2, atagSet[b], "unknown access level in lt: " .. b)
-
-		local A, B = graph.access.levels[a], graph.access.levels[b]
-		check(2, A ~= B, "access relation endpoints must have distinct definitions: " .. a .. " <= " .. b)
-		check(
-			2,
-			(not A.os) or B.os,
-			"order-sensitive access level must not be below order-insensitive level: " .. a .. " <= " .. b
-		)
-	end
-	do
-		local adjList = MathGraph.edges2AdjList(atagSet, graph.access.lt)
-		check(2, MathGraph.isDAG(adjList), "access relations must form a DAG")
-	end
-
-	local ntagSet = MathSet.tab2set(graph.nodes)
-
-	for ntag, node in pairs(graph.nodes) do
-		check(2, atagSet[node.atag], "unknown access level for node " .. ntag .. ": " .. node.atag)
-		check(2, not graph.access.levels[node.atag].os, "node access level must be order-insensitive: " .. node.atag)
-
-		local ttagSet = MathSet.tab2set(node.tasks)
-		for ttag, task in pairs(node.tasks) do
-			check(2, atagSet[task.atag], "unknown access level for task " .. ntag .. "." .. ttag .. ": " .. task.atag)
-			for _, pttag in pairs(task.parents_c) do
-				check(2, ttagSet[pttag], "unknown control parent for task " .. ntag .. "." .. ttag .. ": " .. pttag)
-			end
-			for _, pntag in pairs(task.parents_d) do
-				check(2, ntagSet[pntag], "unknown data parent for task " .. ntag .. "." .. ttag .. ": " .. pntag)
-			end
-		end
-		for apiTag, api in pairs(node.apis) do
-			check(2, atagSet[api.atag], "unknown access level for API " .. ntag .. "." .. apiTag .. ": " .. api.atag)
-			if api.ttag then
-				check(2, ttagSet[api.ttag], "unknown task for API " .. ntag .. "." .. apiTag .. ": " .. api.ttag)
-			end
-		end
-	end
-end
-
-local function restructure(graph)
-	graph.parents_d = {}
-	for ntag, node in pairs(graph.nodes) do
-		node.parents_c = {}
-		node.parents_d = {}
-		for ttag, task in pairs(node.tasks) do
-			node.parents_c[ttag] = MathSet.arr2set(task.parents_c)
-			node.parents_d[ttag] = task.parents_d
-			task.parents_c = nil
-			task.parents_d = nil
-		end
-		graph.parents_d[ntag] = node.parents_d
-		node.parents_d = nil
-	end
-end
-
-local function materialize(graph)
-	graph.access = Access.newAccess(graph.access.levels, graph.access.lt)
-	for ntag, node in pairs(graph.nodes) do
-		node.data = {}
-		node.dirty = true
-		node.count = 0
-		node.children_c = MathGraph.revAdjList(node.parents_c)
-		check(2, MathGraph.isDAG(node.children_c, true), "control dependencies must form a DAG in node: " .. ntag)
-		node.order = MathGraph.sort(node.children_c, true)
-		node.data_a = {}
-
-		for atag, level in pairs(graph.access.levels) do
-			node.data_a[atag] = level.func(node.data)
-			check(
-				2,
-				type(node.data_a[atag]) == "table",
-				"access function must return a table for node "
-					.. ntag
-					.. ", level "
-					.. atag
-					.. "; got "
-					.. type(node.data_a[atag])
-			)
-		end
-
-		for _, task in pairs(node.tasks) do
-			task.dirty = true
-			task.count = 0
-		end
-	end
-
-	graph.parents_n = {}
-	for ntag, _ in pairs(graph.parents_d) do
-		graph.parents_n[ntag] = {}
-	end
-	for ntag, _ in pairs(graph.parents_d) do
-		for ttag, _ in pairs(graph.parents_d[ntag]) do
-			for _, pntag in pairs(graph.parents_d[ntag][ttag]) do
-				graph.parents_n[ntag][pntag] = true
-			end
-		end
-	end
-	graph.children_n = MathGraph.revAdjList(graph.parents_n)
-	check(2, MathGraph.isDAG(graph.children_n, false), "node data dependencies must form a DAG")
-	graph.order = MathGraph.sort(graph.children_n, false)
-
-	graph.children_d = {}
-	for ntag, _ in pairs(graph.children_n) do
-		graph.children_d[ntag] = {}
-		for cntag, _ in pairs(graph.children_n[ntag]) do
-			graph.children_d[ntag][cntag] = {}
-		end
-	end
-	for ntag, _ in pairs(graph.parents_d) do
-		for ttag, _ in pairs(graph.parents_d[ntag]) do
-			for _, pntag in pairs(graph.parents_d[ntag][ttag]) do
-				graph.children_d[pntag][ntag][ttag] = true
-			end
-		end
-	end
 end
 
 local function build(graph)
