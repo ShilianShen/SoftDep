@@ -60,17 +60,17 @@ function Access:gt(atag1, atag2)
 end
 
 ---@param levels table<string, softdep.AccessLevel>
----@param lt softdep.Edges
+---@param edges softdep.Edges
 ---@return softdep.Access
-function Access.newAccess(levels, lt)
+function Access.newAccess(levels, edges)
 	check(
 		2,
 		types.accessLevels(levels),
 		"newAccess: expected levels to map strings to tables with a function field func and a boolean field os"
 	)
-	check(2, types.accessLt(lt), "newAccess: expected lt to be an array of arrays of strings")
+	check(2, types.accessLt(edges), "newAccess: expected lt to be an array of arrays of strings")
 
-	for _, edge in ipairs(lt) do
+	for _, edge in ipairs(edges) do
 		check(2, #edge == 2, "access relation must contain exactly two levels")
 
 		local a, b = edge[1], edge[2]
@@ -82,7 +82,7 @@ function Access.newAccess(levels, lt)
 	end
 
 	local atagSet = MathSet.tab2set(levels)
-	local adjList = MathGraph.edges2AdjList(atagSet, lt)
+	local adjList = MathGraph.edges2AdjList(atagSet, edges)
 	check(2, MathGraph.isDAG(adjList), "access relation must be acyclic")
 
 	local access = {
@@ -106,8 +106,8 @@ function Access.newAccess(levels, lt)
 	check(2, access.top ~= nil, "top should be explicitly declared")
 	check(2, access.bot ~= nil, "bot should be explicitly declared")
 
-	for _, method in ipairs({ "leq", "geq", "eq", "lt", "gt" }) do
-		access[method] = Access[method]
+	for k, v in pairs(Access) do
+		access[k] = v
 	end
 
 	return access
