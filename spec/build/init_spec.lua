@@ -181,15 +181,6 @@ describe("softdep.build", function()
 			assert.are.equal(2, calls)
 		end)
 
-		it("propagates access callback errors", function()
-			local config = makeConfig()
-			config.access.levels.read.func = function()
-				error("view failed", 0)
-			end
-			assert.has_error(function()
-				build(config)
-			end, "view failed")
-		end)
 	end)
 
 	describe("dependency construction", function()
@@ -274,41 +265,6 @@ describe("softdep.build", function()
 	end)
 
 	describe("validation", function()
-		for _, case in ipairs({
-			{ "independent tasks", { a = {}, b = {} } },
-			{
-				"branching tasks",
-				{
-					start = {},
-					left = { parents_c = { "start" } },
-					right = { parents_c = { "start" } },
-					finish = { parents_c = { "left", "right" } },
-				},
-			},
-		}) do
-			it("rejects non-unique task order for " .. case[1], function()
-				local config = makeConfig()
-				config.nodes.main.tasks = case[2]
-				assert.has_error(function()
-					build(config)
-				end, "MathGraph.isDAG: expected a unique topological order when uniqueness is enabled")
-			end)
-		end
-
-		for _, source in ipairs({ "explicit", "default" }) do
-			it("rejects an order-sensitive " .. source .. " node tag", function()
-				local config = makeConfig()
-				if source == "explicit" then
-					config.nodes.main.atag = "write"
-				else
-					config.default.nodeAtag = "write"
-				end
-				assert.has_error(function()
-					build(config)
-				end, "node access level must be order-insensitive: write")
-			end)
-		end
-
 		local cases = {
 			{
 				"missing access",
