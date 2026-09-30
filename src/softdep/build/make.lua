@@ -4,9 +4,10 @@ local Access = require("softdep.Access")
 local function pass(...) end
 
 ---@param taskDeclaration softdep.declaration.Task
+---@param accessLevels softdep.AccessLevel[]
 ---@param taskDefaultAtag string
 ---@return softdep.Task
-local function newTask(taskDeclaration, taskDefaultAtag)
+local function newTask(taskDeclaration, accessLevels, taskDefaultAtag)
 	local task = {
 		func = taskDeclaration.func or pass,
 		auto = taskDeclaration.auto or pass,
@@ -14,18 +15,29 @@ local function newTask(taskDeclaration, taskDefaultAtag)
 		dirty = true,
 		count = 0,
 	}
+	if accessLevels[task.atag] == nil then
+		error("TODO", 2)
+	end
 	return task
 end
 
 ---@param apiDeclaration softdep.declaration.Api
+---@param tasks table<string, softdep.Task>
+---@param accessLevels softdep.AccessLevel[]
 ---@param apiDefaultAtag string
 ---@return softdep.Api
-local function newApi(apiDeclaration, apiDefaultAtag)
+local function newApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
 	local api = {
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
 		atag = apiDeclaration.atag or apiDefaultAtag,
 	}
+	if api.ttag ~= nil and tasks[api.ttag] == nil then
+		error("TODO", 2)
+	end
+	if accessLevels[api.atag] == nil then
+		error("TODO", 2)
+	end
 	return api
 end
 
@@ -43,20 +55,31 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 		count = 0,
 	}
 
+	if accessLevels[node.atag] == nil then
+		error("TODO", 2)
+	end
+	if accessLevels[node.atag].os then
+		error("TODO", 2)
+	end
+
 	---@type table<string, softdep.Task>
 	node.tasks = {}
 
-    ---@type table<string, table>
-    node.data_a = {}
-    for atag, level in pairs(accessLevels) do
-        node.data_a[atag] = level.func(node.data)
-    end
+	---@type table<string, table>
+	node.data_a = {}
+	for atag, level in pairs(accessLevels) do
+		node.data_a[atag] = level.func(node.data)
+	end
 
 	---@type softdep.AdjList
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		node.tasks[ttag] = newTask(taskDeclaration, taskDefaultAtag)
+		local ok, task = pcall(newTask, taskDeclaration, accessLevels, taskDefaultAtag)
+		if not ok then
+			error("TODO", 2)
+		end
+		node.tasks[ttag] = task
 		node.parents_c[ttag] = MathSet.arr2set(taskDeclaration.parents_c or {})
 	end
 
@@ -66,7 +89,11 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		node.apis[itag] = newApi(apiDeclaration, apiDefaultAtag)
+		local ok, api = pcall(newApi, apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
+		if not ok then
+			error("TODO", 2)
+		end
+		node.apis[itag] = api
 	end
 
 	return node
