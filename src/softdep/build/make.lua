@@ -1,6 +1,7 @@
 local MathSet = require("softdep.MathSet")
 local MathGraph = require("softdep.MathGraph")
 local Access = require("softdep.Access")
+require("softdep.build.declare")
 local function pass(...) end
 
 ---@param taskDeclaration softdep.declaration.Task

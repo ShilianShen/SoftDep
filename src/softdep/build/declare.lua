@@ -20,8 +20,6 @@
 ---@field nodes table<string, softdep.declaration.Node>|nil
 ---@field default {nodeAtag: string, taskAtag: string, apiAtag: string}
 
-------------------------------------------------------------------------------------------------
-
 ---@class softdep.Task
 ---@field func function
 ---@field auto function
@@ -54,3 +52,5 @@
 ---@field order string[]
 ---@field parents_d table<string, table<string, table<string, string>>>
 ---@field children_d table<string, softdep.AdjList>
+
+return
