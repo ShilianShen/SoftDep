@@ -89,7 +89,7 @@ function Access.newAccess(levels, edges)
 
 	local atagSet = MathSet.tab2set(levels)
 	local adjList = MathGraph.edges2AdjList(atagSet, edges)
-	if not MathGraph.isDAG(adjList) then
+	if not MathGraph.checkDAG(adjList) then
 		error("access relation must be acyclic", 2)
 	end
 

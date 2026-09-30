@@ -13,14 +13,14 @@ describe("MathGraph", function()
 		{ "unknown neighbor", { a = { missing = true } } },
 	}
 
-	describe("isEdges", function()
+	describe("checkEdges", function()
 		it("accepts empty graphs and isolated vertices", function()
-			assert.is_true(MathGraph.isEdges({}, {}))
-			assert.is_true(MathGraph.isEdges({ a = true }, {}))
+			assert.is_true(MathGraph.checkEdges({}, {}))
+			assert.is_true(MathGraph.checkEdges({ a = true }, {}))
 		end)
 
 		it("accepts directed edges, duplicates and self edges", function()
-			assert.is_true(MathGraph.isEdges({ a = true, b = true }, {
+			assert.is_true(MathGraph.checkEdges({ a = true, b = true }, {
 				{ "a", "b" },
 				{ "a", "b" },
 				{ "b", "a" },
@@ -30,26 +30,30 @@ describe("MathGraph", function()
 
 		for _, case in ipairs(invalidEdges) do
 			it("returns false for " .. case[1], function()
-				assert.is_false(MathGraph.isEdges(case[2], case[3]))
+				local ok, result = MathGraph.checkEdges(case[2], case[3])
+				assert.is_false(ok)
+				assert.is_string(result)
 			end)
 		end
 	end)
 
-	describe("isAdjList", function()
+	describe("checkAdjList", function()
 		it("accepts empty graphs and isolated vertices", function()
-			assert.is_true(MathGraph.isAdjList({}))
-			assert.is_true(MathGraph.isAdjList({ a = {}, b = {} }))
+			assert.is_true(MathGraph.checkAdjList({}))
+			assert.is_true(MathGraph.checkAdjList({ a = {}, b = {} }))
 		end)
 
 		it("accepts directed edges, cycles and self edges", function()
-			assert.is_true(MathGraph.isAdjList({ a = { b = true }, b = {} }))
-			assert.is_true(MathGraph.isAdjList({ a = { b = true }, b = { a = true } }))
-			assert.is_true(MathGraph.isAdjList({ a = { a = true } }))
+			assert.is_true(MathGraph.checkAdjList({ a = { b = true }, b = {} }))
+			assert.is_true(MathGraph.checkAdjList({ a = { b = true }, b = { a = true } }))
+			assert.is_true(MathGraph.checkAdjList({ a = { a = true } }))
 		end)
 
 		for _, case in ipairs(invalidAdjLists) do
 			it("returns false for " .. case[1], function()
-				assert.is_false(MathGraph.isAdjList(case[2]))
+				local ok, result = MathGraph.checkAdjList(case[2])
+				assert.is_false(ok)
+				assert.is_string(result)
 			end)
 		end
 	end)
@@ -63,7 +67,15 @@ describe("MathGraph", function()
 			end)
 		end
 
-		for _, name in ipairs({ "isDAG", "revAdjList", "reachAdjList", "sort" }) do
+		for _, case in ipairs(invalidAdjLists) do
+			it("checkDAG rejects " .. case[1], function()
+				local ok, result = MathGraph.checkDAG(case[2], false)
+				assert.is_false(ok)
+				assert.is_string(result)
+			end)
+		end
+
+		for _, name in ipairs({ "revAdjList", "reachAdjList", "sort" }) do
 			for _, case in ipairs(invalidAdjLists) do
 				it(name .. " rejects " .. case[1], function()
 					assert.has_error(function()
@@ -74,7 +86,7 @@ describe("MathGraph", function()
 		end
 	end)
 
-	describe("isDAG", function()
+	describe("checkDAG", function()
 		local cases = {
 			{ "empty graph", {}, true },
 			{ "isolated vertices", { a = {}, b = {} }, true },
@@ -89,8 +101,8 @@ describe("MathGraph", function()
 
 		for _, case in ipairs(cases) do
 			it("classifies a " .. case[1], function()
-				assert.are.equal(case[3], MathGraph.isDAG(case[2]))
-				assert.are.equal(case[3], MathGraph.isDAG(case[2], false))
+				assert.are.equal(case[3], MathGraph.checkDAG(case[2]))
+				assert.are.equal(case[3], MathGraph.checkDAG(case[2], false))
 			end)
 		end
 	end)
@@ -110,36 +122,40 @@ describe("MathGraph", function()
 
 		for _, case in ipairs(uniqueCases) do
 			it("accepts a " .. case[1] .. " when enabled", function()
-				assert.is_true(MathGraph.isDAG(case[2], true))
+				assert.is_true(MathGraph.checkDAG(case[2], true))
 				assert.are.same(case[3], MathGraph.sort(case[2], true))
 			end)
 		end
 
 		for _, case in ipairs(nonUniqueCases) do
-			for _, name in ipairs({ "isDAG", "sort" }) do
-				it(name .. " rejects " .. case[1] .. " when enabled", function()
-					assert.has_error(function()
-						MathGraph[name](case[2], true)
-					end)
+			it("checkDAG rejects " .. case[1] .. " when enabled", function()
+				local ok, result = MathGraph.checkDAG(case[2], true)
+				assert.is_false(ok)
+				assert.is_string(result)
+			end)
+
+			it("sort rejects " .. case[1] .. " when enabled", function()
+				assert.has_error(function()
+					MathGraph.sort(case[2], true)
 				end)
-			end
+			end)
 
 			it("accepts " .. case[1] .. " when disabled", function()
-				assert.is_true(MathGraph.isDAG(case[2], false))
+				assert.is_true(MathGraph.checkDAG(case[2], false))
 				assert.are.equal(case[3], #MathGraph.sort(case[2], false))
 			end)
 		end
 
 		it("does not modify the input when enabled", function()
 			local adjList = { a = { b = true }, b = { c = true }, c = {} }
-			MathGraph.isDAG(adjList, true)
+			MathGraph.checkDAG(adjList, true)
 			assert.are.same({ a = { b = true }, b = { c = true }, c = {} }, adjList)
 			MathGraph.sort(adjList, true)
 			assert.are.same({ a = { b = true }, b = { c = true }, c = {} }, adjList)
 		end)
 	end)
 
-	for _, name in ipairs({ "isDAG", "revAdjList", "reachAdjList", "sort" }) do
+	for _, name in ipairs({ "checkDAG", "revAdjList", "reachAdjList", "sort" }) do
 		it(name .. " does not modify the input adjacency list", function()
 			local adjList = { a = { b = true }, b = { c = true }, c = {}, d = {} }
 			MathGraph[name](adjList, name == "reachAdjList")
