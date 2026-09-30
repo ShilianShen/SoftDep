@@ -91,11 +91,11 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 		node.children_c = result
 	end
 	do
-        local ok, result = pcall( MathGraph.sort, node.children_c, true)
+		local ok, result = pcall(MathGraph.sort, node.children_c, true)
 		if not ok then
-            error("TODO", 2)
-        end
-        node.order = result
+			error("TODO", 2)
+		end
+		node.order = result
 	end
 
 	---@type table<string, softdep.Api>
@@ -114,16 +114,26 @@ end
 ---@param graphDeclaration softdep.declaration.Graph
 ---@return softdep.Graph
 local function newGraph(graphDeclaration)
-	local graph = {
-		access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt),
-	}
+	local graph = {}
+
+	do
+		local ok, result = pcall(Access.newAccess, graphDeclaration.access.levels, graphDeclaration.access.lt)
+		if not ok then
+			error("TODO", 2)
+		end
+		graph.access = result
+	end
 
 	---@type table<string, softdep.Node>
 	graph.nodes = {}
 	local default = graphDeclaration.default
 	for ntag, nodeDeclaration in pairs(graphDeclaration.nodes or {}) do
-		local node = newNode(nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
-		graph.nodes[ntag] = node
+		local ok, result =
+			pcall(newNode, nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
+		if not ok then
+			error("TODO", 2)
+		end
+		graph.nodes[ntag] = result
 	end
 
 	---@type softdep.AdjList
@@ -139,8 +149,20 @@ local function newGraph(graphDeclaration)
 		graph.parents_n[ntag] = parents_n
 	end
 
-	graph.children_n = MathGraph.revAdjList(graph.parents_n)
-	graph.order = MathGraph.sort(graph.children_n)
+	do
+		local ok, result = pcall(MathGraph.revAdjList, graph.parents_n)
+		if not ok then
+			error("TODO", 2)
+		end
+		graph.children_n = result
+	end
+	do
+		local ok, result = pcall(MathGraph.sort, graph.children_n)
+		if not ok then
+			error("TODO", 2)
+		end
+		graph.order = result
+	end
 
 	---@type table<string, table<string, table<string, string>>>
 	graph.parents_d = {}
