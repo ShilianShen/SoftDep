@@ -75,25 +75,37 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local ok, task = pcall(newTask, taskDeclaration, accessLevels, taskDefaultAtag)
+		local ok, result = pcall(newTask, taskDeclaration, accessLevels, taskDefaultAtag)
 		if not ok then
 			error("TODO", 2)
 		end
-		node.tasks[ttag] = task
+		node.tasks[ttag] = result
 		node.parents_c[ttag] = MathSet.arr2set(taskDeclaration.parents_c or {})
 	end
 
-	node.children_c = MathGraph.revAdjList(node.parents_c)
-	node.order = MathGraph.sort(node.children_c, true)
+	do
+		local ok, result = pcall(MathGraph.revAdjList, node.parents_c)
+		if not ok then
+			error("TODO", 2)
+		end
+		node.children_c = result
+	end
+	do
+        local ok, result = pcall( MathGraph.sort, node.children_c, true)
+		if not ok then
+            error("TODO", 2)
+        end
+        node.order = result
+	end
 
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local ok, api = pcall(newApi, apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
+		local ok, result = pcall(newApi, apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
 		if not ok then
 			error("TODO", 2)
 		end
-		node.apis[itag] = api
+		node.apis[itag] = result
 	end
 
 	return node
