@@ -4,6 +4,7 @@ local applyDefaults = require("softdep.build.1_applyDefaults")
 local validate = require("softdep.build.2_validate")
 local restructure = require("softdep.build.3_restructure")
 local materialize = require("softdep.build.4_materialize")
+local newGraph = require("softdep.build.make")
 
 local firstTypeCheck = types.shape({
 	access = types.shape({
@@ -113,4 +114,5 @@ local function build(graph)
 	return graph
 end
 
-return build
+return newGraph
+-- return build
