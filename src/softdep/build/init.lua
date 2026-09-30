@@ -101,14 +101,10 @@ local function build(graph)
 	check(2, firstTypeCheck(graph))
 	do
 		graph = deepCopyAsTree(graph)
-		-- graph = applyDefaults(graph)
-		-- graph = validate(graph)
-		-- graph = restructure(graph)
-		-- graph = materialize(graph)
+		graph = newGraph(graph)
 	end
 	check(2, finalTypeCheck(graph))
 	return graph
 end
 
-return newGraph
--- return build
+return build

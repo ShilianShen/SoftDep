@@ -70,6 +70,9 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	node.data_a = {}
 	for atag, level in pairs(accessLevels) do
 		node.data_a[atag] = level.func(node.data)
+        if type(node.data_a[atag]) ~= "table" then
+            error("TODO", 2)
+        end
 	end
 
 	---@type softdep.AdjList
