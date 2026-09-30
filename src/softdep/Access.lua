@@ -68,29 +68,29 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.Access
 function Access.newAccess(levels, edges)
+	local atagSet = MathSet.tab2set(levels)
+
+	do
+		local ok, result = MathGraph.checkEdges(atagSet, edges)
+		if not ok then
+			error(result, 2)
+		end
+	end
+
 	for _, edge in ipairs(edges) do
-		if #edge ~= 2 then
-			error("access relation must contain exactly two levels", 2)
-		end
-
-		local a, b = edge[1], edge[2]
-		if levels[a] == nil then
-			error("unknown access level in lt: " .. tostring(a), 2)
-		end
-		if levels[b] == nil then
-			error("unknown access level in lt: " .. tostring(b), 2)
-		end
-
-		local A, B = levels[a], levels[b]
+		local A = levels[edge[1]]
+		local B = levels[edge[2]]
 		if A.os and not B.os then
 			error("order-sensitive shouldn't less than order-insensitive", 2)
 		end
 	end
 
-	local atagSet = MathSet.tab2set(levels)
 	local adjList = MathGraph.edges2AdjList(atagSet, edges)
-	if not MathGraph.checkDAG(adjList) then
-		error("access relation must be acyclic", 2)
+	do
+		local ok, result = MathGraph.checkDAG(adjList)
+		if not ok then
+			error(result, 2)
+		end
 	end
 
 	local access = {
