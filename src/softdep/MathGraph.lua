@@ -80,11 +80,11 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.AdjList
 function MathGraph.edges2AdjList(vertices, edges)
-	if not MathGraph.checkEdges(vertices, edges) then
-		error(
-			"MathGraph.edges2AdjList: expected vertices to be a set with all values equal to true and edges to be an array of vertex pairs whose endpoints belong to vertices",
-			2
-		)
+	do
+		local ok, result = MathGraph.checkEdges(vertices, edges)
+		if not ok then
+			error(result, 2)
+		end
 	end
 
 	local adjList = {}
@@ -103,11 +103,11 @@ end
 ---@param adjList softdep.AdjList
 ---@return softdep.AdjList
 function MathGraph.revAdjList(adjList)
-	if not MathGraph.checkAdjList(adjList) then
-		error(
-			"MathGraph.revAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
-			2
-		)
+	do
+		local ok, result = MathGraph.checkAdjList(adjList)
+		if not ok then
+			error(result, 2)
+		end
 	end
 
 	local revAdjList = {}
@@ -129,11 +129,11 @@ end
 ---@param reflexive boolean
 ---@return softdep.AdjList
 function MathGraph.reachAdjList(adjList, reflexive)
-	if not MathGraph.checkAdjList(adjList) then
-		error(
-			"MathGraph.reachAdjList: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
-			2
-		)
+	do
+		local ok, result = MathGraph.checkAdjList(adjList)
+		if not ok then
+			error(result, 2)
+		end
 	end
 
 	local reachAdjList = {}
@@ -168,11 +168,18 @@ end
 ---@param uniqueness boolean|nil
 ---@return string[]
 function MathGraph.sort(adjList, uniqueness)
-	if not MathGraph.checkAdjList(adjList) then
-		error(
-			"MathGraph.sort: expected adjList to map every vertex to a set of neighbors with all values equal to true and no unknown vertices",
-			2
-		)
+	do
+		local ok, result = MathGraph.checkAdjList(adjList)
+		if not ok then
+			error(result, 2)
+		end
+	end
+
+	do
+		local ok, result = MathGraph.checkDAG(adjList, uniqueness)
+		if not ok then
+			error(result, 2)
+		end
 	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
@@ -188,13 +195,6 @@ function MathGraph.sort(adjList, uniqueness)
 	end
 
 	for _, _ in pairs(adjList) do
-		if not (#stack > 0) then
-			error("MathGraph.sort: expected a DAG; adjList contains a cycle", 2)
-		end
-		if not (not uniqueness or #stack == 1) then
-			error("MathGraph.sort: expected a unique topological order when uniqueness is enabled", 2)
-		end
-
 		local i = math.random(#stack)
 		local vtag = table.remove(stack, i)
 
