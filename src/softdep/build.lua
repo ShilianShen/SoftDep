@@ -118,13 +118,14 @@ end
 local function newGraph(graphDeclaration)
 	local graph = {}
 
-	do
-		local ok, result = pcall(Access.newAccess, graphDeclaration.access.levels, graphDeclaration.access.lt)
-		if not ok then
-			error("TODO", 2)
-		end
-		graph.access = result
+	local accessEdgesOk, accessEdgesResult =
+		Access.checkEdges(graphDeclaration.access.levels, graphDeclaration.access.lt)
+
+	if not accessEdgesOk then
+		error("TODO", 2)
 	end
+
+	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
 	---@type table<string, softdep.Node>
 	graph.nodes = {}
@@ -151,20 +152,19 @@ local function newGraph(graphDeclaration)
 		graph.parents_n[ntag] = parents_n
 	end
 
-	do
-		local ok, result = pcall(MathGraph.revAdjList, graph.parents_n)
-		if not ok then
-			error("TODO", 2)
-		end
-		graph.children_n = result
+	local adjListOk, adjListResult = MathGraph.checkAdjList(graph.parents_n)
+	if not adjListOk then
+		error("TODO", 2)
 	end
-	do
-		local ok, result = pcall(MathGraph.sort, graph.children_n)
-		if not ok then
-			error("TODO", 2)
-		end
-		graph.order = result
+
+	graph.children_n = MathGraph.revAdjList(graph.parents_n)
+
+	local dagOk, dagResult = MathGraph.checkDAG(graph.children_n, false)
+	if not dagOk then
+		error("TODO", 2)
 	end
+
+	graph.order = MathGraph.sort(graph.children_n, false)
 
 	---@type table<string, table<string, table<string, string>>>
 	graph.parents_d = {}
