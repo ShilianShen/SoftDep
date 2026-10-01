@@ -46,8 +46,8 @@ end
 ---@param nodeDefaultAtag string
 ---@param taskDefaultAtag string
 ---@param apiDefaultAtag string
----@return softdep.Node
-local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefaultAtag, apiDefaultAtag)
+---@return boolean, softdep.Node|string
+local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefaultAtag, apiDefaultAtag)
 	local node = {
 		atag = nodeDeclaration.atag or nodeDefaultAtag,
 		data = {},
@@ -56,10 +56,10 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	}
 
 	if accessLevels[node.atag] == nil then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 	if accessLevels[node.atag].os then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 
 	---@type table<string, softdep.Task>
@@ -70,7 +70,7 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	for atag, level in pairs(accessLevels) do
 		node.data_a[atag] = level.func(node.data)
 		if type(node.data_a[atag]) ~= "table" then
-			error("TODO", 2)
+			return false, "TODO"
 		end
 	end
 
@@ -80,38 +80,37 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
 		local taskOk, taskResult = createTask(taskDeclaration, accessLevels, taskDefaultAtag)
 		if not taskOk or type(taskResult) == "string" then
-			error("TODO", 2)
+			return false, "TODO"
 		end
 		node.tasks[ttag] = taskResult
 		node.parents_c[ttag] = MathSet.arr2set(taskDeclaration.parents_c or {})
 	end
 
-	do
-		local ok, result = pcall(MathGraph.revAdjList, node.parents_c)
-		if not ok then
-			error("TODO", 2)
-		end
-		node.children_c = result
+	local adjListOk, adjListResult = MathGraph.checkAdjList(node.parents_c)
+	if not adjListOk then
+		return false, "TODO"
 	end
-	do
-		local ok, result = pcall(MathGraph.sort, node.children_c, true)
-		if not ok then
-			error("TODO", 2)
-		end
-		node.order = result
+
+	node.children_c = MathGraph.revAdjList(node.parents_c)
+
+	local dagOk, degResult = MathGraph.checkDAG(node.children_c)
+	if not dagOk then
+		return false, "TODO"
 	end
+
+	node.order = MathGraph.sort(node.children_c, true)
 
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
 		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
 		if not apiOk or type(apiResult) == "string" then
-			error("TODO", 2)
+			return false, "TODO"
 		end
 		node.apis[itag] = apiResult
 	end
 
-	return node
+	return true, node
 end
 
 ---@param graphDeclaration softdep.declaration.Graph
@@ -131,12 +130,12 @@ local function newGraph(graphDeclaration)
 	graph.nodes = {}
 	local default = graphDeclaration.default
 	for ntag, nodeDeclaration in pairs(graphDeclaration.nodes or {}) do
-		local ok, result =
-			pcall(newNode, nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
-		if not ok then
+		local nodeOk, nodeResult =
+			createNode(nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
+		if not nodeOk or type(nodeResult) == "string" then
 			error("TODO", 2)
 		end
-		graph.nodes[ntag] = result
+		graph.nodes[ntag] = nodeResult
 	end
 
 	---@type softdep.AdjList
