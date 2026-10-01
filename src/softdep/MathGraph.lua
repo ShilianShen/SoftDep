@@ -1,5 +1,6 @@
 local MathGraph = {}
 local MathSet = require("softdep.MathSet")
+local assertOk = require("softdep.assertOk")
 
 ---@alias softdep.Vertex string
 ---@alias softdep.Vertices softdep.Set
@@ -81,12 +82,7 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.AdjList
 function MathGraph.edges2AdjList(vertices, edges)
-	do
-		local ok, result = MathGraph.checkEdges(vertices, edges)
-		if not ok then
-			error(result, 2)
-		end
-	end
+	assertOk(MathGraph.checkEdges(vertices, edges))
 
 	local adjList = {}
 
@@ -104,12 +100,7 @@ end
 ---@param adjList softdep.AdjList
 ---@return softdep.AdjList
 function MathGraph.revAdjList(adjList)
-	do
-		local ok, result = MathGraph.checkAdjList(adjList)
-		if not ok then
-			error(result, 2)
-		end
-	end
+	assertOk(MathGraph.checkAdjList(adjList))
 
 	local revAdjList = {}
 
@@ -130,12 +121,7 @@ end
 ---@param reflexive boolean
 ---@return softdep.AdjList
 function MathGraph.reachAdjList(adjList, reflexive)
-	do
-		local ok, result = MathGraph.checkAdjList(adjList)
-		if not ok then
-			error(result, 2)
-		end
-	end
+	assertOk(MathGraph.checkAdjList(adjList))
 
 	local reachAdjList = {}
 	for v1, _ in pairs(adjList) do
@@ -169,19 +155,8 @@ end
 ---@param uniqueness boolean|nil
 ---@return string[]
 function MathGraph.sort(adjList, uniqueness)
-	do
-		local ok, result = MathGraph.checkAdjList(adjList)
-		if not ok then
-			error(result, 2)
-		end
-	end
-
-	do
-		local ok, result = MathGraph.checkDAG(adjList, uniqueness)
-		if not ok then
-			error(result, 2)
-		end
-	end
+	assertOk(MathGraph.checkAdjList(adjList))
+	assertOk(MathGraph.checkDAG(adjList, uniqueness))
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}

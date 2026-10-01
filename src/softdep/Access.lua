@@ -1,5 +1,6 @@
 local MathGraph = require("softdep.MathGraph")
 local MathSet = require("softdep.MathSet")
+local assertOk = require("softdep.assertOk")
 
 ---@class softdep.AccessLevel
 ---@field func function
@@ -128,12 +129,7 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.Access
 function Access.newAccess(levels, edges)
-	do
-		local ok, result = Access.checkEdges(levels, edges)
-		if not ok then
-			error(result, 2)
-		end
-	end
+	assertOk(Access.checkEdges(levels, edges))
 
 	local atagSet = MathSet.tab2set(levels)
 	local adjList = MathGraph.edges2AdjList(atagSet, edges)
