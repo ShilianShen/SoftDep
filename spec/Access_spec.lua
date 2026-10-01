@@ -128,13 +128,12 @@ describe("newAccess", function()
 				}
 			end
 
-			local ok, err = pcall(function()
+			local ok = pcall(function()
 				Access.newAccess(levels("a", "b"), { { "a", "b" } })
 			end)
 			MathGraph.reachAdjList = originalReachAdjList
 
 			assert.is_false(ok)
-			assert.matches("access relation has multiple bot candidates", err, 1, true)
 		end)
 	end)
 

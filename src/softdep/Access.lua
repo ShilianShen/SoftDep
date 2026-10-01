@@ -66,14 +66,14 @@ end
 
 ---@param levels table<string, softdep.AccessLevel>
 ---@param edges softdep.Edges
----@return softdep.Access
-function Access.newAccess(levels, edges)
+---@return boolean, nil|string
+function Access.checkEdges(levels, edges)
 	local atagSet = MathSet.tab2set(levels)
 
 	do
 		local ok, result = MathGraph.checkEdges(atagSet, edges)
 		if not ok then
-			error(result, 2)
+			return false, result
 		end
 	end
 
@@ -81,7 +81,7 @@ function Access.newAccess(levels, edges)
 		local A = levels[edge[1]]
 		local B = levels[edge[2]]
 		if A.os and not B.os then
-			error("order-sensitive shouldn't less than order-insensitive", 2)
+			return false, "TODO"
 		end
 	end
 
@@ -89,9 +89,54 @@ function Access.newAccess(levels, edges)
 	do
 		local ok, result = MathGraph.checkDAG(adjList)
 		if not ok then
+			return false, result
+		end
+	end
+
+	local reachAdjList = MathGraph.reachAdjList(adjList, true)
+	do
+		local n = MathSet.count(atagSet)
+		local top = false
+		local bot = false
+		for atag, _ in pairs(atagSet) do
+			local m = MathSet.count(reachAdjList[atag])
+			if m == 1 then
+                if top then
+                    return false, "TODO"
+                end
+				top = true
+			end
+			if m == n then
+                if bot then
+                    return false, "TODO"
+                end
+				bot = true
+			end
+		end
+		if not top then
+			return false, "TODO"
+		end
+		if not bot then
+			return false, "TODO"
+		end
+	end
+
+	return true
+end
+
+---@param levels table<string, softdep.AccessLevel>
+---@param edges softdep.Edges
+---@return softdep.Access
+function Access.newAccess(levels, edges)
+	do
+		local ok, result = Access.checkEdges(levels, edges)
+		if not ok then
 			error(result, 2)
 		end
 	end
+
+	local atagSet = MathSet.tab2set(levels)
+	local adjList = MathGraph.edges2AdjList(atagSet, edges)
 
 	local access = {
 		reachAdjList = MathGraph.reachAdjList(adjList, true),
@@ -102,24 +147,11 @@ function Access.newAccess(levels, edges)
 	for atag, _ in pairs(atagSet) do
 		local m = MathSet.count(access.reachAdjList[atag])
 		if m == 1 then
-			if access.top ~= nil then
-				error("access relation has multiple top candidates", 2)
-			end
 			access.top = atag
 		end
 		if m == n then
-			if access.bot ~= nil then
-				error("access relation has multiple bot candidates", 2)
-			end
 			access.bot = atag
 		end
-	end
-
-	if access.top == nil then
-		error("top should be explicitly declared", 2)
-	end
-	if access.bot == nil then
-		error("bot should be explicitly declared", 2)
 	end
 
 	for k, v in pairs(Access) do
