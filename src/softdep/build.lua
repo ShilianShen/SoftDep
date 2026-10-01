@@ -93,7 +93,7 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 
 	node.children_c = MathGraph.revAdjList(node.parents_c)
 
-	local dagOk, degResult = MathGraph.checkDAG(node.children_c)
+	local dagOk, degResult = MathGraph.checkDAG(node.children_c, true)
 	if not dagOk then
 		return false, "TODO"
 	end
@@ -127,9 +127,19 @@ local function createGraph(graphDeclaration)
 
 	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
+	local default = graphDeclaration.default
+	if graph.access.levels[default.nodeAtag] == nil then
+		return false, "TODO"
+	end
+	if graph.access.levels[default.taskAtag] == nil then
+		return false, "TODO"
+	end
+	if graph.access.levels[default.apiAtag] == nil then
+		return false, "TODO"
+	end
+
 	---@type table<string, softdep.Node>
 	graph.nodes = {}
-	local default = graphDeclaration.default
 	for ntag, nodeDeclaration in pairs(graphDeclaration.nodes or {}) do
 		local nodeOk, nodeResult =
 			createNode(nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
