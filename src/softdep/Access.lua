@@ -101,15 +101,15 @@ function Access.checkEdges(levels, edges)
 		for atag, _ in pairs(atagSet) do
 			local m = MathSet.count(reachAdjList[atag])
 			if m == 1 then
-                if top then
-                    return false, "TODO"
-                end
+				if top then
+					return false, "TODO"
+				end
 				top = true
 			end
 			if m == n then
-                if bot then
-                    return false, "TODO"
-                end
+				if bot then
+					return false, "TODO"
+				end
 				bot = true
 			end
 		end
@@ -159,6 +159,87 @@ function Access.newAccess(levels, edges)
 	end
 
 	return access
+end
+
+---@param levels table<string, softdep.AccessLevel>
+---@param edges softdep.Edges
+---@return softdep.Access|nil, string|nil
+function Access.createAccess(levels, edges)
+	local atagSet = MathSet.tab2set(levels)
+
+	for _, edge in ipairs(edges) do
+		local A = levels[edge[1]]
+		local B = levels[edge[2]]
+		if A.os and not B.os then
+			return nil, "TODO"
+		end
+	end
+
+	local adjList = MathGraph.edges2AdjList(atagSet, edges)
+
+	do
+		local ok, result = MathGraph.checkDAG(adjList)
+		if not ok then
+			return nil, result
+		end
+	end
+
+	local reachAdjList = MathGraph.reachAdjList(adjList, true)
+	do
+		local n = MathSet.count(atagSet)
+		local top = false
+		local bot = false
+		for atag, _ in pairs(atagSet) do
+			local m = MathSet.count(reachAdjList[atag])
+			if m == 1 then
+				if top then
+					return nil, "TODO"
+				end
+				top = true
+			end
+			if m == n then
+				if bot then
+					return nil, "TODO"
+				end
+				bot = true
+			end
+		end
+		if not top then
+			return nil, "TODO"
+		end
+		if not bot then
+			return nil, "TODO"
+		end
+	end
+
+	do
+		local ok, result = Access.checkEdges(levels, edges)
+		if not ok then
+			return nil, result
+		end
+	end
+
+	local access = {
+		reachAdjList = MathGraph.reachAdjList(adjList, true),
+		levels = levels,
+	}
+
+	local n = MathSet.count(atagSet)
+	for atag, _ in pairs(atagSet) do
+		local m = MathSet.count(access.reachAdjList[atag])
+		if m == 1 then
+			access.top = atag
+		end
+		if m == n then
+			access.bot = atag
+		end
+	end
+
+	for k, v in pairs(Access) do
+		access[k] = v
+	end
+
+	return access, nil
 end
 
 return Access
