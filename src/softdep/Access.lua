@@ -25,6 +25,9 @@ local function assertIncluded(access, atag1, atag2)
 	error("unknown access level: " .. tostring(missing), 3)
 end
 
+--- Preconditions:
+--- - self.levels[atag1] ~= nil
+--- - self.levels[atag2] ~= nil
 ---@param atag1 string
 ---@param atag2 string
 ---@return boolean
@@ -33,6 +36,9 @@ function Access:leq(atag1, atag2)
 	return self.reachAdjList[atag1][atag2]
 end
 
+--- Preconditions:
+--- - self.levels[atag1] ~= nil
+--- - self.levels[atag2] ~= nil
 ---@param atag1 string
 ---@param atag2 string
 ---@return boolean
@@ -41,6 +47,9 @@ function Access:geq(atag1, atag2)
 	return self.reachAdjList[atag2][atag1]
 end
 
+--- Preconditions:
+--- - self.levels[atag1] ~= nil
+--- - self.levels[atag2] ~= nil
 ---@param atag1 string
 ---@param atag2 string
 ---@return boolean
@@ -49,6 +58,9 @@ function Access:eq(atag1, atag2)
 	return atag1 == atag2
 end
 
+--- Preconditions:
+--- - self.levels[atag1] ~= nil
+--- - self.levels[atag2] ~= nil
 ---@param atag1 string
 ---@param atag2 string
 ---@return boolean
@@ -57,6 +69,9 @@ function Access:lt(atag1, atag2)
 	return atag1 ~= atag2 and self.reachAdjList[atag1][atag2]
 end
 
+--- Preconditions:
+--- - self.levels[atag1] ~= nil
+--- - self.levels[atag2] ~= nil
 ---@param atag1 string
 ---@param atag2 string
 ---@return boolean
@@ -125,6 +140,8 @@ function Access.checkEdges(levels, edges)
 	return true
 end
 
+--- Preconditions:
+--- - Access.checkEdges(levels, edges)
 ---@param levels table<string, softdep.AccessLevel>
 ---@param edges softdep.Edges
 ---@return softdep.Access
