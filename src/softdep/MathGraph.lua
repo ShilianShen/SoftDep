@@ -1,6 +1,5 @@
 local MathGraph = {}
 local MathSet = require("softdep.MathSet")
-local assertOk = require("softdep.assertOk")
 
 ---@alias softdep.Vertex string
 ---@alias softdep.Vertices softdep.Set
@@ -94,7 +93,9 @@ end
 ---@return softdep.AdjList adjList
 function MathGraph.edges2AdjList(vertices, edges)
 	local edgesOk, edgesResult = MathGraph.checkEdges(vertices, edges)
-	assertOk(edgesOk, edgesResult and "MathGraph.edges2AdjList: " .. edgesResult)
+	if not edgesOk then
+		error(edgesResult and "MathGraph.edges2AdjList: " .. edgesResult, 2)
+	end
 
 	local adjList = {}
 
@@ -119,7 +120,9 @@ end
 ---@return softdep.AdjList revAdjList
 function MathGraph.revAdjList(adjList)
 	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
-	assertOk(adjListOk, adjListResult and "MathGraph.revAdjList: " .. adjListResult)
+	if not adjListOk then
+		error(adjListResult and "MathGraph.revAdjList: " .. adjListResult, 2)
+	end
 
 	local revAdjList = {}
 
@@ -147,7 +150,9 @@ end
 ---@return softdep.AdjList reachAdjList
 function MathGraph.reachAdjList(adjList, reflexive)
 	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
-	assertOk(adjListOk, adjListResult and "MathGraph.reachAdjList: " .. adjListResult)
+	if not adjListOk then
+		error(adjListResult and "MathGraph.reachAdjList: " .. adjListResult, 2)
+	end
 
 	local reachAdjList = {}
 
@@ -188,10 +193,14 @@ end
 ---@return string[]
 function MathGraph.sort(adjList, uniqueness)
 	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
-	assertOk(adjListOk, adjListResult and "MathGraph.sort: " .. adjListResult)
+	if not adjListOk then
+		error(adjListResult and "MathGraph.sort: " .. adjListResult, 2)
+	end
 
 	local dagOk, dagResult = MathGraph.checkDAG(adjList, uniqueness)
-	assertOk(dagOk, dagResult and "MathGraph.sort: " .. dagResult)
+	if not dagOk then
+		error(dagResult and "MathGraph.sort: " .. dagResult, 2)
+	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
 	local indegrees = {}
