@@ -2,6 +2,7 @@ package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 
 local assert = require("luassert")
 local Access = require("softdep.Access")
+local MathGraph = require("softdep.MathGraph")
 
 local function levels(...)
 	local result = {}
@@ -115,6 +116,26 @@ describe("newAccess", function()
 				end)
 			end)
 		end
+
+		it("rejects multiple bottom candidates reported by reachability", function()
+			-- A valid DAG cannot naturally have two vertices that both reach every
+			-- vertex. Stub the collaborator so this defensive branch remains tested.
+			local originalReachAdjList = MathGraph.reachAdjList
+			MathGraph.reachAdjList = function()
+				return {
+					a = { a = true, b = true },
+					b = { a = true, b = true },
+				}
+			end
+
+			local ok, err = pcall(function()
+				Access.newAccess(levels("a", "b"), { { "a", "b" } })
+			end)
+			MathGraph.reachAdjList = originalReachAdjList
+
+			assert.is_false(ok)
+			assert.matches("access relation has multiple bot candidates", err, 1, true)
+		end)
 	end)
 
 	describe("order sensitivity", function()
