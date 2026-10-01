@@ -84,9 +84,14 @@ end
 
 --- Preconditions:
 --- - MathGraph.checkEdges(vertices, edges)
+---
+--- Postcondition:
+--- - MathGraph.checkEdges(vertices, edges)
+--- - MathGraph.checkAdjList(adjList)
+---
 ---@param vertices softdep.Set
 ---@param edges softdep.Edges
----@return softdep.AdjList
+---@return softdep.AdjList adjList
 function MathGraph.edges2AdjList(vertices, edges)
 	local edgesOk, edgesResult = MathGraph.checkEdges(vertices, edges)
 	assertOk(edgesOk, edgesResult and "MathGraph.edges2AdjList: " .. edgesResult)
@@ -106,8 +111,12 @@ end
 
 --- Preconditions:
 --- - MathGraph.checkAdjList(adjList)
+---
+--- Postconditions:
+--- - MathGraph.checkAdjList(revAdjList)
+---
 ---@param adjList softdep.AdjList
----@return softdep.AdjList
+---@return softdep.AdjList revAdjList
 function MathGraph.revAdjList(adjList)
 	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
 	assertOk(adjListOk, adjListResult and "MathGraph.revAdjList: " .. adjListResult)
@@ -129,9 +138,13 @@ end
 
 --- Preconditions:
 --- - MathGraph.checkAdjList(adjList)
+--- 
+--- Postconditions:
+--- - MathGraph.checkAdjList(reachAdjList)
+--- 
 ---@param adjList softdep.AdjList
 ---@param reflexive boolean
----@return softdep.AdjList
+---@return softdep.AdjList reachAdjList
 function MathGraph.reachAdjList(adjList, reflexive)
 	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
 	assertOk(adjListOk, adjListResult and "MathGraph.reachAdjList: " .. adjListResult)
@@ -169,6 +182,7 @@ end
 --- Preconditions:
 --- - MathGraph.checkAdjList(adjList)
 --- - MathGraph.checkDAG(adjList, uniqueness)
+--- 
 ---@param adjList softdep.AdjList
 ---@param uniqueness boolean|nil
 ---@return string[]
