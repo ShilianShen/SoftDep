@@ -5,6 +5,9 @@ local MathGraph = require("softdep.MathGraph")
 
 describe("MathGraph", function()
 	local invalidEdges = {
+		{ "empty edge", { a = true }, { {} } },
+		{ "edge with one endpoint", { a = true }, { { "a" } } },
+		{ "edge with more than two endpoints", { a = true, b = true, c = true }, { { "a", "b", "c" } } },
 		{ "unknown source", { a = true }, { { "missing", "a" } } },
 		{ "unknown target", { a = true }, { { "a", "missing" } } },
 	}

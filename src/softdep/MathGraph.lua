@@ -13,10 +13,11 @@ local MathSet = require("softdep.MathSet")
 function MathGraph.checkEdges(vertices, edges)
 	for _, edge in ipairs(edges) do
 		local a, b = edge[1], edge[2]
-		if vertices[a] == nil then
+		if #edge ~= 2 then
 			return false, "TODO"
-		end
-		if vertices[b] == nil then
+		elseif vertices[a] == nil then
+			return false, "TODO"
+		elseif vertices[b] == nil then
 			return false, "TODO"
 		end
 	end
