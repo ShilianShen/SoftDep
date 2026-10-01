@@ -6,8 +6,8 @@ local function pass(...) end
 ---@param taskDeclaration softdep.declaration.Task
 ---@param accessLevels softdep.AccessLevel[]
 ---@param taskDefaultAtag string
----@return softdep.Task
-local function newTask(taskDeclaration, accessLevels, taskDefaultAtag)
+---@return boolean, softdep.Task|string
+local function createTask(taskDeclaration, accessLevels, taskDefaultAtag)
 	local task = {
 		func = taskDeclaration.func or pass,
 		auto = taskDeclaration.auto or pass,
@@ -16,9 +16,9 @@ local function newTask(taskDeclaration, accessLevels, taskDefaultAtag)
 		count = 0,
 	}
 	if accessLevels[task.atag] == nil then
-		error("TODO", 2)
+		return false, "TODO"
 	end
-	return task
+	return true, task
 end
 
 ---@param apiDeclaration softdep.declaration.Api
@@ -69,20 +69,20 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	node.data_a = {}
 	for atag, level in pairs(accessLevels) do
 		node.data_a[atag] = level.func(node.data)
-        if type(node.data_a[atag]) ~= "table" then
-            error("TODO", 2)
-        end
+		if type(node.data_a[atag]) ~= "table" then
+			error("TODO", 2)
+		end
 	end
 
 	---@type softdep.AdjList
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local ok, result = pcall(newTask, taskDeclaration, accessLevels, taskDefaultAtag)
-		if not ok then
+		local taskOk, taskResult = createTask(taskDeclaration, accessLevels, taskDefaultAtag)
+		if not taskOk or type(taskResult) == "string" then
 			error("TODO", 2)
 		end
-		node.tasks[ttag] = result
+		node.tasks[ttag] = taskResult
 		node.parents_c[ttag] = MathSet.arr2set(taskDeclaration.parents_c or {})
 	end
 
