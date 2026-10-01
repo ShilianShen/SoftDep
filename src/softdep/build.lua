@@ -114,15 +114,15 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 end
 
 ---@param graphDeclaration softdep.declaration.Graph
----@return softdep.Graph
-local function newGraph(graphDeclaration)
+---@return boolean, softdep.Graph|string
+local function createGraph(graphDeclaration)
 	local graph = {}
 
 	local accessEdgesOk, accessEdgesResult =
 		Access.checkEdges(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
 	if not accessEdgesOk then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 
 	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
@@ -134,7 +134,7 @@ local function newGraph(graphDeclaration)
 		local nodeOk, nodeResult =
 			createNode(nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
 		if not nodeOk or type(nodeResult) == "string" then
-			error("TODO", 2)
+			return false, "TODO"
 		end
 		graph.nodes[ntag] = nodeResult
 	end
@@ -154,14 +154,14 @@ local function newGraph(graphDeclaration)
 
 	local adjListOk, adjListResult = MathGraph.checkAdjList(graph.parents_n)
 	if not adjListOk then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 
 	graph.children_n = MathGraph.revAdjList(graph.parents_n)
 
 	local dagOk, dagResult = MathGraph.checkDAG(graph.children_n, false)
 	if not dagOk then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 
 	graph.order = MathGraph.sort(graph.children_n, false)
@@ -191,7 +191,7 @@ local function newGraph(graphDeclaration)
 		end
 	end
 
-	return graph
+	return true, graph
 end
 
-return newGraph
+return createGraph

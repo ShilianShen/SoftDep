@@ -103,7 +103,11 @@ function softdep.newGraph(config)
 	check(2, firstTypeCheck(config))
 
 	config = deepCopyAsTree(config)
-	local graph = build(config)
+	local graphOk, graphResult = build(config)
+	if not graphOk then
+		error("TODO", 2)
+	end
+	local graph = graphResult
 
 	check(2, finalTypeCheck(graph))
 	bind(graph)
