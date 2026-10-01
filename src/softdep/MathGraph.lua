@@ -82,6 +82,8 @@ function MathGraph.checkDAG(adjList, uniqueness)
 	return true
 end
 
+--- Preconditions:
+--- - MathGraph.checkEdges(vertices, edges)
 ---@param vertices softdep.Set
 ---@param edges softdep.Edges
 ---@return softdep.AdjList
@@ -102,6 +104,8 @@ function MathGraph.edges2AdjList(vertices, edges)
 	return adjList
 end
 
+--- Preconditions:
+--- - MathGraph.checkAdjList(adjList)
 ---@param adjList softdep.AdjList
 ---@return softdep.AdjList
 function MathGraph.revAdjList(adjList)
@@ -123,6 +127,8 @@ function MathGraph.revAdjList(adjList)
 	return revAdjList
 end
 
+--- Preconditions:
+--- - MathGraph.checkAdjList(adjList)
 ---@param adjList softdep.AdjList
 ---@param reflexive boolean
 ---@return softdep.AdjList
@@ -159,6 +165,10 @@ end
 --- The topological order is intentionally unspecified.
 --- Do not sort zero-indegree vertices: callers must not rely on
 --- ordering constraints that are not represented by the DAG.
+---
+--- Preconditions:
+--- - MathGraph.checkAdjList(adjList)
+--- - MathGraph.checkDAG(adjList, uniqueness)
 ---@param adjList softdep.AdjList
 ---@param uniqueness boolean|nil
 ---@return string[]
