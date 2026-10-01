@@ -25,20 +25,20 @@ end
 ---@param tasks table<string, softdep.Task>
 ---@param accessLevels softdep.AccessLevel[]
 ---@param apiDefaultAtag string
----@return softdep.Api
-local function newApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
+---@return boolean, softdep.Api|string
+local function createApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
 	local api = {
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
 		atag = apiDeclaration.atag or apiDefaultAtag,
 	}
 	if api.ttag ~= nil and tasks[api.ttag] == nil then
-		error("TODO", 2)
+		return false, "TODO"
 	end
 	if accessLevels[api.atag] == nil then
-		error("TODO", 2)
+		return false, "TODO"
 	end
-	return api
+	return true, api
 end
 
 ---@param nodeDeclaration softdep.declaration.Node
@@ -104,11 +104,11 @@ local function newNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefau
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local ok, result = pcall(newApi, apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
-		if not ok then
+		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
+		if not apiOk or type(apiResult) == "string" then
 			error("TODO", 2)
 		end
-		node.apis[itag] = result
+		node.apis[itag] = apiResult
 	end
 
 	return node
