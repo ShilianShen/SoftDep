@@ -52,5 +52,3 @@
 ---@field order string[]
 ---@field parents_d table<string, table<string, table<string, string>>>
 ---@field children_d table<string, softdep.AdjList>
-
-return
