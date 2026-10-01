@@ -10,28 +10,32 @@ local assertOk = require("softdep.assertOk")
 
 ---@param vertices softdep.Vertices
 ---@param edges softdep.Edges
----@return boolean, nil|string
+---@return boolean, string|nil
 function MathGraph.checkEdges(vertices, edges)
-	for _, edge in ipairs(edges) do
-		local a, b = edge[1], edge[2]
+	for i, edge in ipairs(edges) do
 		if #edge ~= 2 then
-			return false, "TODO"
-		elseif vertices[a] == nil then
-			return false, "TODO"
-		elseif vertices[b] == nil then
-			return false, "TODO"
+			return false,
+				string.format("MathGraph.checkEdges: edge %d must contain exactly two endpoints; got %d", i, #edge)
+		end
+
+		if vertices[edge[1]] == nil then
+			return false, string.format("MathGraph.checkEdges: edge %d references unknown source vertex %q", i, edge[1])
+		end
+
+		if vertices[edge[2]] == nil then
+			return false, string.format("MathGraph.checkEdges: edge %d references unknown target vertex %q", i, edge[2])
 		end
 	end
 	return true
 end
 
 ---@param adjList softdep.AdjList
----@return boolean, nil|string
+---@return boolean, string|nil
 function MathGraph.checkAdjList(adjList)
 	for v1, _ in pairs(adjList) do
 		for v2, _ in pairs(adjList[v1]) do
 			if adjList[v2] == nil then
-				return false, "TODO"
+				return false, string.format("MathGraph.checkAdjList: vertex %q references unknown neighbor %q", v1, v2)
 			end
 		end
 	end
@@ -42,8 +46,9 @@ end
 ---@param uniqueness boolean|nil
 ---@return boolean, nil|string
 function MathGraph.checkDAG(adjList, uniqueness)
-	if not MathGraph.checkAdjList(adjList) then
-		return false, "TODO"
+	local ok, result = MathGraph.checkAdjList(adjList)
+	if not ok then
+		return false, result
 	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
@@ -58,15 +63,19 @@ function MathGraph.checkDAG(adjList, uniqueness)
 	end
 
 	for _, _ in pairs(adjList) do
-		if not (not uniqueness or #stack == 1) then
-			return false, "TODO"
+		if #stack == 0 then
+			return false, "MathGraph.checkDAG: expected a DAG; the graph contains a cycle"
+		end
+
+		if uniqueness and #stack > 1 then
+			return false,
+				string.format(
+					"MathGraph.checkDAG: expected a unique topological order; found %d valid next vertices",
+					#stack
+				)
 		end
 
 		local vtag = table.remove(stack)
-		if vtag == nil then
-			return false, "TODO"
-		end
-
 		for ctag, _ in pairs(adjList[vtag]) do
 			indegrees[ctag] = indegrees[ctag] - 1
 			if indegrees[ctag] == 0 then
@@ -124,6 +133,7 @@ function MathGraph.reachAdjList(adjList, reflexive)
 	assertOk(MathGraph.checkAdjList(adjList))
 
 	local reachAdjList = {}
+
 	for v1, _ in pairs(adjList) do
 		reachAdjList[v1] = {}
 		for v2, _ in pairs(adjList[v1]) do
