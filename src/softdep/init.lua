@@ -1,7 +1,7 @@
 local bind = require("softdep.bind")
 local types = require("softdep.types")
 local check = require("softdep.check")
-local newGraph = require("softdep.build.make")
+local build = require("softdep.build")
 local softdep = {}
 
 local function deepCopyAsTree(graph)
@@ -103,7 +103,7 @@ function softdep.newGraph(config)
 	check(2, firstTypeCheck(config))
 
 	config = deepCopyAsTree(config)
-	local graph = newGraph(config)
+	local graph = build(config)
 
 	check(2, finalTypeCheck(graph))
 	bind(graph)
