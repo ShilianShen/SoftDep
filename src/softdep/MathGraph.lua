@@ -45,9 +45,9 @@ end
 ---@param uniqueness boolean|nil
 ---@return boolean, nil|string
 function MathGraph.checkDAG(adjList, uniqueness)
-	local ok, result = MathGraph.checkAdjList(adjList)
-	if not ok then
-		return false, result
+	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
+	if not adjListOk then
+		return false, adjListResult
 	end
 
 	local revAdjList = MathGraph.revAdjList(adjList)
@@ -88,8 +88,8 @@ end
 ---@param edges softdep.Edges
 ---@return softdep.AdjList
 function MathGraph.edges2AdjList(vertices, edges)
-	local ok, result = MathGraph.checkEdges(vertices, edges)
-	assertOk(ok, result and "MathGraph.edges2AdjList: " .. result)
+	local edgesOk, edgesResult = MathGraph.checkEdges(vertices, edges)
+	assertOk(edgesOk, edgesResult and "MathGraph.edges2AdjList: " .. edgesResult)
 
 	local adjList = {}
 
@@ -109,8 +109,8 @@ end
 ---@param adjList softdep.AdjList
 ---@return softdep.AdjList
 function MathGraph.revAdjList(adjList)
-	local ok, result = MathGraph.checkAdjList(adjList)
-	assertOk(ok, result and "MathGraph.revAdjList: " .. result)
+	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
+	assertOk(adjListOk, adjListResult and "MathGraph.revAdjList: " .. adjListResult)
 
 	local revAdjList = {}
 
@@ -133,8 +133,8 @@ end
 ---@param reflexive boolean
 ---@return softdep.AdjList
 function MathGraph.reachAdjList(adjList, reflexive)
-	local ok, result = MathGraph.checkAdjList(adjList)
-	assertOk(ok, result and "MathGraph.reachAdjList: " .. result)
+	local adjListOk, adjListResult = MathGraph.checkAdjList(adjList)
+	assertOk(adjListOk, adjListResult and "MathGraph.reachAdjList: " .. adjListResult)
 
 	local reachAdjList = {}
 

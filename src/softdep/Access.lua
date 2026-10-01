@@ -86,11 +86,9 @@ end
 function Access.checkEdges(levels, edges)
 	local atagSet = MathSet.tab2set(levels)
 
-	do
-		local ok, result = MathGraph.checkEdges(atagSet, edges)
-		if not ok then
-			return false, result
-		end
+	local edgesOk, edgesResult = MathGraph.checkEdges(atagSet, edges)
+	if not edgesOk then
+		return false, edgesResult
 	end
 
 	for _, edge in ipairs(edges) do
@@ -102,11 +100,10 @@ function Access.checkEdges(levels, edges)
 	end
 
 	local adjList = MathGraph.edges2AdjList(atagSet, edges)
-	do
-		local ok, result = MathGraph.checkDAG(adjList)
-		if not ok then
-			return false, result
-		end
+
+	local dagOk, dagResult = MathGraph.checkDAG(adjList)
+	if not dagOk then
+		return false, dagResult
 	end
 
 	local reachAdjList = MathGraph.reachAdjList(adjList, true)
@@ -190,11 +187,9 @@ function Access.createAccess(levels, edges)
 
 	local adjList = MathGraph.edges2AdjList(atagSet, edges)
 
-	do
-		local ok, result = MathGraph.checkDAG(adjList)
-		if not ok then
-			return nil, result
-		end
+	local dagOk, dagResult = MathGraph.checkDAG(adjList)
+	if not dagOk then
+		return nil, dagResult
 	end
 
 	local reachAdjList = MathGraph.reachAdjList(adjList, true)
@@ -225,11 +220,9 @@ function Access.createAccess(levels, edges)
 		end
 	end
 
-	do
-		local ok, result = Access.checkEdges(levels, edges)
-		if not ok then
-			return nil, result
-		end
+	local edgesOk, edgesResult = Access.checkEdges(levels, edges)
+	if not edgesOk then
+		return nil, edgesResult
 	end
 
 	local access = {
