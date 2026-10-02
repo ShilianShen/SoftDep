@@ -1,8 +1,10 @@
 local methods = require("softdep.methods")
 local build = require("softdep.build")
 local check = require("softdep.check")
+local const = require("softdep.const")
 local softdep = {
 	methods = methods,
+	const = const,
 }
 
 local function deepCopyAsTree(graph)

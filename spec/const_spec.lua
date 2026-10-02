@@ -1,7 +1,8 @@
 package.path = "src/?.lua;" .. "src/?/init.lua;" .. package.path
 
 local assert = require("luassert")
-local const = require("softdep.const")
+local softdep = require("softdep")
+local const = softdep.const
 
 describe("const", function()
 	it("reads non-table fields from the source", function()

@@ -8,7 +8,7 @@ function methods.spread(graph)
 		for _, ttag in ipairs(node.order_c) do
 			local task = node.tasks[ttag]
 
-			if not task.dirty and task.auto(node.data) then
+			if not task.dirty and task.auto(node.data_const) then
 				task.dirty = true
 			end
 

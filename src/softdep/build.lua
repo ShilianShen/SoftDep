@@ -1,6 +1,7 @@
 local MathSet = require("softdep.MathSet")
 local MathGraph = require("softdep.MathGraph")
 local Access = require("softdep.Access")
+local const = require("softdep.const")
 
 local function pass(...) end
 
@@ -95,6 +96,8 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 			return false, "TODO"
 		end
 	end
+
+	node.data_const = const(node.data)
 
 	---@type softdep.AdjList
 	node.parents_c = {}

@@ -44,6 +44,7 @@
 ---@field atag string
 ---@field data table
 ---@field data_a table<string, table>
+---@field data_const table
 ---@field dirty boolean
 ---@field count integer
 ---@field parents_c softdep.AdjList

@@ -255,7 +255,7 @@ describe("softdep", function()
 		assertClean(graph)
 	end)
 
-	it("checks auto only for clean tasks and passes the node data", function()
+	it("checks auto only for clean tasks and passes the const node data", function()
 		local autoCalls, taskCalls = 0, 0
 		local seen
 		local graph = softdep.newGraph(config({
@@ -279,7 +279,8 @@ describe("softdep", function()
 		graph:update()
 		assert.equal(1, autoCalls)
 		assert.equal(1, taskCalls)
-		assert.equal(graph.nodes.main.data, seen)
+		assert.equal(graph.nodes.main.data_const, seen)
+		assert.are_not.equal(graph.nodes.main.data, seen)
 		graph.nodes.main.data.trigger = true
 		graph:update()
 		assert.equal(2, autoCalls)
