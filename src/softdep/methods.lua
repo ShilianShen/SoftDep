@@ -45,13 +45,7 @@ function methods.update(graph)
 			local task = node.tasks[ttag]
 
 			if task.dirty then
-				local parents_d = {}
-				for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
-					local pnode = graph.nodes[pntag]
-					parents_d[pdtag] = pnode.data_a[pnode.atag]
-				end
-
-				task.func(node.data_a[task.atag], parents_d)
+				task.func(node.data_a[task.atag], graph._data[ntag][ttag])
 				task.dirty = false
 				task.count = task.count + 1
 			end

@@ -246,6 +246,19 @@ local function createGraph(graphDeclaration)
 		end
 	end
 
+	---@type table<string, table<string, table<string, table>>>
+	graph._data = {}
+	for ntag, _ in pairs(graph.nodes) do
+		graph._data[ntag] = {}
+		for ttag, _ in pairs(graph.nodes[ntag].tasks) do
+			graph._data[ntag][ttag] = {}
+			for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
+				local pnode = graph.nodes[pntag]
+				graph._data[ntag][ttag][pdtag] = pnode.data_a[pnode.atag]
+			end
+		end
+	end
+
 	return true, graph
 end
 

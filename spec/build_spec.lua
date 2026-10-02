@@ -37,6 +37,7 @@ describe("build", function()
 		assert.are.same({}, graph.parents_d)
 		assert.are.same({}, graph.children_d)
 		assert.are.same({}, graph.order_n)
+		assert.are.same({}, graph._data)
 		assert.are.equal("read", graph.access.bot)
 		assert.are.equal("write", graph.access.top)
 	end)
@@ -71,6 +72,7 @@ describe("build", function()
 		assert.are.same({ "first", "second" }, node.order_c)
 		assert.are.same({ "first", "second" }, node.order_cf)
 		assert.are.same({}, node.order_cb)
+		assert.are.same({ first = {}, second = {} }, graph._data.main)
 
 		for _, task in pairs(node.tasks) do
 			assert.is_function(task.func)
@@ -180,6 +182,10 @@ describe("build", function()
 			middle = { sink = { consume = true } },
 			sink = {},
 		}, graph.children_d)
+		assert.are.same({}, graph._data.source.produce)
+		assert.are.equal(graph.nodes.source.data_a.read, graph._data.middle.consume.input)
+		assert.are.equal(graph._data.middle.consume.input, graph._data.middle.consume.alias)
+		assert.are.equal(graph.nodes.middle.data_a.read, graph._data.sink.consume.input)
 
 		local position = {}
 		for i, tag in ipairs(graph.order_n) do
