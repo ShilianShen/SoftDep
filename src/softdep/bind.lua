@@ -1,7 +1,8 @@
 local MathSet = require("softdep.MathSet")
+local methods = {}
 
 ---@param graph softdep.Graph
-local function spreadGraph(graph)
+function methods.spreadGraph(graph)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 
@@ -35,7 +36,7 @@ local function spreadGraph(graph)
 end
 
 ---@param graph softdep.Graph
-local function newModule(graph, ntagArr)
+function methods.newModule(graph, ntagArr)
 	local module = {
 		ntagSet = MathSet.arr2set(ntagArr),
 		parents_n = {},
@@ -51,8 +52,8 @@ local function newModule(graph, ntagArr)
 end
 
 ---@param graph softdep.Graph
-local function updateGraph(graph, module)
-	spreadGraph(graph)
+function methods.updateGraph(graph, module)
+	methods.spreadGraph(graph)
 	if module ~= nil then
 		for pntag, _ in pairs(module.parents_n) do
 			local pnode = graph.nodes[pntag]
@@ -106,9 +107,9 @@ local nodeMetatable = {
 
 ---@param graph softdep.Graph
 local function bind(graph)
-	graph.spread = spreadGraph
-	graph.update = updateGraph
-	graph.newModule = newModule
+	graph.spread = methods.spreadGraph
+	graph.update = methods.updateGraph
+	graph.newModule = methods.newModule
 
 	for _, node in pairs(graph.nodes) do
 		for _, task in pairs(node.tasks) do
