@@ -17,7 +17,7 @@ local function declaration()
 			lt = { { "read", "write" } },
 		},
 		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
-		nodes = {
+			nodes = {
 			main = {
 				atag = "read",
 				tasks = {
@@ -27,6 +27,7 @@ local function declaration()
 						atag = "write",
 						parents_c = {},
 						parents_d = {},
+						back = true,
 					},
 				},
 				apis = {
@@ -129,6 +130,9 @@ describe("graph declaration check", function()
 		end },
 		{ "invalid task access tag", function(value)
 			value.nodes.main.tasks.run.atag = 1
+		end },
+		{ "non-boolean task back", function(value)
+			value.nodes.main.tasks.run.back = "back"
 		end },
 		{ "sparse control dependencies", function(value)
 			value.nodes.main.tasks.run.parents_c = { [2] = "run" }

@@ -30,6 +30,7 @@ local function createTask(taskDeclaration, access, taskDefaultAtag, node)
 		atag = taskDeclaration.atag or taskDefaultAtag,
 		dirty = true,
 		count = 0,
+		back = taskDeclaration.back or false,
 	}
 	if access.levels[task.atag] == nil then
 		return false, "TODO"

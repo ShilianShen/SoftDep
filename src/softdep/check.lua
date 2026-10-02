@@ -120,6 +120,7 @@ local function checkTask(task, path)
 		atag = true,
 		parents_c = true,
 		parents_d = true,
+		back = true,
 	})
 	if not ok then
 		return false, result
@@ -133,6 +134,10 @@ local function checkTask(task, path)
 	end
 
 	ok, result = checkOptionalType(task.atag, "string", path .. ".atag")
+	if not ok then
+		return false, result
+	end
+	ok, result = checkOptionalType(task.back, "boolean", path .. ".back")
 	if not ok then
 		return false, result
 	end

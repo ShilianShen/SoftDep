@@ -73,6 +73,7 @@ describe("build", function()
 			assert.are.equal("write", task.atag)
 			assert.is_true(task.dirty)
 			assert.are.equal(0, task.count)
+			assert.is_false(task.back)
 		end
 
 		assert.are.equal("second", node.apis.run.ttag)
@@ -89,7 +90,7 @@ describe("build", function()
 			main = {
 				atag = "read",
 				tasks = {
-					run = { func = taskFunc, auto = autoFunc, atag = "read" },
+					run = { func = taskFunc, auto = autoFunc, atag = "read", back = true },
 				},
 				apis = {
 					call = { func = apiFunc, ttag = "run", atag = "read" },
@@ -101,6 +102,7 @@ describe("build", function()
 		assert.are.equal(taskFunc, graph.nodes.main.tasks.run.func)
 		assert.are.equal(autoFunc, graph.nodes.main.tasks.run.auto)
 		assert.are.equal("read", graph.nodes.main.tasks.run.atag)
+		assert.is_true(graph.nodes.main.tasks.run.back)
 		assert.are.equal(apiFunc, graph.nodes.main.apis.call.func)
 		assert.are.equal("read", graph.nodes.main.apis.call.atag)
 	end)

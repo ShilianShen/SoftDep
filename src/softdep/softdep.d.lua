@@ -4,6 +4,7 @@
 ---@field atag string|nil
 ---@field parents_c string[]|nil
 ---@field parents_d table<string, string>|nil
+---@field back boolean|nil
 
 ---@class softdep.declaration.Api
 ---@field func function|nil
@@ -27,6 +28,7 @@
 ---@field dirty boolean
 ---@field count integer
 ---@field higher boolean TODO
+---@field back boolean TODO
 
 ---@class softdep.Api
 ---@field func function|nil
