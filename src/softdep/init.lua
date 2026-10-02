@@ -1,4 +1,4 @@
-local bind = require("softdep.bind")
+local bind = require("softdep.methods")
 local build = require("softdep.build")
 local check = require("softdep.check")
 local softdep = {}
