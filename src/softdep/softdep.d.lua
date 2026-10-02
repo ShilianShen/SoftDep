@@ -35,8 +35,8 @@
 ---@field func function|nil
 ---@field ttag string|nil
 ---@field atag string
----@field _node softdep.Node TODO
----@field dirty boolean TODO
+---@field _node softdep.Node
+---@field dirty boolean
 
 ---@class softdep.Node
 ---@field tasks table<string, softdep.Task>
