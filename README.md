@@ -246,12 +246,6 @@ The API and internal model may still change as the design evolves.
 
 Currently, the project is tested with Lua 5.4.
 
-## Third-party Software
-
-SoftDep includes code from `tableshape`, which is licensed under the MIT License.
-
-See [`THIRD_PARTY_LICENSES`](THIRD_PARTY_LICENSES) for details.
-
 ## License
 
 SoftDep is released under the [MIT License](LICENSE).
