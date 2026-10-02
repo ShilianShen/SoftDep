@@ -5,7 +5,4 @@ return {
 	include = {
 		"^src/softdep",
 	},
-	exclude = {
-		"src/softdep/tableshape",
-	},
 }
