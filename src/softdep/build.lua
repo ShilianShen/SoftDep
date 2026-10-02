@@ -4,10 +4,10 @@ local Access = require("softdep.Access")
 local function pass(...) end
 
 ---@param taskDeclaration softdep.declaration.Task
----@param accessLevels softdep.AccessLevel[]
+---@param access softdep.Access
 ---@param taskDefaultAtag string
 ---@return boolean, softdep.Task|string
-local function createTask(taskDeclaration, accessLevels, taskDefaultAtag)
+local function createTask(taskDeclaration, access, taskDefaultAtag)
 	local task = {
 		func = taskDeclaration.func or pass,
 		auto = taskDeclaration.auto or pass,
@@ -15,7 +15,7 @@ local function createTask(taskDeclaration, accessLevels, taskDefaultAtag)
 		dirty = true,
 		count = 0,
 	}
-	if accessLevels[task.atag] == nil then
+	if access.levels[task.atag] == nil then
 		return false, "TODO"
 	end
 	return true, task
@@ -23,10 +23,10 @@ end
 
 ---@param apiDeclaration softdep.declaration.Api
 ---@param tasks table<string, softdep.Task>
----@param accessLevels softdep.AccessLevel[]
+---@param access softdep.Access
 ---@param apiDefaultAtag string
 ---@return boolean, softdep.Api|string
-local function createApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
+local function createApi(apiDeclaration, tasks, access, apiDefaultAtag)
 	local api = {
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
@@ -35,7 +35,7 @@ local function createApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
 	if api.ttag ~= nil and tasks[api.ttag] == nil then
 		return false, "TODO"
 	end
-	if accessLevels[api.atag] == nil then
+	if access.levels[api.atag] == nil then
 		return false, "TODO"
 	end
 	return true, api
@@ -78,7 +78,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local taskOk, taskResult = createTask(taskDeclaration, access.levels, taskDefaultAtag)
+		local taskOk, taskResult = createTask(taskDeclaration, access, taskDefaultAtag)
 		if not taskOk or type(taskResult) == "string" then
 			return false, "TODO"
 		end
@@ -103,7 +103,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access.levels, apiDefaultAtag)
+		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, apiDefaultAtag)
 		if not apiOk or type(apiResult) == "string" then
 			return false, "TODO"
 		end
