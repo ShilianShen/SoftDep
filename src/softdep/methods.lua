@@ -91,38 +91,4 @@ function methods.updateGraph(graph, module)
 	end
 end
 
-local nodeMetatable = {
-	__call = function(api, ...)
-		if api.func then
-			api.func(api._node.data_a[api.atag], ...)
-			if api.higher then
-				api._node.dirty = true
-			end
-		end
-		if api.ttag then
-			api._node.tasks[api.ttag].dirty = true
-		end
-	end,
-}
-
----@param graph softdep.Graph
-local function bind(graph)
-	graph.spread = methods.spreadGraph
-	graph.update = methods.updateGraph
-	graph.newModule = methods.newModule
-
-	for _, node in pairs(graph.nodes) do
-		for _, task in pairs(node.tasks) do
-			task.higher = graph.access:lt(node.atag, task.atag)
-		end
-		for _, api in pairs(node.apis) do
-			api._node = node
-			api.higher = graph.access:lt(node.atag, api.atag)
-			setmetatable(api, nodeMetatable)
-		end
-	end
-
-	return graph
-end
-
-return bind
+return methods
