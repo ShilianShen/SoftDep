@@ -131,6 +131,16 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	end
 
 	node.order_c = MathGraph.sort(node.children_c, true)
+	node.order_cf = {}
+	node.order_cb = {}
+	for _, ntag in ipairs(node.order_c) do
+		local task = node.tasks[ntag]
+		if not task.back then
+			table.insert(node.order_cf, ntag)
+		else
+			table.insert(node.order_cb, ntag)
+		end
+	end
 
 	---@type table<string, softdep.Api>
 	node.apis = {}

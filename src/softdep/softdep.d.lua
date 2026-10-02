@@ -49,6 +49,8 @@
 ---@field parents_c softdep.AdjList
 ---@field children_c softdep.AdjList
 ---@field order_c string[]
+---@field order_cf string[]
+---@field order_cb string[]
 
 ---@class softdep.Graph
 ---@field access softdep.Access

@@ -66,6 +66,8 @@ describe("build", function()
 		assert.are.same({ first = {}, second = { first = true } }, node.parents_c)
 		assert.are.same({ first = { second = true }, second = {} }, node.children_c)
 		assert.are.same({ "first", "second" }, node.order_c)
+		assert.are.same({ "first", "second" }, node.order_cf)
+		assert.are.same({}, node.order_cb)
 
 		for _, task in pairs(node.tasks) do
 			assert.is_function(task.func)
@@ -123,6 +125,8 @@ describe("build", function()
 
 		assert.is_true(ok)
 		assert.are.same({ "front", "firstBack", "secondBack" }, graph.nodes.main.order_c)
+		assert.are.same({ "front" }, graph.nodes.main.order_cf)
+		assert.are.same({ "firstBack", "secondBack" }, graph.nodes.main.order_cb)
 	end)
 
 	it("creates independent access views for every node", function()
