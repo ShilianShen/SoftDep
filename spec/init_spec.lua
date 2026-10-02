@@ -347,8 +347,35 @@ describe("softdep", function()
 		assert.equal(1, graph.nodes.main.tasks.run.count)
 		assertClean(graph)
 		graph.nodes.main.apis.empty()
-		assertClean(graph)
+		assert.is_true(graph.nodes.main.dirty)
+		assert.is_false(graph.nodes.main.tasks.run.dirty)
+		graph:update()
 		graph.nodes.main.apis.taskOnly()
+		assert.is_true(graph.nodes.main.dirty)
+		assert.is_true(graph.nodes.main.tasks.run.dirty)
+	end)
+
+	it("uses the API dirty flag independently of its function and task", function()
+		local calls = 0
+		local graph = softdep.newGraph(config({
+			main = {
+				tasks = { run = {} },
+				apis = {
+					clean = {
+						func = function()
+							calls = calls + 1
+						end,
+						ttag = "run",
+						dirty = false,
+					},
+				},
+			},
+		}))
+		graph:update()
+
+		graph.nodes.main.apis.clean()
+
+		assert.equal(1, calls)
 		assert.is_false(graph.nodes.main.dirty)
 		assert.is_true(graph.nodes.main.tasks.run.dirty)
 	end)

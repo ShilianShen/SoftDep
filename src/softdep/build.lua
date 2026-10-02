@@ -8,12 +8,12 @@ local nodeMetatable = {
 	__call = function(api, ...)
 		if api.func then
 			api.func(api._node.data_a[api.atag], ...)
-			if api.higher then
-				api._node.dirty = true
-			end
 		end
 		if api.ttag then
 			api._node.tasks[api.ttag].dirty = true
+		end
+		if api.dirty then
+			api._node.dirty = true
 		end
 	end,
 }
