@@ -25,7 +25,7 @@ function softdep.newGraph(config)
 
 	config = deepCopyAsTree(config)
 	local graphOk, graphResult = build(config)
-	if not graphOk then
+	if not graphOk or type(graphResult) == "string" then
 		error("TODO", 2)
 	end
 	local graph = graphResult
