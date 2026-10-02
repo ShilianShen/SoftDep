@@ -53,8 +53,9 @@ describe("graph declaration check", function()
 		assert.is_true(check.graphDeclaration(value))
 	end)
 
+	---@type [string, fun(value: table): any][]
 	local invalidCases = {
-		{ "non-table graph", function()
+		{ "non-table graph", function(_)
 			return "graph"
 		end },
 		{ "unknown graph field", function(value)
@@ -154,8 +155,9 @@ describe("graph declaration check", function()
 
 	for _, case in ipairs(invalidCases) do
 		it("rejects " .. case[1], function()
-			local value = declaration()
-			value = case[2](value) or value
+			local original = declaration()
+			local replacement = case[2](original)
+			local value = replacement or original
 			local ok = check.graphDeclaration(value)
 			assert.is_false(ok)
 		end)
