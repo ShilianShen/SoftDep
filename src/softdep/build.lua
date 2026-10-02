@@ -42,12 +42,12 @@ local function createApi(apiDeclaration, tasks, accessLevels, apiDefaultAtag)
 end
 
 ---@param nodeDeclaration softdep.declaration.Node
----@param accessLevels softdep.AccessLevel[]
+---@param access softdep.Access
 ---@param nodeDefaultAtag string
 ---@param taskDefaultAtag string
 ---@param apiDefaultAtag string
 ---@return boolean, softdep.Node|string
-local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDefaultAtag, apiDefaultAtag)
+local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultAtag, apiDefaultAtag)
 	local node = {
 		atag = nodeDeclaration.atag or nodeDefaultAtag,
 		data = {},
@@ -55,10 +55,10 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 		count = 0,
 	}
 
-	if accessLevels[node.atag] == nil then
+	if access.levels[node.atag] == nil then
 		return false, "TODO"
 	end
-	if accessLevels[node.atag].os then
+	if access.levels[node.atag].os then
 		return false, "TODO"
 	end
 
@@ -67,7 +67,7 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 
 	---@type table<string, table>
 	node.data_a = {}
-	for atag, level in pairs(accessLevels) do
+	for atag, level in pairs(access.levels) do
 		node.data_a[atag] = level.func(node.data)
 		if type(node.data_a[atag]) ~= "table" then
 			return false, "TODO"
@@ -78,7 +78,7 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local taskOk, taskResult = createTask(taskDeclaration, accessLevels, taskDefaultAtag)
+		local taskOk, taskResult = createTask(taskDeclaration, access.levels, taskDefaultAtag)
 		if not taskOk or type(taskResult) == "string" then
 			return false, "TODO"
 		end
@@ -103,7 +103,7 @@ local function createNode(nodeDeclaration, accessLevels, nodeDefaultAtag, taskDe
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, accessLevels, apiDefaultAtag)
+		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access.levels, apiDefaultAtag)
 		if not apiOk or type(apiResult) == "string" then
 			return false, "TODO"
 		end
@@ -142,7 +142,7 @@ local function createGraph(graphDeclaration)
 	graph.nodes = {}
 	for ntag, nodeDeclaration in pairs(graphDeclaration.nodes or {}) do
 		local nodeOk, nodeResult =
-			createNode(nodeDeclaration, graph.access.levels, default.nodeAtag, default.taskAtag, default.apiAtag)
+			createNode(nodeDeclaration, graph.access, default.nodeAtag, default.taskAtag, default.apiAtag)
 		if not nodeOk or type(nodeResult) == "string" then
 			return false, "TODO"
 		end
