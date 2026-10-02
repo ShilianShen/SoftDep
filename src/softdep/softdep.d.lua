@@ -10,6 +10,7 @@
 ---@field func function|nil
 ---@field ttag string|nil
 ---@field atag string|nil
+---@field dirty boolean|nil
 
 ---@class softdep.declaration.Node
 ---@field atag string|nil
@@ -36,6 +37,7 @@
 ---@field atag string
 ---@field _node softdep.Node TODO
 ---@field higher boolean TODO
+---@field dirty boolean TODO
 
 ---@class softdep.Node
 ---@field tasks table<string, softdep.Task>

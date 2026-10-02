@@ -31,7 +31,7 @@ local function declaration()
 					},
 				},
 				apis = {
-					call = { func = function() end, ttag = "run", atag = "write" },
+					call = { func = function() end, ttag = "run", atag = "write", dirty = false },
 				},
 			},
 		},
@@ -160,6 +160,9 @@ describe("graph declaration check", function()
 		end },
 		{ "invalid API access tag", function(value)
 			value.nodes.main.apis.call.atag = {}
+		end },
+		{ "non-boolean API dirty", function(value)
+			value.nodes.main.apis.call.dirty = "dirty"
 		end },
 	}
 

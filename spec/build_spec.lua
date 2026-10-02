@@ -78,8 +78,10 @@ describe("build", function()
 
 		assert.are.equal("second", node.apis.run.ttag)
 		assert.are.equal("write", node.apis.run.atag)
+		assert.is_true(node.apis.run.dirty)
 		assert.is_nil(node.apis.inspect.ttag)
 		assert.are.equal("write", node.apis.inspect.atag)
+		assert.is_true(node.apis.inspect.dirty)
 	end)
 
 	it("preserves explicit functions and access tags", function()
@@ -93,7 +95,7 @@ describe("build", function()
 					run = { func = taskFunc, auto = autoFunc, atag = "read", back = true },
 				},
 				apis = {
-					call = { func = apiFunc, ttag = "run", atag = "read" },
+					call = { func = apiFunc, ttag = "run", atag = "read", dirty = false },
 				},
 			},
 		}))
@@ -105,6 +107,7 @@ describe("build", function()
 		assert.is_true(graph.nodes.main.tasks.run.back)
 		assert.are.equal(apiFunc, graph.nodes.main.apis.call.func)
 		assert.are.equal("read", graph.nodes.main.apis.call.atag)
+		assert.is_false(graph.nodes.main.apis.call.dirty)
 	end)
 
 	it("creates independent access views for every node", function()

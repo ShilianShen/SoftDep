@@ -50,6 +50,7 @@ local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
 		atag = apiDeclaration.atag or apiDefaultAtag,
+		dirty = apiDeclaration.dirty ~= false,
 	}
 	if api.ttag ~= nil and tasks[api.ttag] == nil then
 		return false, "TODO"

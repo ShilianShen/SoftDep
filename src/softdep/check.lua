@@ -157,7 +157,7 @@ local function checkTask(task, path)
 end
 
 local function checkApi(api, path)
-	local ok, result = checkFields(api, path, { func = true, ttag = true, atag = true })
+	local ok, result = checkFields(api, path, { func = true, ttag = true, atag = true, dirty = true })
 	if not ok then
 		return false, result
 	end
@@ -170,7 +170,11 @@ local function checkApi(api, path)
 	if not ok then
 		return false, result
 	end
-	return checkOptionalType(api.atag, "string", path .. ".atag")
+	ok, result = checkOptionalType(api.atag, "string", path .. ".atag")
+	if not ok then
+		return false, result
+	end
+	return checkOptionalType(api.dirty, "boolean", path .. ".dirty")
 end
 
 local function checkNode(node, path)
