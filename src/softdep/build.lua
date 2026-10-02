@@ -59,7 +59,6 @@ local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
 		return false, "TODO"
 	end
 	api._node = node
-	api.higher = access:lt(node.atag, api.atag)
 	setmetatable(api, nodeMetatable)
 	return true, api
 end

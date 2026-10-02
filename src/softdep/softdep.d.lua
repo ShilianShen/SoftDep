@@ -36,7 +36,6 @@
 ---@field ttag string|nil
 ---@field atag string
 ---@field _node softdep.Node TODO
----@field higher boolean TODO
 ---@field dirty boolean TODO
 
 ---@class softdep.Node
