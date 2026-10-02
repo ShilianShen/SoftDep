@@ -2,7 +2,7 @@ local MathSet = require("softdep.MathSet")
 local methods = {}
 
 ---@param graph softdep.Graph
-function methods.spreadGraph(graph)
+function methods.spread(graph)
 	for _, ntag in ipairs(graph.order) do
 		local node = graph.nodes[ntag]
 
@@ -52,8 +52,8 @@ function methods.newModule(graph, ntagArr)
 end
 
 ---@param graph softdep.Graph
-function methods.updateGraph(graph, module)
-	methods.spreadGraph(graph)
+function methods.update(graph, module)
+	methods.spread(graph)
 	if module ~= nil then
 		for pntag, _ in pairs(module.parents_n) do
 			local pnode = graph.nodes[pntag]

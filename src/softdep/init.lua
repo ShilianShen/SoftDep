@@ -1,7 +1,9 @@
 local methods = require("softdep.methods")
 local build = require("softdep.build")
 local check = require("softdep.check")
-local softdep = {}
+local softdep = {
+	methods = methods,
+}
 
 local function deepCopyAsTree(graph)
 	if type(graph) ~= "table" then
@@ -17,43 +19,28 @@ local function deepCopyAsTree(graph)
 	return result
 end
 
-local nodeMetatable = {
-	__call = function(api, ...)
-		if api.func then
-			api.func(api._node.data_a[api.atag], ...)
-			if api.higher then
-				api._node.dirty = true
-			end
-		end
-		if api.ttag then
-			api._node.tasks[api.ttag].dirty = true
-		end
-	end,
+local mt = {
+	__index = methods,
 }
 
----@param graph softdep.Graph
-local function bind(graph)
-	graph.spread = methods.spreadGraph
-	graph.update = methods.updateGraph
-	graph.newModule = methods.newModule
-
-	return graph
-end
-
-function softdep.newGraph(config)
-	local declarationOk, declarationResult = check.graphDeclaration(config)
+---@param declaration softdep.declaration.Graph
+---@return softdep.Graph
+function softdep.newGraph(declaration)
+	local declarationOk, declarationResult = check.graphDeclaration(declaration)
 	if not declarationOk then
 		error(declarationResult, 2)
 	end
 
-	config = deepCopyAsTree(config)
-	local graphOk, graphResult = build(config)
+	declaration = deepCopyAsTree(declaration)
+
+	local graphOk, graphResult = build(declaration)
 	if not graphOk or type(graphResult) == "string" then
 		error("TODO", 2)
 	end
+
 	local graph = graphResult
 
-	bind(graph)
+	setmetatable(graph, mt)
 	return graph
 end
 
