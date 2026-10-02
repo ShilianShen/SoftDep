@@ -1,4 +1,3 @@
-local MathSet = require("softdep.MathSet")
 local methods = {}
 
 ---@param graph softdep.Graph
@@ -36,57 +35,31 @@ function methods.spread(graph)
 end
 
 ---@param graph softdep.Graph
-function methods.newModule(graph, ntagArr)
-	local module = {
-		ntagSet = MathSet.arr2set(ntagArr),
-		parents_n = {},
-	}
-	for ntag, _ in pairs(module.ntagSet) do
-		for pntag, _ in pairs(graph.parents_n[ntag]) do
-			if not module.ntagSet[pntag] then
-				module.parents_n[pntag] = true
-			end
-		end
-	end
-	return module
-end
-
----@param graph softdep.Graph
-function methods.update(graph, module)
+function methods.update(graph)
 	methods.spread(graph)
-	if module ~= nil then
-		for pntag, _ in pairs(module.parents_n) do
-			local pnode = graph.nodes[pntag]
-			if pnode.dirty then
-				return
-			end
-		end
-	end
 
 	for _, ntag in ipairs(graph.order_n) do
-		if module == nil or module.ntagSet[ntag] then
-			local node = graph.nodes[ntag]
+		local node = graph.nodes[ntag]
 
-			for _, ttag in ipairs(node.order_c) do
-				local task = node.tasks[ttag]
+		for _, ttag in ipairs(node.order_c) do
+			local task = node.tasks[ttag]
 
-				if task.dirty then
-					local parents_d = {}
-					for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
-						local pnode = graph.nodes[pntag]
-						parents_d[pdtag] = pnode.data_a[pnode.atag]
-					end
-
-					task.func(node.data_a[task.atag], parents_d)
-					task.dirty = false
-					task.count = task.count + 1
+			if task.dirty then
+				local parents_d = {}
+				for pdtag, pntag in pairs(graph.parents_d[ntag][ttag]) do
+					local pnode = graph.nodes[pntag]
+					parents_d[pdtag] = pnode.data_a[pnode.atag]
 				end
-			end
 
-			if node.dirty then
-				node.dirty = false
-				node.count = node.count + 1
+				task.func(node.data_a[task.atag], parents_d)
+				task.dirty = false
+				task.count = task.count + 1
 			end
+		end
+
+		if node.dirty then
+			node.dirty = false
+			node.count = node.count + 1
 		end
 	end
 end
