@@ -119,7 +119,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 		return false, "TODO"
 	end
 
-	node.order = MathGraph.sort(node.children_c, true)
+	node.order_c = MathGraph.sort(node.children_c, true)
 
 	---@type table<string, softdep.Api>
 	node.apis = {}
@@ -195,7 +195,7 @@ local function createGraph(graphDeclaration)
 		return false, "TODO"
 	end
 
-	graph.order = MathGraph.sort(graph.children_n, false)
+	graph.order_n = MathGraph.sort(graph.children_n, false)
 
 	---@type table<string, table<string, table<string, string>>>
 	graph.parents_d = {}

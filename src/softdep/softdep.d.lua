@@ -45,13 +45,13 @@
 ---@field count integer
 ---@field parents_c softdep.AdjList
 ---@field children_c softdep.AdjList
----@field order string[]
+---@field order_c string[]
 
 ---@class softdep.Graph
 ---@field access softdep.Access
 ---@field nodes table<string, softdep.Node>
 ---@field parents_n softdep.AdjList
 ---@field children_n softdep.AdjList
----@field order string[]
+---@field order_n string[]
 ---@field parents_d table<string, table<string, table<string, string>>>
 ---@field children_d table<string, softdep.AdjList>

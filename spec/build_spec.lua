@@ -36,7 +36,7 @@ describe("build", function()
 		assert.are.same({}, graph.children_n)
 		assert.are.same({}, graph.parents_d)
 		assert.are.same({}, graph.children_d)
-		assert.are.same({}, graph.order)
+		assert.are.same({}, graph.order_n)
 		assert.are.equal("read", graph.access.bot)
 		assert.are.equal("write", graph.access.top)
 	end)
@@ -65,7 +65,7 @@ describe("build", function()
 		assert.are.equal(node.data, node.data_a.write)
 		assert.are.same({ first = {}, second = { first = true } }, node.parents_c)
 		assert.are.same({ first = { second = true }, second = {} }, node.children_c)
-		assert.are.same({ "first", "second" }, node.order)
+		assert.are.same({ "first", "second" }, node.order_c)
 
 		for _, task in pairs(node.tasks) do
 			assert.is_function(task.func)
@@ -155,7 +155,7 @@ describe("build", function()
 		}, graph.children_d)
 
 		local position = {}
-		for i, tag in ipairs(graph.order) do
+		for i, tag in ipairs(graph.order_n) do
 			position[tag] = i
 		end
 		assert.is_true(position.source < position.middle)

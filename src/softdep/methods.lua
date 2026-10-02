@@ -3,10 +3,10 @@ local methods = {}
 
 ---@param graph softdep.Graph
 function methods.spread(graph)
-	for _, ntag in ipairs(graph.order) do
+	for _, ntag in ipairs(graph.order_n) do
 		local node = graph.nodes[ntag]
 
-		for _, ttag in ipairs(node.order) do
+		for _, ttag in ipairs(node.order_c) do
 			local task = node.tasks[ttag]
 
 			if not task.dirty and task.auto(node.data) then
@@ -63,11 +63,11 @@ function methods.update(graph, module)
 		end
 	end
 
-	for _, ntag in ipairs(graph.order) do
+	for _, ntag in ipairs(graph.order_n) do
 		if module == nil or module.ntagSet[ntag] then
 			local node = graph.nodes[ntag]
 
-			for _, ttag in ipairs(node.order) do
+			for _, ttag in ipairs(node.order_c) do
 				local task = node.tasks[ttag]
 
 				if task.dirty then
