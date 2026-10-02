@@ -113,6 +113,16 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 		return false, "TODO"
 	end
 
+	for ttag, _ in pairs(node.parents_c) do
+		local task = node.tasks[ttag]
+		for pttag, _ in pairs(node.parents_c[ttag]) do
+			local ptask = node.tasks[pttag]
+			if ptask.back and not task.back then
+				return false, "TODO"
+			end
+		end
+	end
+
 	node.children_c = MathGraph.revAdjList(node.parents_c)
 
 	local dagOk, degResult = MathGraph.checkDAG(node.children_c, true)

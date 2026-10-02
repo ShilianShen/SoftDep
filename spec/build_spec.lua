@@ -110,6 +110,21 @@ describe("build", function()
 		assert.is_false(graph.nodes.main.apis.call.dirty)
 	end)
 
+	it("allows control dependencies to enter and remain in back tasks", function()
+		local ok, graph = build(config({
+			main = {
+				tasks = {
+					front = {},
+					firstBack = { parents_c = { "front" }, back = true },
+					secondBack = { parents_c = { "firstBack" }, back = true },
+				},
+			},
+		}))
+
+		assert.is_true(ok)
+		assert.are.same({ "front", "firstBack", "secondBack" }, graph.nodes.main.order_c)
+	end)
+
 	it("creates independent access views for every node", function()
 		local declaration = config({ first = {}, second = {} })
 		declaration.access.levels.read.func = function(data)
@@ -232,6 +247,17 @@ describe("build", function()
 					tasks = {
 						first = { parents_c = { "second" } },
 						second = { parents_c = { "first" } },
+					},
+				},
+			}))
+		end)
+
+		it("rejects a non-back task depending on a back task", function()
+			assertBuildFails(config({
+				main = {
+					tasks = {
+						back = { back = true },
+						front = { parents_c = { "back" } },
 					},
 				},
 			}))
