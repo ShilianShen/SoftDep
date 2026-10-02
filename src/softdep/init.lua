@@ -39,11 +39,11 @@ local function bind(graph)
 
 	for _, node in pairs(graph.nodes) do
 		for _, task in pairs(node.tasks) do
-			task.higher = graph.access:lt(node.atag, task.atag)
+			task.higher = graph.access:lt(node.atag, task.atag) -- TODO
 		end
 		for _, api in pairs(node.apis) do
-			api._node = node
-			api.higher = graph.access:lt(node.atag, api.atag)
+			api._node = node -- TODO
+			api.higher = graph.access:lt(node.atag, api.atag) -- TODO
 			setmetatable(api, nodeMetatable)
 		end
 	end

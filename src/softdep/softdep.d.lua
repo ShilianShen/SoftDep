@@ -26,11 +26,14 @@
 ---@field atag string
 ---@field dirty boolean
 ---@field count integer
+---@field higher boolean TODO
 
 ---@class softdep.Api
 ---@field func function|nil
 ---@field ttag string|nil
 ---@field atag string
+---@field _node softdep.Node TODO
+---@field higher boolean TODO
 
 ---@class softdep.Node
 ---@field tasks table<string, softdep.Task>
