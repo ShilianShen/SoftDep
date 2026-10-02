@@ -6,8 +6,9 @@ local function pass(...) end
 ---@param taskDeclaration softdep.declaration.Task
 ---@param access softdep.Access
 ---@param taskDefaultAtag string
+---@param nodeAtag string
 ---@return boolean, softdep.Task|string
-local function createTask(taskDeclaration, access, taskDefaultAtag)
+local function createTask(taskDeclaration, access, taskDefaultAtag, nodeAtag)
 	local task = {
 		func = taskDeclaration.func or pass,
 		auto = taskDeclaration.auto or pass,
@@ -25,8 +26,9 @@ end
 ---@param tasks table<string, softdep.Task>
 ---@param access softdep.Access
 ---@param apiDefaultAtag string
+---@param node table
 ---@return boolean, softdep.Api|string
-local function createApi(apiDeclaration, tasks, access, apiDefaultAtag)
+local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
 	local api = {
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
@@ -78,7 +80,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local taskOk, taskResult = createTask(taskDeclaration, access, taskDefaultAtag)
+		local taskOk, taskResult = createTask(taskDeclaration, access, taskDefaultAtag, node.atag)
 		if not taskOk or type(taskResult) == "string" then
 			return false, "TODO"
 		end
@@ -103,7 +105,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, apiDefaultAtag)
+		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, apiDefaultAtag, node)
 		if not apiOk or type(apiResult) == "string" then
 			return false, "TODO"
 		end
