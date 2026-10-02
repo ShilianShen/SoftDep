@@ -73,11 +73,17 @@ describe("graph declaration check", function()
 		{ "non-string access tag", function(value)
 			value.access.levels[1] = value.access.levels.read
 		end },
+		{ "non-table access level", function(value)
+			value.access.levels.read = false
+		end },
 		{ "non-function access view", function(value)
 			value.access.levels.read.func = true
 		end },
 		{ "non-boolean order sensitivity", function(value)
 			value.access.levels.read.os = 0
+		end },
+		{ "non-table access relations", function(value)
+			value.access.lt = false
 		end },
 		{ "non-array access relations", function(value)
 			value.access.lt = { relation = { "read", "write" } }
