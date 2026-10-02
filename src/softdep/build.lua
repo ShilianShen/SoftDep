@@ -1,7 +1,22 @@
 local MathSet = require("softdep.MathSet")
 local MathGraph = require("softdep.MathGraph")
 local Access = require("softdep.Access")
+
 local function pass(...) end
+
+local nodeMetatable = {
+	__call = function(api, ...)
+		if api.func then
+			api.func(api._node.data_a[api.atag], ...)
+			if api.higher then
+				api._node.dirty = true
+			end
+		end
+		if api.ttag then
+			api._node.tasks[api.ttag].dirty = true
+		end
+	end,
+}
 
 ---@param taskDeclaration softdep.declaration.Task
 ---@param access softdep.Access
@@ -19,6 +34,7 @@ local function createTask(taskDeclaration, access, taskDefaultAtag, node)
 	if access.levels[task.atag] == nil then
 		return false, "TODO"
 	end
+	task.higher = access:lt(node.atag, task.atag)
 	return true, task
 end
 
@@ -40,6 +56,9 @@ local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
 	if access.levels[api.atag] == nil then
 		return false, "TODO"
 	end
+	api._node = node
+	api.higher = access:lt(node.atag, api.atag)
+	setmetatable(api, nodeMetatable)
 	return true, api
 end
 
