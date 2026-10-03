@@ -28,8 +28,7 @@
 ---@field atag string
 ---@field dirty boolean
 ---@field count integer
----@field higher boolean TODO
----@field back boolean TODO
+---@field back boolean
 
 ---@class softdep.Api
 ---@field func function|nil

@@ -36,7 +36,6 @@ local function createTask(taskDeclaration, access, taskDefaultAtag, node)
 	if access.levels[task.atag] == nil then
 		return false, "TODO"
 	end
-	task.higher = access:lt(node.atag, task.atag)
 	return true, task
 end
 
