@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/ShilianShen/SoftDep/actions/workflows/ci.yml/badge.svg)](https://github.com/ShilianShen/SoftDep/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ShilianShen/SoftDep/branch/main/graph/badge.svg)](https://codecov.io/gh/ShilianShen/SoftDep)
+[![Lua 5.4](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](https://www.lua.org/)
+[![License: MIT](https://img.shields.io/github/license/ShilianShen/SoftDep)](LICENSE)
+![Runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-brightgreen)
 
 **SoftDep** is a Lua library for describing and executing dependencies between data and tasks.
 
