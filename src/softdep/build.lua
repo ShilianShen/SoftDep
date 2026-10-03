@@ -34,7 +34,7 @@ local function createTask(taskDeclaration, access, taskDefaultAtag, node)
 		back = taskDeclaration.back or false,
 	}
 	if access.levels[task.atag] == nil then
-		return false, "TODO"
+		return false, "task references an unknown access level"
 	end
 	return true, task
 end
@@ -53,10 +53,10 @@ local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
 		dirty = apiDeclaration.dirty ~= false,
 	}
 	if api.ttag ~= nil and tasks[api.ttag] == nil then
-		return false, "TODO"
+		return false, "API references an unknown task"
 	end
 	if access.levels[api.atag] == nil then
-		return false, "TODO"
+		return false, "API references an unknown access level"
 	end
 	api._node = node
 	setmetatable(api, nodeMetatable)
@@ -78,10 +78,10 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	}
 
 	if access.levels[node.atag] == nil then
-		return false, "TODO"
+		return false, "node references an unknown access level"
 	end
 	if access.levels[node.atag].os then
-		return false, "TODO"
+		return false, "node access level must be order-insensitive"
 	end
 
 	---@type table<string, softdep.Task>
@@ -92,7 +92,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	for atag, level in pairs(access.levels) do
 		node.data_a[atag] = level.func(node.data)
 		if type(node.data_a[atag]) ~= "table" then
-			return false, "TODO"
+			return false, "access level function must return a table"
 		end
 	end
 
@@ -104,7 +104,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
 		local taskOk, taskResult = createTask(taskDeclaration, access, taskDefaultAtag, node)
 		if not taskOk or type(taskResult) == "string" then
-			return false, "TODO"
+			return false, "failed to create task"
 		end
 		node.tasks[ttag] = taskResult
 		node.parents_c[ttag] = MathSet.arr2set(taskDeclaration.parents_c or {})
@@ -112,7 +112,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 
 	local adjListOk, adjListResult = MathGraph.checkAdjList(node.parents_c)
 	if not adjListOk then
-		return false, "TODO"
+		return false, "task references an unknown control dependency"
 	end
 
 	for ttag, _ in pairs(node.parents_c) do
@@ -120,7 +120,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 		for pttag, _ in pairs(node.parents_c[ttag]) do
 			local ptask = node.tasks[pttag]
 			if ptask.back and not task.back then
-				return false, "TODO"
+				return false, "non-back task cannot depend on a back task"
 			end
 		end
 	end
@@ -129,7 +129,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 
 	local dagOk, degResult = MathGraph.checkDAG(node.children_c, true)
 	if not dagOk then
-		return false, "TODO"
+		return false, "task control dependencies must have a unique topological order"
 	end
 
 	node.order_c = MathGraph.sort(node.children_c, true)
@@ -149,7 +149,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
 		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, apiDefaultAtag, node)
 		if not apiOk or type(apiResult) == "string" then
-			return false, "TODO"
+			return false, "failed to create API"
 		end
 		node.apis[itag] = apiResult
 	end
@@ -166,20 +166,20 @@ local function createGraph(graphDeclaration)
 		Access.checkEdges(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
 	if not accessEdgesOk then
-		return false, "TODO"
+		return false, "invalid access level relation"
 	end
 
 	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
 	local default = graphDeclaration.default
 	if graph.access.levels[default.nodeAtag] == nil then
-		return false, "TODO"
+		return false, "default node access tag references an unknown access level"
 	end
 	if graph.access.levels[default.taskAtag] == nil then
-		return false, "TODO"
+		return false, "default task access tag references an unknown access level"
 	end
 	if graph.access.levels[default.apiAtag] == nil then
-		return false, "TODO"
+		return false, "default API access tag references an unknown access level"
 	end
 
 	---@type table<string, softdep.Node>
@@ -188,7 +188,7 @@ local function createGraph(graphDeclaration)
 		local nodeOk, nodeResult =
 			createNode(nodeDeclaration, graph.access, default.nodeAtag, default.taskAtag, default.apiAtag)
 		if not nodeOk or type(nodeResult) == "string" then
-			return false, "TODO"
+			return false, "failed to create node"
 		end
 		graph.nodes[ntag] = nodeResult
 	end
@@ -208,14 +208,14 @@ local function createGraph(graphDeclaration)
 
 	local adjListOk, adjListResult = MathGraph.checkAdjList(graph.parents_n)
 	if not adjListOk then
-		return false, "TODO"
+		return false, "task references an unknown data dependency node"
 	end
 
 	graph.children_n = MathGraph.revAdjList(graph.parents_n)
 
 	local dagOk, dagResult = MathGraph.checkDAG(graph.children_n, false)
 	if not dagOk then
-		return false, "TODO"
+		return false, "node data dependencies must form a DAG"
 	end
 
 	graph.order_n = MathGraph.sort(graph.children_n, false)

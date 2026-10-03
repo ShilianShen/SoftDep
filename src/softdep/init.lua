@@ -37,7 +37,7 @@ function softdep.newGraph(declaration)
 
 	local graphOk, graphResult = build(declaration)
 	if not graphOk or type(graphResult) == "string" then
-		error("TODO", 2)
+		error("failed to build graph", 2)
 	end
 
 	local graph = graphResult

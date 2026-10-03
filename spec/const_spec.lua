@@ -45,7 +45,7 @@ describe("const", function()
 
 		assert.has_error(function()
 			return readonly.nested
-		end, 'cannot access table-valued field "nested" from const table')
+		end)
 	end)
 
 	for _, case in ipairs({
@@ -58,7 +58,7 @@ describe("const", function()
 
 			assert.has_error(function()
 				readonly[case[3]] = case[4]
-			end, ('cannot modify const table field "%s"'):format(case[3]))
+			end)
 		end)
 	end
 

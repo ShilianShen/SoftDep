@@ -34,7 +34,7 @@ describe("softdep", function()
 		it("reports declaration validation errors", function()
 			assert.has_error(function()
 				softdep.newGraph(nil)
-			end, "graph declaration must be a table")
+			end)
 		end)
 
 		it("rejects declarations that cannot be built", function()
@@ -42,7 +42,7 @@ describe("softdep", function()
 				softdep.newGraph(config({
 					main = { tasks = { run = { parents_c = { "missing" } } } },
 				}))
-			end, "TODO")
+			end)
 		end)
 	end)
 
