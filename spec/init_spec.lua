@@ -57,14 +57,14 @@ describe("softdep", function()
 			assert.equal(2, node.tasks.second.count)
 		end)
 
-		it("counts read task execution without counting a clean node again", function()
+		it("counts read task execution as a node update", function()
 			local graph = softdep.newGraph(config({ main = { tasks = { read = { atag = "read" } } } }))
 			local node = graph.nodes.main
 			graph:update()
 			node.tasks.read.dirty = true
 			graph:update()
 			assert.equal(2, node.tasks.read.count)
-			assert.equal(1, node.count)
+			assert.equal(2, node.count)
 			assertClean(graph)
 		end)
 
@@ -201,7 +201,7 @@ describe("softdep", function()
 	end)
 
 	for _, level in ipairs({ "read", "write" }) do
-		it("propagates a " .. level .. " task according to its access level", function()
+		it("propagates a non-back " .. level .. " task", function()
 			local calls = { source = 0, sink = 0 }
 			local graph = softdep.newGraph(config({
 				source = {
@@ -229,10 +229,86 @@ describe("softdep", function()
 			graph.nodes.source.tasks.run.dirty = true
 			graph:update()
 			assert.equal(2, calls.source)
-			assert.equal(level == "write" and 2 or 1, calls.sink)
+			assert.equal(2, calls.sink)
 			assertClean(graph)
 		end)
 	end
+
+	it("executes front tasks forward and back tasks backward across nodes", function()
+		local calls = {}
+		local function record(name)
+			return function()
+				calls[#calls + 1] = name
+			end
+		end
+		local graph = softdep.newGraph(config({
+			first = {
+				tasks = {
+					front = { func = record("first.front") },
+					back = { back = true, parents_c = { "front" }, func = record("first.back") },
+				},
+			},
+			second = {
+				tasks = {
+					front = { parents_d = { input = "first" }, func = record("second.front") },
+					back = { back = true, parents_c = { "front" }, func = record("second.back") },
+				},
+			},
+			third = {
+				tasks = {
+					front = { parents_d = { input = "second" }, func = record("third.front") },
+					back = { back = true, parents_c = { "front" }, func = record("third.back") },
+				},
+			},
+		}))
+
+		graph:update()
+
+		assert.same({
+			"first.front",
+			"second.front",
+			"third.front",
+			"third.back",
+			"second.back",
+			"first.back",
+		}, calls)
+		assertClean(graph)
+	end)
+
+	it("runs a dirty back task without dirtying its node or data dependents", function()
+		local calls = { back = 0, sink = 0 }
+		local graph = softdep.newGraph(config({
+			source = {
+				tasks = {
+					front = {},
+					back = {
+						back = true,
+						parents_c = { "front" },
+						func = function()
+							calls.back = calls.back + 1
+						end,
+					},
+				},
+			},
+			sink = {
+				tasks = { run = {
+					parents_d = { input = "source" },
+					func = function()
+						calls.sink = calls.sink + 1
+					end,
+				} },
+			},
+		}))
+		graph:update()
+		graph.nodes.source.tasks.back.dirty = true
+
+		graph:update()
+
+		assert.equal(2, calls.back)
+		assert.equal(1, calls.sink)
+		assert.equal(1, graph.nodes.source.count)
+		assertClean(graph)
+	end)
 
 	it("propagates explicitly dirty nodes even when they have no tasks", function()
 		local calls = 0

@@ -12,11 +12,15 @@ function methods.spread(graph)
 				task.dirty = true
 			end
 
+            if not task.dirty and node.dirty and task.back then
+                task.dirty = true
+            end
+
 			if task.dirty then
 				for cttag, _ in pairs(node.children_c[ttag]) do
 					node.tasks[cttag].dirty = true
 				end
-				if task.higher then
+				if not task.back then
 					node.dirty = true
 				end
 			end
@@ -41,7 +45,22 @@ function methods.update(graph)
 	for _, ntag in ipairs(graph.order_n) do
 		local node = graph.nodes[ntag]
 
-		for _, ttag in ipairs(node.order_c) do
+		for _, ttag in ipairs(node.order_cf) do
+			local task = node.tasks[ttag]
+
+			if task.dirty then
+				task.func(node.data_a[task.atag], graph._data[ntag][ttag])
+				task.dirty = false
+				task.count = task.count + 1
+			end
+		end
+	end
+
+	for i = #graph.order_n, 1, -1 do
+		local ntag = graph.order_n[i]
+		local node = graph.nodes[ntag]
+
+		for _, ttag in ipairs(node.order_cb) do
 			local task = node.tasks[ttag]
 
 			if task.dirty then
