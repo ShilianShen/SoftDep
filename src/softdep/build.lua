@@ -21,17 +21,15 @@ local nodeMetatable = {
 
 ---@param taskDeclaration softdep.declaration.Task
 ---@param access softdep.Access
----@param taskDefaultAtag string
----@param node softdep.Node
 ---@return boolean, softdep.Task|string
-local function createTask(taskDeclaration, access, taskDefaultAtag, node)
+local function createTask(taskDeclaration, access)
 	local task = {
 		func = taskDeclaration.func or pass,
 		auto = taskDeclaration.auto or pass,
-		atag = taskDeclaration.atag or taskDefaultAtag,
+		atag = taskDeclaration.atag,
 		dirty = true,
 		count = 0,
-		back = taskDeclaration.back or false,
+		back = taskDeclaration.back,
 	}
 	if access.levels[task.atag] == nil then
 		return false, "task references an unknown access level"
@@ -42,15 +40,14 @@ end
 ---@param apiDeclaration softdep.declaration.Api
 ---@param tasks table<string, softdep.Task>
 ---@param access softdep.Access
----@param apiDefaultAtag string
 ---@param node softdep.Node
 ---@return boolean, softdep.Api|string
-local function createApi(apiDeclaration, tasks, access, apiDefaultAtag, node)
+local function createApi(apiDeclaration, tasks, access, node)
 	local api = {
 		func = apiDeclaration.func,
 		ttag = apiDeclaration.ttag,
-		atag = apiDeclaration.atag or apiDefaultAtag,
-		dirty = apiDeclaration.dirty ~= false,
+		atag = apiDeclaration.atag,
+		dirty = apiDeclaration.dirty,
 	}
 	if api.ttag ~= nil and tasks[api.ttag] == nil then
 		return false, "API references an unknown task"
@@ -65,13 +62,10 @@ end
 
 ---@param nodeDeclaration softdep.declaration.Node
 ---@param access softdep.Access
----@param nodeDefaultAtag string
----@param taskDefaultAtag string
----@param apiDefaultAtag string
 ---@return boolean, softdep.Node|string
-local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultAtag, apiDefaultAtag)
+local function createNode(nodeDeclaration, access)
 	local node = {
-		atag = nodeDeclaration.atag or nodeDefaultAtag,
+		atag = nodeDeclaration.atag,
 		data = {},
 		dirty = true,
 		count = 0,
@@ -102,7 +96,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	node.parents_c = {}
 
 	for ttag, taskDeclaration in pairs(nodeDeclaration.tasks or {}) do
-		local taskOk, taskResult = createTask(taskDeclaration, access, taskDefaultAtag, node)
+		local taskOk, taskResult = createTask(taskDeclaration, access)
 		if not taskOk or type(taskResult) == "string" then
 			return false, "failed to create task"
 		end
@@ -147,7 +141,7 @@ local function createNode(nodeDeclaration, access, nodeDefaultAtag, taskDefaultA
 	---@type table<string, softdep.Api>
 	node.apis = {}
 	for itag, apiDeclaration in pairs(nodeDeclaration.apis or {}) do
-		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, apiDefaultAtag, node)
+		local apiOk, apiResult = createApi(apiDeclaration, node.tasks, access, node)
 		if not apiOk or type(apiResult) == "string" then
 			return false, "failed to create API"
 		end
@@ -171,22 +165,10 @@ local function createGraph(graphDeclaration)
 
 	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
 
-	local default = graphDeclaration.default
-	if graph.access.levels[default.nodeAtag] == nil then
-		return false, "default node access tag references an unknown access level"
-	end
-	if graph.access.levels[default.taskAtag] == nil then
-		return false, "default task access tag references an unknown access level"
-	end
-	if graph.access.levels[default.apiAtag] == nil then
-		return false, "default API access tag references an unknown access level"
-	end
-
 	---@type table<string, softdep.Node>
 	graph.nodes = {}
 	for ntag, nodeDeclaration in pairs(graphDeclaration.nodes or {}) do
-		local nodeOk, nodeResult =
-			createNode(nodeDeclaration, graph.access, default.nodeAtag, default.taskAtag, default.apiAtag)
+		local nodeOk, nodeResult = createNode(nodeDeclaration, graph.access)
 		if not nodeOk or type(nodeResult) == "string" then
 			return false, "failed to create node"
 		end

@@ -8,6 +8,23 @@ local function identity(data)
 end
 
 local function config(nodes)
+	nodes = nodes or {}
+	for _, node in pairs(nodes) do
+		node.atag = node.atag or "read"
+		for _, task in pairs(node.tasks or {}) do
+			task.atag = task.atag or "write"
+			if task.back == nil then
+				task.back = false
+			end
+		end
+		for _, api in pairs(node.apis or {}) do
+			api.atag = api.atag or "write"
+			if api.dirty == nil then
+				api.dirty = true
+			end
+		end
+	end
+
 	return {
 		access = {
 			levels = {
@@ -16,8 +33,7 @@ local function config(nodes)
 			},
 			lt = { { "read", "write" } },
 		},
-		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
-		nodes = nodes or {},
+		nodes = nodes,
 	}
 end
 
@@ -42,7 +58,7 @@ describe("build", function()
 		assert.are.equal("write", graph.access.top)
 	end)
 
-	it("builds nodes, tasks and APIs with defaults", function()
+	it("builds nodes, tasks and APIs with explicit declaration fields", function()
 		local ok, graph = build(config({
 			main = {
 				tasks = {
@@ -201,14 +217,6 @@ describe("build", function()
 			declaration.access.lt = { { "missing", "write" } }
 			assertBuildFails(declaration)
 		end)
-
-		for _, field in ipairs({ "nodeAtag", "taskAtag", "apiAtag" }) do
-			it("rejects an unknown default " .. field, function()
-				local declaration = config()
-				declaration.default[field] = "missing"
-				assertBuildFails(declaration)
-			end)
-		end
 
 		for _, subject in ipairs({ "node", "task", "api" }) do
 			it("rejects an unknown " .. subject .. " access tag", function()

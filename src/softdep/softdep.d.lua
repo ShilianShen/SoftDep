@@ -1,26 +1,25 @@
 ---@class softdep.declaration.Task
 ---@field func function|nil
 ---@field auto function|nil
----@field atag string|nil
+---@field atag string
 ---@field parents_c string[]|nil
 ---@field parents_d table<string, string>|nil
----@field back boolean|nil
+---@field back boolean
 
 ---@class softdep.declaration.Api
 ---@field func function|nil
 ---@field ttag string|nil
----@field atag string|nil
----@field dirty boolean|nil
+---@field atag string
+---@field dirty boolean
 
 ---@class softdep.declaration.Node
----@field atag string|nil
+---@field atag string
 ---@field tasks table<string, softdep.declaration.Task>|nil
 ---@field apis table<string, softdep.declaration.Api>|nil
 
 ---@class softdep.declaration.Graph
 ---@field access {levels: table<string, softdep.AccessLevel>, lt: softdep.Edges}
 ---@field nodes table<string, softdep.declaration.Node>|nil
----@field default {nodeAtag: string, taskAtag: string, apiAtag: string}
 
 ---@class softdep.Task
 ---@field func function

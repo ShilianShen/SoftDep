@@ -133,13 +133,11 @@ local function checkTask(task, path)
 		end
 	end
 
-	ok, result = checkOptionalType(task.atag, "string", path .. ".atag")
-	if not ok then
-		return false, result
+	if type(task.atag) ~= "string" then
+		return fail(path .. ".atag", "a string")
 	end
-	ok, result = checkOptionalType(task.back, "boolean", path .. ".back")
-	if not ok then
-		return false, result
+	if type(task.back) ~= "boolean" then
+		return fail(path .. ".back", "a boolean")
 	end
 
 	if task.parents_c ~= nil then
@@ -170,11 +168,13 @@ local function checkApi(api, path)
 	if not ok then
 		return false, result
 	end
-	ok, result = checkOptionalType(api.atag, "string", path .. ".atag")
-	if not ok then
-		return false, result
+	if type(api.atag) ~= "string" then
+		return fail(path .. ".atag", "a string")
 	end
-	return checkOptionalType(api.dirty, "boolean", path .. ".dirty")
+	if type(api.dirty) ~= "boolean" then
+		return fail(path .. ".dirty", "a boolean")
+	end
+	return true
 end
 
 local function checkNode(node, path)
@@ -183,9 +183,8 @@ local function checkNode(node, path)
 		return false, result
 	end
 
-	ok, result = checkOptionalType(node.atag, "string", path .. ".atag")
-	if not ok then
-		return false, result
+	if type(node.atag) ~= "string" then
+		return fail(path .. ".atag", "a string")
 	end
 
 	if node.tasks ~= nil then
@@ -202,39 +201,18 @@ local function checkNode(node, path)
 	return true
 end
 
-local function checkDefault(default, path)
-	local ok, result = checkFields(default, path, { nodeAtag = true, taskAtag = true, apiAtag = true })
-	if not ok then
-		return false, result
-	end
-
-	for _, field in ipairs({ "nodeAtag", "taskAtag", "apiAtag" }) do
-		if type(default[field]) ~= "string" then
-			return fail(path .. "." .. field, "a string")
-		end
-	end
-
-	return true
-end
-
 ---@param declaration any
 ---@return boolean, string|nil
 function check.graphDeclaration(declaration)
 	local ok, result = checkFields(declaration, "graph declaration", {
 		access = true,
 		nodes = true,
-		default = true,
 	})
 	if not ok then
 		return false, result
 	end
 
 	ok, result = checkAccess(declaration.access, "graph declaration.access")
-	if not ok then
-		return false, result
-	end
-
-	ok, result = checkDefault(declaration.default, "graph declaration.default")
 	if not ok then
 		return false, result
 	end

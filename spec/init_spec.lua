@@ -7,6 +7,23 @@ local function identity(data)
 end
 
 local function config(nodes)
+	nodes = nodes or {}
+	for _, node in pairs(nodes) do
+		node.atag = node.atag or "read"
+		for _, task in pairs(node.tasks or {}) do
+			task.atag = task.atag or "write"
+			if task.back == nil then
+				task.back = false
+			end
+		end
+		for _, api in pairs(node.apis or {}) do
+			api.atag = api.atag or "write"
+			if api.dirty == nil then
+				api.dirty = true
+			end
+		end
+	end
+
 	return {
 		access = {
 			levels = {
@@ -15,8 +32,7 @@ local function config(nodes)
 			},
 			lt = { { "read", "write" } },
 		},
-		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
-		nodes = nodes or {},
+		nodes = nodes,
 	}
 end
 

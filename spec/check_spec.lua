@@ -16,8 +16,7 @@ local function declaration()
 			},
 			lt = { { "read", "write" } },
 		},
-		default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" },
-			nodes = {
+		nodes = {
 			main = {
 				atag = "read",
 				tasks = {
@@ -49,7 +48,6 @@ describe("graph declaration check", function()
 
 	it("checks structure without checking graph semantics", function()
 		local value = declaration()
-		value.default.nodeAtag = "missing"
 		value.nodes.main.tasks.run.parents_c = { "missing" }
 		assert.is_true(check.graphDeclaration(value))
 	end)
@@ -61,6 +59,9 @@ describe("graph declaration check", function()
 		end },
 		{ "unknown graph field", function(value)
 			value.extra = true
+		end },
+		{ "obsolete default field", function(value)
+			value.default = { nodeAtag = "read", taskAtag = "write", apiAtag = "write" }
 		end },
 		{ "missing access", function(value)
 			value.access = nil
@@ -95,15 +96,6 @@ describe("graph declaration check", function()
 		{ "access relation with non-string endpoint", function(value)
 			value.access.lt = { { "read", false } }
 		end },
-		{ "non-table defaults", function(value)
-			value.default = "read"
-		end },
-		{ "missing default", function(value)
-			value.default.taskAtag = nil
-		end },
-		{ "unknown default field", function(value)
-			value.default.extra = true
-		end },
 		{ "non-table nodes", function(value)
 			value.nodes = true
 		end },
@@ -115,6 +107,9 @@ describe("graph declaration check", function()
 		end },
 		{ "invalid node access tag", function(value)
 			value.nodes.main.atag = false
+		end },
+		{ "missing node access tag", function(value)
+			value.nodes.main.atag = nil
 		end },
 		{ "non-table tasks", function(value)
 			value.nodes.main.tasks = false
@@ -131,8 +126,14 @@ describe("graph declaration check", function()
 		{ "invalid task access tag", function(value)
 			value.nodes.main.tasks.run.atag = 1
 		end },
+		{ "missing task access tag", function(value)
+			value.nodes.main.tasks.run.atag = nil
+		end },
 		{ "non-boolean task back", function(value)
 			value.nodes.main.tasks.run.back = "back"
+		end },
+		{ "missing task back", function(value)
+			value.nodes.main.tasks.run.back = nil
 		end },
 		{ "sparse control dependencies", function(value)
 			value.nodes.main.tasks.run.parents_c = { [2] = "run" }
@@ -161,8 +162,14 @@ describe("graph declaration check", function()
 		{ "invalid API access tag", function(value)
 			value.nodes.main.apis.call.atag = {}
 		end },
+		{ "missing API access tag", function(value)
+			value.nodes.main.apis.call.atag = nil
+		end },
 		{ "non-boolean API dirty", function(value)
 			value.nodes.main.apis.call.dirty = "dirty"
+		end },
+		{ "missing API dirty", function(value)
+			value.nodes.main.apis.call.dirty = nil
 		end },
 	}
 
