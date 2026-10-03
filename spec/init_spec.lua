@@ -30,6 +30,22 @@ local function assertClean(graph)
 end
 
 describe("softdep", function()
+	describe("newGraph", function()
+		it("reports declaration validation errors", function()
+			assert.has_error(function()
+				softdep.newGraph(nil)
+			end, "graph declaration must be a table")
+		end)
+
+		it("rejects declarations that cannot be built", function()
+			assert.has_error(function()
+				softdep.newGraph(config({
+					main = { tasks = { run = { parents_c = { "missing" } } } },
+				}))
+			end, "TODO")
+		end)
+	end)
+
 	describe("update counts", function()
 		it("counts completed dirty updates, not spread calls or clean updates", function()
 			local graph = softdep.newGraph(config({ main = { tasks = { first = {}, second = { parents_c = { "first" } } } } }))
@@ -307,6 +323,32 @@ describe("softdep", function()
 		assert.equal(2, calls.back)
 		assert.equal(1, calls.sink)
 		assert.equal(1, graph.nodes.source.count)
+		assertClean(graph)
+	end)
+
+	it("activates clean back tasks when their node is dirty", function()
+		local calls = 0
+		local graph = softdep.newGraph(config({
+			main = {
+				tasks = { cleanup = {
+					back = true,
+					func = function()
+						calls = calls + 1
+					end,
+				} },
+			},
+		}))
+		graph:update()
+		graph:update()
+		assert.equal(1, calls)
+
+		graph.nodes.main.dirty = true
+		graph:spread()
+
+		assert.is_true(graph.nodes.main.tasks.cleanup.dirty)
+		assert.equal(1, calls)
+		graph:update()
+		assert.equal(2, calls)
 		assertClean(graph)
 	end)
 
