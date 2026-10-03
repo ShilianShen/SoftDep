@@ -102,7 +102,7 @@ graph.nodes.price.apis.set(20)
 graph.nodes.quantity.apis.set(3)
 graph.nodes.taxRate.apis.set(0.1)
 
-graph:run()
+graph:update()
 
 print("total:", graph.nodes.total.data.value)
 
@@ -110,6 +110,6 @@ print("\nchange tax rate\n")
 
 -- Only `tax` and `total` need to be recomputed.
 graph.nodes.taxRate.apis.set(0.2)
-graph:run()
+graph:update()
 
 print("total:", graph.nodes.total.data.value)

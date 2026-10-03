@@ -49,7 +49,7 @@ graph.nodes.price.apis.set(20)
 graph.nodes.quantity.apis.set(3)
 graph.nodes.taxRate.apis.set(0.1)
 
-graph:run()
+graph:update()
 ```
 
 This computes:
@@ -65,7 +65,7 @@ Now change only the tax rate:
 
 ```lua
 graph.nodes.taxRate.apis.set(0.2)
-graph:run()
+graph:update()
 ```
 
 Only the affected part of the graph is recomputed:
@@ -198,7 +198,13 @@ For example:
 read < write
 ```
 
-This allows SoftDep to reason about whether executing a task should cause changes to propagate to dependent nodes.
+Each access level provides a view of a node's data. Tasks and APIs receive the
+view selected by their `atag`, while data dependencies receive the view selected
+by the source node's `atag`.
+
+The `os` flag marks an access level as order-sensitive. SoftDep validates that
+order-sensitive levels are not placed below order-insensitive levels and that a
+node's externally exposed access level is order-insensitive.
 
 See the design documents for the formal model.
 
@@ -207,21 +213,25 @@ See the design documents for the formal model.
 The high-level execution method is:
 
 ```lua
-graph:run()
+graph:update()
 ```
 
-It consists of two phases:
+`update()` first propagates dirty state and then executes dirty tasks in
+dependency order. Internally, it begins by calling:
 
 ```lua
 graph:spread()
-graph:update()
 ```
 
 `spread()` propagates dirty state through the dependency graph.
 
-`update()` executes the dirty tasks in dependency order.
+Calling `spread()` directly is optional. It is useful when you want to inspect
+which tasks became dirty before executing them. A later call to `update()` will
+perform propagation again before execution, so normal callers only need to call
+`update()`.
 
-Keeping these operations separate also makes it possible to inspect or visualize the graph between propagation and execution.
+Keeping propagation available as a separate operation makes it possible to
+inspect or visualize the graph before execution.
 
 ## Design
 
