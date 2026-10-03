@@ -101,8 +101,11 @@ For example:
 
 ```lua
 subtotal = {
+    atag = "read",
     tasks = {
         compute = {
+            atag = "write",
+            back = false,
             parents_d = {
                 price = "price",
                 quantity = "quantity",
@@ -130,6 +133,8 @@ The input nodes in the example expose a `set` API:
 ```lua
 set = {
     ttag = "changed",
+    atag = "write",
+    dirty = true,
     func = function(data, value)
         data.value = value
     end,
@@ -204,6 +209,10 @@ read < write
 Each access level provides a view of a node's data. Tasks and APIs receive the
 view selected by their `atag`, while data dependencies receive the view selected
 by the source node's `atag`.
+
+Every node, task, and API must declare its `atag` explicitly. Tasks must also
+declare `back`, and APIs must declare `dirty`. SoftDep does not choose defaults
+for these fields because they affect access and dirty-propagation semantics.
 
 The `os` flag marks an access level as order-sensitive. SoftDep validates that
 order-sensitive levels are not placed below order-insensitive levels and that a

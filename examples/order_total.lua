@@ -8,12 +8,18 @@ end
 
 local function input()
 	return {
+		atag = "read",
 		tasks = {
-			changed = {},
+			changed = {
+				atag = "write",
+				back = false,
+			},
 		},
 		apis = {
 			set = {
 				ttag = "changed",
+				atag = "write",
+				dirty = true,
 				func = function(data, value)
 					data.value = value
 				end,
@@ -39,20 +45,17 @@ local graph = softdep.newGraph({
 		},
 	},
 
-	default = {
-		nodeAtag = "read",
-		taskAtag = "write",
-		apiAtag = "write",
-	},
-
 	nodes = {
 		price = input(),
 		quantity = input(),
 		taxRate = input(),
 
 		subtotal = {
+			atag = "read",
 			tasks = {
 				compute = {
+					atag = "write",
+					back = false,
 					parents_d = {
 						price = "price",
 						quantity = "quantity",
@@ -66,8 +69,11 @@ local graph = softdep.newGraph({
 		},
 
 		tax = {
+			atag = "read",
 			tasks = {
 				compute = {
+					atag = "write",
+					back = false,
 					parents_d = {
 						subtotal = "subtotal",
 						taxRate = "taxRate",
@@ -81,8 +87,11 @@ local graph = softdep.newGraph({
 		},
 
 		total = {
+			atag = "read",
 			tasks = {
 				compute = {
+					atag = "write",
+					back = false,
 					parents_d = {
 						subtotal = "subtotal",
 						tax = "tax",
