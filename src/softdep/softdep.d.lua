@@ -18,7 +18,7 @@
 ---@field apis table<string, softdep.declaration.Api>|nil
 
 ---@class softdep.declaration.Graph
----@field access {levels: table<string, softdep.AccessLevel>, lt: softdep.Edges}
+---@field access {levels: table<string, softdep.AccessLevel>, edges: softdep.Edges}
 ---@field nodes table<string, softdep.declaration.Node>|nil
 
 ---@class softdep.Task

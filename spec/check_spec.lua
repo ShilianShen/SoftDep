@@ -14,7 +14,7 @@ local function declaration()
 				read = { func = identity, os = false },
 				write = { func = identity, os = true },
 			},
-			lt = { { "read", "write" } },
+			edges = { { "read", "write" } },
 		},
 		nodes = {
 			main = {
@@ -85,16 +85,16 @@ describe("graph declaration check", function()
 			value.access.levels.read.os = 0
 		end },
 		{ "non-table access relations", function(value)
-			value.access.lt = false
+			value.access.edges = false
 		end },
 		{ "non-array access relations", function(value)
-			value.access.lt = { relation = { "read", "write" } }
+			value.access.edges = { relation = { "read", "write" } }
 		end },
 		{ "access relation with wrong length", function(value)
-			value.access.lt = { { "read" } }
+			value.access.edges = { { "read" } }
 		end },
 		{ "access relation with non-string endpoint", function(value)
-			value.access.lt = { { "read", false } }
+			value.access.edges = { { "read", false } }
 		end },
 		{ "non-table nodes", function(value)
 			value.nodes = true

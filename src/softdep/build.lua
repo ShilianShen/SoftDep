@@ -157,13 +157,13 @@ local function createGraph(graphDeclaration)
 	local graph = {}
 
 	local accessEdgesOk, accessEdgesResult =
-		Access.checkEdges(graphDeclaration.access.levels, graphDeclaration.access.lt)
+		Access.checkEdges(graphDeclaration.access.levels, graphDeclaration.access.edges)
 
 	if not accessEdgesOk then
 		return false, "invalid access level relation"
 	end
 
-	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.lt)
+	graph.access = Access.newAccess(graphDeclaration.access.levels, graphDeclaration.access.edges)
 
 	---@type table<string, softdep.Node>
 	graph.nodes = {}

@@ -30,7 +30,7 @@ local function config(nodes)
 				read = { func = identity, os = false },
 				write = { func = identity, os = true },
 			},
-			lt = { { "read", "write" } },
+			edges = { { "read", "write" } },
 		},
 		nodes = nodes,
 	}

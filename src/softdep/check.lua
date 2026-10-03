@@ -98,7 +98,7 @@ local function checkAccessLevel(level, path)
 end
 
 local function checkAccess(access, path)
-	local ok, result = checkFields(access, path, { levels = true, lt = true })
+	local ok, result = checkFields(access, path, { levels = true, edges = true })
 	if not ok then
 		return false, result
 	end
@@ -108,7 +108,7 @@ local function checkAccess(access, path)
 		return false, result
 	end
 
-	return checkArray(access.lt, path .. ".lt", function(edge, edgePath)
+	return checkArray(access.edges, path .. ".edges", function(edge, edgePath)
 		return checkArray(edge, edgePath, checkString, 2)
 	end)
 end

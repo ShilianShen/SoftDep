@@ -40,7 +40,7 @@ local graph = softdep.newGraph({
 				os = true,
 			},
 		},
-		lt = {
+		edges = {
 			{ "read", "write" },
 		},
 	},

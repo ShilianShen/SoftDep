@@ -31,7 +31,7 @@ local function config(nodes)
 				read = { func = identity, os = false },
 				write = { func = identity, os = true },
 			},
-			lt = { { "read", "write" } },
+			edges = { { "read", "write" } },
 		},
 		nodes = nodes,
 	}
@@ -214,7 +214,7 @@ describe("build", function()
 	describe("validation", function()
 		it("rejects invalid access relations", function()
 			local declaration = config()
-			declaration.access.lt = { { "missing", "write" } }
+			declaration.access.edges = { { "missing", "write" } }
 			assertBuildFails(declaration)
 		end)
 
