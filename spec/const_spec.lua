@@ -5,20 +5,72 @@ local softdep = require("softdep")
 local const = softdep.const
 
 describe("const", function()
-	it("reads non-table fields from the source", function()
-		local func = function() end
+	it("reads scalar fields and exposes wrapped functions", function()
 		local readonly = const({
 			boolean = false,
-			func = func,
+			func = function() end,
 			number = 42,
 			string = "value",
 		})
 
 		assert.is_false(readonly.boolean)
-		assert.are.equal(func, readonly.func)
+		assert.is_function(readonly.func)
 		assert.are.equal(42, readonly.number)
 		assert.are.equal("value", readonly.string)
 		assert.is_nil(readonly.missing)
+	end)
+
+	it("binds method calls to the source", function()
+		local source = {
+			value = 1,
+			increment = function(self, amount)
+				self.value = self.value + amount
+				return self
+			end,
+		}
+		local readonly = const(source)
+
+		assert.are.equal(source, readonly:increment(2))
+		assert.are.equal(3, source.value)
+	end)
+
+	it("caches wrappers by source function", function()
+		local function getValue(self)
+			return self.value
+		end
+
+		local first = const({ value = "first", getValue = getValue })
+		local second = const({ value = "second", getValue = getValue })
+
+		assert.are.equal(first.getValue, first.getValue)
+		assert.are.equal(first.getValue, second.getValue)
+		assert.are.equal("first", first:getValue())
+		assert.are.equal("second", second:getValue())
+	end)
+
+	it("uses a replacement source function", function()
+		local source = {
+			getValue = function()
+				return "old"
+			end,
+		}
+		local readonly = const(source)
+		local oldMethod = readonly.getValue
+
+		source.getValue = function()
+			return "new"
+		end
+
+		assert.are_not.equal(oldMethod, readonly.getValue)
+		assert.are.equal("new", readonly:getValue())
+	end)
+
+	it("rejects method calls with an invalid receiver", function()
+		local method = const({ func = function() end }).func
+
+		assert.has_error(function()
+			method({})
+		end, "const method called with an invalid receiver")
 	end)
 
 	it("reflects changes made to the source", function()
