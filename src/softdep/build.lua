@@ -7,8 +7,9 @@ local function pass(...) end
 
 local nodeMetatable = {
 	__call = function(api, ...)
+		local result = nil
 		if api.func then
-			api.func(api._node.data_a[api.atag], ...)
+			result = api.func(api._node.data_a[api.atag], ...)
 		end
 		if api.ttag then
 			api._node.tasks[api.ttag].dirty = true
@@ -16,6 +17,7 @@ local nodeMetatable = {
 		if api.dirty then
 			api._node.dirty = true
 		end
+		return result
 	end,
 }
 
